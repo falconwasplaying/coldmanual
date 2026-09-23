@@ -6,13 +6,19 @@ import "components"
 
 ApplicationWindow {
     id: window
-    visible: true
+    visible: false
     width: 1200
     height: 800
     minimumWidth: 960
     minimumHeight: 640
     title: "ColdManual — Fast Offline Documentation Browser"
     color: Theme.background
+
+    onVisibleChanged: {
+        if (visible) {
+            splashDismissTimer.restart()
+        }
+    }
 
     property int currentTab: 1 // Default to Browse Catalog on first run if no docs, or Reader
 
@@ -507,6 +513,12 @@ ApplicationWindow {
             NumberAnimation { duration: 280; easing.type: Easing.OutQuad }
         }
 
+        Component.onCompleted: {
+            if (window.visible) {
+                splashDismissTimer.restart()
+            }
+        }
+
         // Prevent click-through while splash is active
         MouseArea {
             anchors.fill: parent
@@ -589,8 +601,8 @@ ApplicationWindow {
 
         Timer {
             id: splashDismissTimer
-            interval: 380
-            running: true
+            interval: 420
+            running: false
             repeat: false
             onTriggered: startupSplash.opacity = 0.0
         }

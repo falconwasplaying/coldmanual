@@ -59,6 +59,10 @@ target_link_libraries(coldmanual PRIVATE
     ${LibArchive_LIBRARIES}
 )
 
+if(WIN32)
+    target_link_libraries(coldmanual PRIVATE dwmapi gdi32)
+endif()
+
 # if(WIN32)
 #     set_target_properties(coldmanual PROPERTIES
 #         WIN32_EXECUTABLE TRUE
