@@ -14,7 +14,7 @@ Item {
     implicitWidth: size
     implicitHeight: size
 
-    function resolveDownloadedLogo() {
+    function resolveLogo() {
         if (logoSource && logoSource !== "") return logoSource
         if (!docId || docId === "") return ""
         if (docId.startsWith("http://") || docId.startsWith("https://") || docId.startsWith("file:///")) {
@@ -24,11 +24,24 @@ Item {
             var downloaded = docsetMgr.getLogoPath(docId)
             if (downloaded && downloaded !== "") return downloaded
         }
-        return ""
+        if (typeof docCatalogMgr !== "undefined" && docCatalogMgr) {
+            var catLogo = docCatalogMgr.getLogoUrl(docId)
+            if (catLogo && catLogo !== "") return catLogo
+        }
+        return "https://raw.githubusercontent.com/falconwasplaying/coldmanual-db/main/logos/" + docId.toLowerCase().trim() + ".svg"
     }
 
-    readonly property string resolvedLogo: resolveDownloadedLogo()
-    readonly property bool hasDownloadedLogo: resolvedLogo !== ""
+    readonly property string resolvedLogo: resolveLogo()
+
+    Connections {
+        target: (typeof docCatalogMgr !== "undefined" && docCatalogMgr) ? docCatalogMgr : null
+        function onLogoReady(id, path) {
+            if (id === root.docId) {
+                logoImg.source = ""
+                logoImg.source = path
+            }
+        }
+    }
 
     Rectangle {
         anchors.fill: parent
@@ -37,7 +50,7 @@ Item {
         border.color: root.showBackground ? Theme.border : "transparent"
         border.width: root.showBackground ? 1 : 0
 
-        // Downloaded Logo Image (shown when doc is installed and logo is fetched)
+        // Official Logo Image (downloaded docset, local db, local cache, or remote CDN)
         Image {
             id: logoImg
             anchors.fill: parent
@@ -46,7 +59,7 @@ Item {
             sourceSize.height: root.size * 2
             fillMode: Image.PreserveAspectFit
             smooth: true
-            visible: root.hasDownloadedLogo && status !== Image.Error
+            visible: root.resolvedLogo !== "" && status !== Image.Error
             source: root.resolvedLogo
         }
 

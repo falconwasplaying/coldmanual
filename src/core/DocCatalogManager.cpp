@@ -27,6 +27,7 @@ QHash<int, QByteArray> DocCatalogManager::roleNames() const {
     roles[CategoryRole] = "category";
     roles[DescriptionRole] = "description";
     roles[IconRole] = "icon";
+    roles[LogoUrlRole] = "logoUrl";
     roles[LatestVersionRole] = "latestVersion";
     roles[VersionsRole] = "versions";
     roles[IsInstalledRole] = "isInstalled";
@@ -54,6 +55,7 @@ QVariant DocCatalogManager::data(const QModelIndex& index, int role) const {
     case CategoryRole: return item.category;
     case DescriptionRole: return item.description;
     case IconRole: return item.icon;
+    case LogoUrlRole: return getLogoUrl(item.id);
     case LatestVersionRole: return item.latestVersion;
     case VersionsRole: {
         QVariantList list;
@@ -164,6 +166,7 @@ void DocCatalogManager::loadDefaultCatalog() {
             applyFilter();
             loadCachedVersions();
             fetchAllDynamicVersions();
+            cacheLogos();
         }
         file.close();
     }
@@ -252,6 +255,7 @@ void DocCatalogManager::refreshCatalog() {
                 applyFilter();
                 loadCachedVersions();
                 fetchAllDynamicVersions();
+                cacheLogos();
             }
         } else {
             qWarning() << "ColdManual primary catalog fetch failed, trying jsDelivr CDN fallback:" << reply->errorString();
@@ -284,6 +288,7 @@ void DocCatalogManager::refreshCatalog() {
                         applyFilter();
                         loadCachedVersions();
                         fetchAllDynamicVersions();
+                        cacheLogos();
                     }
                 } else {
                     qWarning() << "ColdManual CDN catalog fetch also failed:" << cdnReply->errorString();
@@ -628,3 +633,94 @@ void DocCatalogManager::fetchDynamicVersions(const QString& docsetId) {
         reply->deleteLater();
     });
 }
+
+QString DocCatalogManager::getLogoUrl(const QString& id) const {
+    if (id.isEmpty()) return QString();
+
+    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/logos";
+    QString cachedPath = cacheDir + "/" + id + ".svg";
+    if (QFile::exists(cachedPath)) {
+        return "file:///" + cachedPath;
+    }
+
+    // Check local coldmanual-db development repository
+    QString localDbLogo = "C:/falcon/Projects/Windows/coldmanual-db/logos/" + id + ".svg";
+    if (QFile::exists(localDbLogo)) {
+        QDir().mkpath(cacheDir);
+        QFile::copy(localDbLogo, cachedPath);
+        return "file:///" + localDbLogo;
+    }
+
+    // Trigger asynchronous download into cache if not already caching
+    const_cast<DocCatalogManager*>(this)->downloadLogo(id);
+
+    // Return remote URL as immediate fallback
+    return QString("https://raw.githubusercontent.com/falconwasplaying/coldmanual-db/main/logos/%1.svg").arg(id);
+}
+
+void DocCatalogManager::cacheLogos() {
+    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/logos";
+    QDir().mkpath(cacheDir);
+
+    for (const auto& item : m_allItems) {
+        QString id = item.id;
+        QString cachedPath = cacheDir + "/" + id + ".svg";
+        if (QFile::exists(cachedPath)) continue;
+
+        QString localDbLogo = "C:/falcon/Projects/Windows/coldmanual-db/logos/" + id + ".svg";
+        if (QFile::exists(localDbLogo)) {
+            QFile::copy(localDbLogo, cachedPath);
+            emit logoReady(id, "file:///" + cachedPath);
+            continue;
+        }
+
+        downloadLogo(id);
+    }
+}
+
+void DocCatalogManager::downloadLogo(const QString& id) {
+    if (m_pendingLogoDownloads.contains(id)) return;
+    m_pendingLogoDownloads.insert(id);
+
+    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/logos";
+    QDir().mkpath(cacheDir);
+    QString cachedPath = cacheDir + "/" + id + ".svg";
+
+    QUrl url(QString("https://raw.githubusercontent.com/falconwasplaying/coldmanual-db/main/logos/%1.svg").arg(id));
+    QNetworkRequest req(url);
+    req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+    req.setHeader(QNetworkRequest::UserAgentHeader, "ColdManual/1.0");
+
+    auto* reply = m_networkManager.get(req);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, id, cachedPath]() {
+        m_pendingLogoDownloads.remove(id);
+        if (reply->error() == QNetworkReply::NoError) {
+            QFile file(cachedPath);
+            if (file.open(QIODevice::WriteOnly)) {
+                file.write(reply->readAll());
+                file.close();
+                emit logoReady(id, "file:///" + cachedPath);
+            }
+        } else {
+            // Try CDN fallback
+            QUrl cdnUrl(QString("https://cdn.jsdelivr.net/gh/falconwasplaying/coldmanual-db@main/logos/%1.svg").arg(id));
+            QNetworkRequest cdnReq(cdnUrl);
+            cdnReq.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+            cdnReq.setHeader(QNetworkRequest::UserAgentHeader, "ColdManual/1.0");
+            auto* cdnReply = m_networkManager.get(cdnReq);
+            connect(cdnReply, &QNetworkReply::finished, this, [this, cdnReply, id, cachedPath]() {
+                if (cdnReply->error() == QNetworkReply::NoError) {
+                    QFile file(cachedPath);
+                    if (file.open(QIODevice::WriteOnly)) {
+                        file.write(cdnReply->readAll());
+                        file.close();
+                        emit logoReady(id, "file:///" + cachedPath);
+                    }
+                }
+                cdnReply->deleteLater();
+            });
+        }
+        reply->deleteLater();
+    });
+}
+

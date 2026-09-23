@@ -53,6 +53,12 @@ void testCatalogParsing() {
     assert(vList[1].toMap()["isLts"].toBool() == true);
     assert(vList[2].toMap()["isDivider"].toBool() == true);
 
+    // Test logo URL resolution
+    QString pythonLogo = catalogMgr.getLogoUrl("python");
+    assert(!pythonLogo.isEmpty());
+    QVariant logoRoleVal = catalogMgr.data(catalogMgr.index(0), DocCatalogManager::LogoUrlRole);
+    assert(!logoRoleVal.toString().isEmpty());
+
     std::cout << "[PASS] testCatalogParsing passed!" << std::endl;
 }
 

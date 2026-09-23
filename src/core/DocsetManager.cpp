@@ -87,6 +87,9 @@ QString DocsetManager::getLogoPath(const QString& id) const {
             break;
         }
     }
+    if (m_catalogMgr) {
+        return m_catalogMgr->getLogoUrl(id);
+    }
     return QString();
 }
 
@@ -309,31 +312,41 @@ void DocsetManager::onDownloadCompleted(const QString& id, const QString& versio
 
     // Asynchronously download official SVG logo from coldmanual-db for reader & offline display
     QString logoDest = doc.logoPath;
-    QUrl logoUrl(QString("https://raw.githubusercontent.com/falconwasplaying/coldmanual-db/main/logos/%1.svg").arg(id));
-    QNetworkRequest logoReq(logoUrl);
-    logoReq.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
-    logoReq.setHeader(QNetworkRequest::UserAgentHeader, "ColdManual/1.0");
+    QString localDbLogo = "C:/falcon/Projects/Windows/coldmanual-db/logos/" + id + ".svg";
+    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/logos";
+    QString cachedLogo = cacheDir + "/" + id + ".svg";
 
-    auto* logoReply = m_networkManager.get(logoReq);
-    connect(logoReply, &QNetworkReply::finished, this, [this, logoReply, id, logoDest]() {
-        if (logoReply->error() == QNetworkReply::NoError) {
-            QFile file(logoDest);
-            if (file.open(QIODevice::WriteOnly)) {
-                file.write(logoReply->readAll());
-                file.close();
-            }
-            for (int i = 0; i < m_installedList.size(); ++i) {
-                if (m_installedList[i].id == id) {
-                    m_installedList[i].logoPath = logoDest;
-                    QModelIndex idx = index(i);
-                    emit dataChanged(idx, idx, {LogoPathRole});
-                    saveInstalledRegistry();
-                    break;
+    if (QFile::exists(cachedLogo)) {
+        QFile::copy(cachedLogo, logoDest);
+    } else if (QFile::exists(localDbLogo)) {
+        QFile::copy(localDbLogo, logoDest);
+    } else {
+        QUrl logoUrl(QString("https://raw.githubusercontent.com/falconwasplaying/coldmanual-db/main/logos/%1.svg").arg(id));
+        QNetworkRequest logoReq(logoUrl);
+        logoReq.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+        logoReq.setHeader(QNetworkRequest::UserAgentHeader, "ColdManual/1.0");
+
+        auto* logoReply = m_networkManager.get(logoReq);
+        connect(logoReply, &QNetworkReply::finished, this, [this, logoReply, id, logoDest]() {
+            if (logoReply->error() == QNetworkReply::NoError) {
+                QFile file(logoDest);
+                if (file.open(QIODevice::WriteOnly)) {
+                    file.write(logoReply->readAll());
+                    file.close();
+                }
+                for (int i = 0; i < m_installedList.size(); ++i) {
+                    if (m_installedList[i].id == id) {
+                        m_installedList[i].logoPath = logoDest;
+                        QModelIndex idx = index(i);
+                        emit dataChanged(idx, idx, {LogoPathRole});
+                        saveInstalledRegistry();
+                        break;
+                    }
                 }
             }
-        }
-        logoReply->deleteLater();
-    });
+            logoReply->deleteLater();
+        });
+    }
 
     m_catalogMgr->setInstalledStatus(id, true, version, trackLatest, false);
 

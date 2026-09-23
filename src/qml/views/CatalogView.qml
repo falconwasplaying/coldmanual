@@ -202,6 +202,7 @@ Item {
 
                             DocLogo {
                                 docId: (model.icon && model.icon !== "") ? model.icon : model.id
+                                logoSource: model.logoUrl || ""
                                 category: model.category || ""
                                 size: 38
                             }
