@@ -142,6 +142,7 @@ Item {
                     // Official Logo Badge
                     DocLogo {
                         docId: model.id
+                        logoSource: model.logoPath || ""
                         size: 44
                     }
 

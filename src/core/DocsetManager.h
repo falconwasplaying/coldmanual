@@ -3,6 +3,9 @@
 #include <QAbstractListModel>
 #include <QList>
 #include <QTimer>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
 #include "CatalogItem.h"
 #include "DocCatalogManager.h"
 #include "DocsetDownloader.h"
@@ -23,6 +26,7 @@ public:
         TrackLatestRole,
         LocalPathRole,
         IndexPathRole,
+        LogoPathRole,
         SizeBytesRole,
         SizeFormattedRole,
         InstalledAtRole,
@@ -52,6 +56,7 @@ public:
     Q_INVOKABLE void setTrackLatest(const QString& id, bool trackLatest);
     Q_INVOKABLE void checkForUpdates();
     Q_INVOKABLE QVariantMap getInstalledDocset(const QString& id) const;
+    Q_INVOKABLE QString getLogoPath(const QString& id) const;
 
 signals:
     void installedCountChanged();
@@ -71,6 +76,7 @@ private:
     DocsetDownloader* m_downloader;
     DocsetSearchEngine* m_searchEngine;
     SettingsManager* m_settingsMgr;
+    QNetworkAccessManager m_networkManager;
 
     QList<InstalledDocset> m_installedList;
     bool m_isCheckingUpdates{false};

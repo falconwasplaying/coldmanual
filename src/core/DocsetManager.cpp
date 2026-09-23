@@ -39,6 +39,7 @@ QHash<int, QByteArray> DocsetManager::roleNames() const {
     roles[TrackLatestRole] = "trackLatest";
     roles[LocalPathRole] = "localPath";
     roles[IndexPathRole] = "indexPath";
+    roles[LogoPathRole] = "logoPath";
     roles[SizeBytesRole] = "sizeBytes";
     roles[SizeFormattedRole] = "sizeFormatted";
     roles[InstalledAtRole] = "installedAt";
@@ -61,6 +62,7 @@ QVariant DocsetManager::data(const QModelIndex& index, int role) const {
     case TrackLatestRole: return item.trackLatest;
     case LocalPathRole: return item.localPath;
     case IndexPathRole: return item.indexPath;
+    case LogoPathRole: return item.logoPath.isEmpty() ? "" : ("file:///" + item.logoPath);
     case SizeBytesRole: return item.sizeBytes;
     case SizeFormattedRole: return formatBytes(item.sizeBytes);
     case InstalledAtRole: return item.installedAt.toString("yyyy-MM-dd");
@@ -70,6 +72,22 @@ QVariant DocsetManager::data(const QModelIndex& index, int role) const {
     default:
         return QVariant();
     }
+}
+
+QString DocsetManager::getLogoPath(const QString& id) const {
+    for (const auto& doc : m_installedList) {
+        if (doc.id == id) {
+            if (!doc.logoPath.isEmpty() && QFile::exists(doc.logoPath)) {
+                return "file:///" + doc.logoPath;
+            }
+            QString fallback = doc.localPath + "/logo.svg";
+            if (QFile::exists(fallback)) {
+                return "file:///" + fallback;
+            }
+            break;
+        }
+    }
+    return QString();
 }
 
 QString DocsetManager::totalStorageUsage() const {
@@ -270,6 +288,7 @@ void DocsetManager::onDownloadCompleted(const QString& id, const QString& versio
     doc.localPath = extractedDir;
     doc.indexPath = indexPath;
     doc.dsidxPath = dsidxPath;
+    doc.logoPath = extractedDir + "/logo.svg";
     doc.sizeBytes = calculateDirectorySize(extractedDir);
     doc.installedAt = QDateTime::currentDateTime();
     doc.lastChecked = QDateTime::currentDateTime();
@@ -287,6 +306,34 @@ void DocsetManager::onDownloadCompleted(const QString& id, const QString& versio
 
     registerWithSearchEngine(doc);
     saveInstalledRegistry();
+
+    // Asynchronously download official SVG logo from coldmanual-db for reader & offline display
+    QString logoDest = doc.logoPath;
+    QUrl logoUrl(QString("https://raw.githubusercontent.com/falconwasplaying/coldmanual-db/main/logos/%1.svg").arg(id));
+    QNetworkRequest logoReq(logoUrl);
+    logoReq.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+    logoReq.setHeader(QNetworkRequest::UserAgentHeader, "ColdManual/1.0");
+
+    auto* logoReply = m_networkManager.get(logoReq);
+    connect(logoReply, &QNetworkReply::finished, this, [this, logoReply, id, logoDest]() {
+        if (logoReply->error() == QNetworkReply::NoError) {
+            QFile file(logoDest);
+            if (file.open(QIODevice::WriteOnly)) {
+                file.write(logoReply->readAll());
+                file.close();
+            }
+            for (int i = 0; i < m_installedList.size(); ++i) {
+                if (m_installedList[i].id == id) {
+                    m_installedList[i].logoPath = logoDest;
+                    QModelIndex idx = index(i);
+                    emit dataChanged(idx, idx, {LogoPathRole});
+                    saveInstalledRegistry();
+                    break;
+                }
+            }
+        }
+        logoReply->deleteLater();
+    });
 
     m_catalogMgr->setInstalledStatus(id, true, version, trackLatest, false);
 

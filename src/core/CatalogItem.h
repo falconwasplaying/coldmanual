@@ -108,6 +108,7 @@ struct InstalledDocset {
     QString localPath;       // Directory on disk
     QString indexPath;       // Relative or absolute path to primary index (e.g. index.html)
     QString dsidxPath;       // SQLite database path if dash format
+    QString logoPath;        // Path to downloaded SVG logo on disk
     qint64 sizeBytes{0};     // Disk usage
     QDateTime installedAt;
     QDateTime lastChecked;
@@ -124,6 +125,7 @@ struct InstalledDocset {
         obj["local_path"] = localPath;
         obj["index_path"] = indexPath;
         obj["dsidx_path"] = dsidxPath;
+        obj["logo_path"] = logoPath;
         obj["size_bytes"] = sizeBytes;
         obj["installed_at"] = installedAt.toString(Qt::ISODate);
         obj["last_checked"] = lastChecked.toString(Qt::ISODate);
@@ -142,6 +144,7 @@ struct InstalledDocset {
         doc.localPath = obj["local_path"].toString();
         doc.indexPath = obj["index_path"].toString();
         doc.dsidxPath = obj["dsidx_path"].toString();
+        doc.logoPath = obj["logo_path"].toString();
         doc.sizeBytes = obj["size_bytes"].toVariant().toLongLong();
         doc.installedAt = QDateTime::fromString(obj["installed_at"].toString(), Qt::ISODate);
         doc.lastChecked = QDateTime::fromString(obj["last_checked"].toString(), Qt::ISODate);
