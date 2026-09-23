@@ -26,6 +26,7 @@
         <file alias="logos/docker.svg">resources/logos/docker.svg</file>
         <file alias="logos/postgresql.svg">resources/logos/postgresql.svg</file>
         <file alias="logos/django.svg">resources/logos/django.svg</file>
+        <file alias="logos/kotlin.svg">resources/logos/kotlin.svg</file>
         <file alias="logos/code.svg">resources/logos/code.svg</file>
     </qresource>
 </RCC>
