@@ -17,7 +17,8 @@ struct CatalogVersion {
 struct FetchedVersion {
     QString version;      // e.g. "3.12"
     QString displayName;  // e.g. "v3.12"
-    bool isStable{false}; // True if marked stable
+    bool isLts{false};    // True if Long Term Support
+    bool isEol{false};    // True if End of Life / unsupported
     QString releaseDate;
     QString downloadUrl;
 };

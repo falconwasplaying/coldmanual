@@ -9,7 +9,8 @@ Item {
     property var versionsModel: []
     property string selectedVersion: "Latest Release"
     property string selectedText: "Latest Release"
-    property bool isStableSelected: false
+    property bool isLtsSelected: false
+    property bool isEolSelected: false
     property bool enabled: true
 
     signal versionSelected(string version, string text)
@@ -41,23 +42,43 @@ Item {
                 verticalAlignment: Text.AlignVCenter
             }
 
-            // Green "Stable" badge in box if stable is selected
+            // Green "LTS" badge in box if LTS is selected
             Rectangle {
-                visible: root.isStableSelected || root.selectedVersion === "Latest Stable" || root.selectedText === "Latest Stable"
+                visible: root.isLtsSelected || root.selectedVersion === "Latest LTS" || root.selectedText === "Latest LTS"
                 height: 16
-                width: boxStableText.implicitWidth + 8
+                width: boxLtsText.implicitWidth + 8
                 radius: 2
                 color: "#163824"
                 border.color: "#22c55e"
                 border.width: 1
 
                 Text {
-                    id: boxStableText
+                    id: boxLtsText
                     anchors.centerIn: parent
-                    text: "Stable"
+                    text: "LTS"
                     font.pixelSize: 8
                     font.bold: true
                     color: "#4ade80"
+                }
+            }
+
+            // Red "EOL" badge in box if EOL is selected
+            Rectangle {
+                visible: root.isEolSelected
+                height: 16
+                width: boxEolText.implicitWidth + 8
+                radius: 2
+                color: "#3b1818"
+                border.color: "#ef4444"
+                border.width: 1
+
+                Text {
+                    id: boxEolText
+                    anchors.centerIn: parent
+                    text: "EOL"
+                    font.pixelSize: 8
+                    font.bold: true
+                    color: "#f87171"
                 }
             }
 
@@ -129,7 +150,8 @@ Item {
                 height: isDivider ? 9 : 30
 
                 property bool isDivider: modelData && modelData.isDivider === true
-                property bool isStable: modelData && modelData.isStable === true
+                property bool isLts: modelData && modelData.isLts === true
+                property bool isEol: modelData && modelData.isEol === true
                 property string itemText: modelData && modelData.text !== undefined ? modelData.text : ""
                 property string itemVersion: modelData && modelData.version !== undefined ? modelData.version : ""
                 property bool isSelected: (root.selectedVersion === itemVersion) || (root.selectedText === itemText)
@@ -165,23 +187,43 @@ Item {
                             elide: Text.ElideRight
                         }
 
-                        // Green "Stable" Tag
+                        // Green "LTS" Tag
                         Rectangle {
-                            visible: isStable
+                            visible: isLts
                             height: 18
-                            width: stableLabel.implicitWidth + 8
+                            width: ltsLabel.implicitWidth + 8
                             radius: 3
                             color: "#163824"
                             border.color: "#22c55e"
                             border.width: 1
 
                             Text {
-                                id: stableLabel
+                                id: ltsLabel
                                 anchors.centerIn: parent
-                                text: "Stable"
+                                text: "LTS"
                                 font.pixelSize: 9
                                 font.bold: true
                                 color: "#4ade80"
+                            }
+                        }
+
+                        // Red "EOL" Tag
+                        Rectangle {
+                            visible: isEol
+                            height: 18
+                            width: eolLabel.implicitWidth + 8
+                            radius: 3
+                            color: "#3b1818"
+                            border.color: "#ef4444"
+                            border.width: 1
+
+                            Text {
+                                id: eolLabel
+                                anchors.centerIn: parent
+                                text: "EOL"
+                                font.pixelSize: 9
+                                font.bold: true
+                                color: "#f87171"
                             }
                         }
 
@@ -202,7 +244,8 @@ Item {
                         onClicked: {
                             root.selectedVersion = itemVersion
                             root.selectedText = itemText
-                            root.isStableSelected = isStable
+                            root.isLtsSelected = isLts
+                            root.isEolSelected = isEol
                             root.versionSelected(itemVersion, itemText)
                             dropdownPopup.close()
                         }
