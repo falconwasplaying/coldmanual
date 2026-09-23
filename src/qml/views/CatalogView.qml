@@ -195,26 +195,14 @@ Item {
                         anchors.margins: 14
                         spacing: 8
 
-                        // Top Row: Icon + Name + Category Tag
+                        // Top Row: Official Logo + Name + Category Tag
                         RowLayout {
                             Layout.fillWidth: true
                             spacing: 10
 
-                            Rectangle {
-                                width: 36
-                                height: 36
-                                radius: Theme.radiusSm
-                                color: Theme.surfaceElevated
-                                border.color: Theme.border
-                                border.width: 1
-
-                                Text {
-                                    anchors.centerIn: parent
-                                    text: model.name ? model.name.substring(0, 2).toUpperCase() : "??"
-                                    font.pixelSize: 13
-                                    font.bold: true
-                                    color: Theme.accent
-                                }
+                            DocLogo {
+                                docId: model.id
+                                size: 38
                             }
 
                             ColumnLayout {

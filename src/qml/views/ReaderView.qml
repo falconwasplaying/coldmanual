@@ -149,10 +149,18 @@ Item {
                     Layout.fillWidth: true
                     spacing: 8
 
+                    DocLogo {
+                        docId: root.currentDocsetId
+                        size: 20
+                        showBackground: false
+                        visible: root.currentDocsetId !== ""
+                    }
+
                     LucideIcon {
                         name: "book-open"
                         size: 14
                         color: Theme.accent
+                        visible: root.currentDocsetId === ""
                     }
 
                     Text {

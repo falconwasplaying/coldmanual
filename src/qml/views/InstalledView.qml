@@ -139,22 +139,10 @@ Item {
                     anchors.margins: 14
                     spacing: 16
 
-                    // Badge
-                    Rectangle {
-                        width: 44
-                        height: 44
-                        radius: Theme.radiusSm
-                        color: Theme.surfaceElevated
-                        border.color: Theme.border
-                        border.width: 1
-
-                        Text {
-                            anchors.centerIn: parent
-                            text: model.name ? model.name.substring(0, 2).toUpperCase() : "??"
-                            font.pixelSize: 15
-                            font.bold: true
-                            color: Theme.accent
-                        }
+                    // Official Logo Badge
+                    DocLogo {
+                        docId: model.id
+                        size: 44
                     }
 
                     // Info Column

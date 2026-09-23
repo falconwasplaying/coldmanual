@@ -6,9 +6,25 @@
         <file alias="Main.qml">src/qml/Main.qml</file>
         <file alias="components/OmniSearchModal.qml">src/qml/components/OmniSearchModal.qml</file>
         <file alias="components/LucideIcon.qml">src/qml/components/LucideIcon.qml</file>
+        <file alias="components/DocLogo.qml">src/qml/components/DocLogo.qml</file>
         <file alias="views/ReaderView.qml">src/qml/views/ReaderView.qml</file>
         <file alias="views/CatalogView.qml">src/qml/views/CatalogView.qml</file>
         <file alias="views/InstalledView.qml">src/qml/views/InstalledView.qml</file>
         <file alias="views/SettingsView.qml">src/qml/views/SettingsView.qml</file>
+
+        <!-- Official brand logos -->
+        <file alias="logos/python.svg">resources/logos/python.svg</file>
+        <file alias="logos/cpp.svg">resources/logos/cpp.svg</file>
+        <file alias="logos/rust.svg">resources/logos/rust.svg</file>
+        <file alias="logos/go.svg">resources/logos/go.svg</file>
+        <file alias="logos/javascript.svg">resources/logos/javascript.svg</file>
+        <file alias="logos/react.svg">resources/logos/react.svg</file>
+        <file alias="logos/qt.svg">resources/logos/qt.svg</file>
+        <file alias="logos/nodejs.svg">resources/logos/nodejs.svg</file>
+        <file alias="logos/sqlite.svg">resources/logos/sqlite.svg</file>
+        <file alias="logos/docker.svg">resources/logos/docker.svg</file>
+        <file alias="logos/postgresql.svg">resources/logos/postgresql.svg</file>
+        <file alias="logos/django.svg">resources/logos/django.svg</file>
+        <file alias="logos/code.svg">resources/logos/code.svg</file>
     </qresource>
 </RCC>

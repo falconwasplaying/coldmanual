@@ -152,6 +152,13 @@ Item {
                         anchors.rightMargin: 10
                         spacing: 10
 
+                        // Docset Logo
+                        DocLogo {
+                            docId: model.docsetId
+                            size: 22
+                            showBackground: false
+                        }
+
                         // Type Badge
                         Rectangle {
                             width: Math.max(50, typeText.implicitWidth + 12)
