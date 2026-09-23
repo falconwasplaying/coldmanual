@@ -1,0 +1,10 @@
+build/
+bin/
+*.log
+*.exe
+*.obj
+*.o
+.ninja_*
+CMakeCache.txt
+CMakeFiles/
+.qt/
