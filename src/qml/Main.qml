@@ -76,10 +76,10 @@ ApplicationWindow {
                         radius: Theme.radiusSm
                         color: Theme.accent
 
-                        Text {
+                        LucideIcon {
                             anchors.centerIn: parent
-                            text: "❄"
-                            font.pixelSize: 18
+                            name: "snowflake"
+                            size: 18
                             color: "#ffffff"
                         }
                     }
@@ -116,9 +116,10 @@ ApplicationWindow {
                         anchors.rightMargin: 10
                         spacing: 8
 
-                        Text {
-                            text: "🔍"
-                            font.pixelSize: 12
+                        LucideIcon {
+                            name: "search"
+                            size: 13
+                            color: Theme.textMuted
                         }
 
                         Text {
@@ -175,9 +176,10 @@ ApplicationWindow {
                             anchors.rightMargin: 12
                             spacing: 10
 
-                            Text {
-                                text: "📖"
-                                font.pixelSize: 14
+                            LucideIcon {
+                                name: "book-open"
+                                size: 15
+                                color: (currentTab === 0) ? Theme.accent : Theme.textSecondary
                             }
 
                             Text {
@@ -210,9 +212,10 @@ ApplicationWindow {
                             anchors.rightMargin: 12
                             spacing: 10
 
-                            Text {
-                                text: "🌐"
-                                font.pixelSize: 14
+                            LucideIcon {
+                                name: "compass"
+                                size: 15
+                                color: (currentTab === 1) ? Theme.accent : Theme.textSecondary
                             }
 
                             Text {
@@ -245,9 +248,10 @@ ApplicationWindow {
                             anchors.rightMargin: 12
                             spacing: 10
 
-                            Text {
-                                text: "📥"
-                                font.pixelSize: 14
+                            LucideIcon {
+                                name: "download"
+                                size: 15
+                                color: (currentTab === 2) ? Theme.accent : Theme.textSecondary
                             }
 
                             Text {
@@ -297,9 +301,10 @@ ApplicationWindow {
                             anchors.rightMargin: 12
                             spacing: 10
 
-                            Text {
-                                text: "⚙️"
-                                font.pixelSize: 14
+                            LucideIcon {
+                                name: "settings"
+                                size: 15
+                                color: (currentTab === 3) ? Theme.accent : Theme.textSecondary
                             }
 
                             Text {

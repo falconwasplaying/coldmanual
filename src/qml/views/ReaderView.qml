@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import ".."
+import "../components"
 
 Item {
     id: root
@@ -146,11 +147,12 @@ Item {
                 // Docset Picker
                 RowLayout {
                     Layout.fillWidth: true
-                    spacing: 6
+                    spacing: 8
 
-                    Text {
-                        text: "📚"
-                        font.pixelSize: 14
+                    LucideIcon {
+                        name: "book-open"
+                        size: 14
+                        color: Theme.accent
                     }
 
                     Text {
@@ -182,11 +184,12 @@ Item {
                         anchors.fill: parent
                         anchors.leftMargin: 8
                         anchors.rightMargin: 8
-                        spacing: 4
+                        spacing: 6
 
-                        Text {
-                            text: "🔍"
-                            font.pixelSize: 10
+                        LucideIcon {
+                            name: "search"
+                            size: 11
+                            color: Theme.textMuted
                         }
 
                         TextInput {
@@ -334,10 +337,10 @@ Item {
                             color: backArea.containsMouse ? Theme.surfaceHover : "transparent"
                             opacity: historyIndex > 0 ? 1.0 : 0.4
 
-                            Text {
+                            LucideIcon {
                                 anchors.centerIn: parent
-                                text: "◀"
-                                font.pixelSize: 11
+                                name: "chevron-left"
+                                size: 14
                                 color: Theme.textPrimary
                             }
 
@@ -357,10 +360,10 @@ Item {
                             color: fwdArea.containsMouse ? Theme.surfaceHover : "transparent"
                             opacity: historyIndex < history.length - 1 ? 1.0 : 0.4
 
-                            Text {
+                            LucideIcon {
                                 anchors.centerIn: parent
-                                text: "▶"
-                                font.pixelSize: 11
+                                name: "chevron-right"
+                                size: 14
                                 color: Theme.textPrimary
                             }
 
@@ -379,10 +382,11 @@ Item {
                             radius: Theme.radiusSm
                             color: reloadArea.containsMouse ? Theme.surfaceHover : "transparent"
 
-                            Text {
+                            LucideIcon {
                                 anchors.centerIn: parent
-                                text: "🔄"
-                                font.pixelSize: 11
+                                name: "refresh-cw"
+                                size: 13
+                                color: Theme.textPrimary
                             }
 
                             MouseArea {
@@ -421,13 +425,14 @@ Item {
                             height: 26
                             radius: Theme.radiusSm
                             color: zoomOutArea.containsMouse ? Theme.surfaceHover : "transparent"
-                            Text {
+
+                            LucideIcon {
                                 anchors.centerIn: parent
-                                text: "−"
-                                font.pixelSize: 14
-                                font.bold: true
+                                name: "zoom-out"
+                                size: 13
                                 color: Theme.textPrimary
                             }
+
                             MouseArea {
                                 id: zoomOutArea
                                 anchors.fill: parent
@@ -449,13 +454,14 @@ Item {
                             height: 26
                             radius: Theme.radiusSm
                             color: zoomInArea.containsMouse ? Theme.surfaceHover : "transparent"
-                            Text {
+
+                            LucideIcon {
                                 anchors.centerIn: parent
-                                text: "+"
-                                font.pixelSize: 14
-                                font.bold: true
+                                name: "zoom-in"
+                                size: 13
                                 color: Theme.textPrimary
                             }
+
                             MouseArea {
                                 id: zoomInArea
                                 anchors.fill: parent
@@ -522,10 +528,11 @@ Item {
                         anchors.centerIn: parent
                         spacing: 12
 
-                        Text {
+                        LucideIcon {
                             Layout.alignment: Qt.AlignHCenter
-                            text: "📖"
-                            font.pixelSize: 48
+                            name: "book-open"
+                            size: 48
+                            color: Theme.accent
                         }
 
                         Text {

@@ -3,6 +3,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import QtQuick.Dialogs
 import ".."
+import "../components"
 
 Item {
     id: root
@@ -59,11 +60,19 @@ Item {
                         anchors.margins: 14
                         spacing: 12
 
-                        Text {
-                            text: "📁 Storage Location"
-                            font.pixelSize: 15
-                            font.bold: true
-                            color: Theme.textPrimary
+                        RowLayout {
+                            spacing: 8
+                            LucideIcon {
+                                name: "folder"
+                                size: 16
+                                color: Theme.accent
+                            }
+                            Text {
+                                text: "Storage Location"
+                                font.pixelSize: 15
+                                font.bold: true
+                                color: Theme.textPrimary
+                            }
                         }
 
                         Text {
@@ -98,19 +107,28 @@ Item {
                             }
 
                             Rectangle {
-                                width: 120
+                                width: openFolderRow.implicitWidth + 24
                                 height: 36
                                 radius: Theme.radiusSm
                                 color: openFolderArea.containsMouse ? Theme.surfaceHover : Theme.surfaceElevated
                                 border.color: Theme.border
                                 border.width: 1
 
-                                Text {
+                                RowLayout {
+                                    id: openFolderRow
                                     anchors.centerIn: parent
-                                    text: "Open Folder"
-                                    font.pixelSize: 12
-                                    font.bold: true
-                                    color: Theme.textPrimary
+                                    spacing: 6
+                                    LucideIcon {
+                                        name: "external-link"
+                                        size: 13
+                                        color: Theme.textPrimary
+                                    }
+                                    Text {
+                                        text: "Open Folder"
+                                        font.pixelSize: 12
+                                        font.bold: true
+                                        color: Theme.textPrimary
+                                    }
                                 }
 
                                 MouseArea {
@@ -147,11 +165,19 @@ Item {
                         anchors.margins: 14
                         spacing: 12
 
-                        Text {
-                            text: "🔄 Automatic Updates"
-                            font.pixelSize: 15
-                            font.bold: true
-                            color: Theme.textPrimary
+                        RowLayout {
+                            spacing: 8
+                            LucideIcon {
+                                name: "refresh-cw"
+                                size: 16
+                                color: Theme.accent
+                            }
+                            Text {
+                                text: "Automatic Updates"
+                                font.pixelSize: 15
+                                font.bold: true
+                                color: Theme.textPrimary
+                            }
                         }
 
                         Text {
@@ -233,11 +259,19 @@ Item {
                         anchors.margins: 14
                         spacing: 14
 
-                        Text {
-                            text: "🎨 Appearance & Typography"
-                            font.pixelSize: 15
-                            font.bold: true
-                            color: Theme.textPrimary
+                        RowLayout {
+                            spacing: 8
+                            LucideIcon {
+                                name: "sparkles"
+                                size: 16
+                                color: Theme.accent
+                            }
+                            Text {
+                                text: "Appearance & Typography"
+                                font.pixelSize: 15
+                                font.bold: true
+                                color: Theme.textPrimary
+                            }
                         }
 
                         RowLayout {
@@ -254,19 +288,27 @@ Item {
                                 spacing: 8
 
                                 Rectangle {
-                                    width: 80
+                                    width: 90
                                     height: 32
                                     radius: Theme.radiusSm
                                     color: settingsMgr.themeMode === "dark" ? Theme.accent : Theme.surfaceElevated
                                     border.color: Theme.border
                                     border.width: 1
 
-                                    Text {
+                                    RowLayout {
                                         anchors.centerIn: parent
-                                        text: "🌙 Dark"
-                                        font.pixelSize: 12
-                                        font.bold: settingsMgr.themeMode === "dark"
-                                        color: settingsMgr.themeMode === "dark" ? Theme.textOnAccent : Theme.textPrimary
+                                        spacing: 6
+                                        LucideIcon {
+                                            name: "moon"
+                                            size: 13
+                                            color: settingsMgr.themeMode === "dark" ? Theme.textOnAccent : Theme.textPrimary
+                                        }
+                                        Text {
+                                            text: "Dark"
+                                            font.pixelSize: 12
+                                            font.bold: settingsMgr.themeMode === "dark"
+                                            color: settingsMgr.themeMode === "dark" ? Theme.textOnAccent : Theme.textPrimary
+                                        }
                                     }
 
                                     MouseArea {
@@ -276,19 +318,27 @@ Item {
                                 }
 
                                 Rectangle {
-                                    width: 80
+                                    width: 90
                                     height: 32
                                     radius: Theme.radiusSm
                                     color: settingsMgr.themeMode === "light" ? Theme.accent : Theme.surfaceElevated
                                     border.color: Theme.border
                                     border.width: 1
 
-                                    Text {
+                                    RowLayout {
                                         anchors.centerIn: parent
-                                        text: "☀️ Light"
-                                        font.pixelSize: 12
-                                        font.bold: settingsMgr.themeMode === "light"
-                                        color: settingsMgr.themeMode === "light" ? Theme.textOnAccent : Theme.textPrimary
+                                        spacing: 6
+                                        LucideIcon {
+                                            name: "sun"
+                                            size: 13
+                                            color: settingsMgr.themeMode === "light" ? Theme.textOnAccent : Theme.textPrimary
+                                        }
+                                        Text {
+                                            text: "Light"
+                                            font.pixelSize: 12
+                                            font.bold: settingsMgr.themeMode === "light"
+                                            color: settingsMgr.themeMode === "light" ? Theme.textOnAccent : Theme.textPrimary
+                                        }
                                     }
 
                                     MouseArea {
@@ -341,11 +391,19 @@ Item {
                     border.color: Theme.border
                     border.width: 1
 
-                    Text {
+                    RowLayout {
                         anchors.centerIn: parent
-                        text: "Reset All Settings to Defaults"
-                        font.pixelSize: 12
-                        color: Theme.danger
+                        spacing: 8
+                        LucideIcon {
+                            name: "rotate-ccw"
+                            size: 14
+                            color: Theme.danger
+                        }
+                        Text {
+                            text: "Reset All Settings to Defaults"
+                            font.pixelSize: 12
+                            color: Theme.danger
+                        }
                     }
 
                     MouseArea {

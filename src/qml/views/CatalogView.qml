@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import ".."
+import "../components"
 
 Item {
     id: root
@@ -51,9 +52,10 @@ Item {
                     anchors.rightMargin: 10
                     spacing: 8
 
-                    Text {
-                        text: "🔍"
-                        font.pixelSize: 13
+                    LucideIcon {
+                        name: "search"
+                        size: 13
+                        color: Theme.textMuted
                     }
 
                     TextInput {
@@ -74,9 +76,9 @@ Item {
                         }
                     }
 
-                    Text {
-                        text: "✕"
-                        font.pixelSize: 11
+                    LucideIcon {
+                        name: "x"
+                        size: 12
                         color: Theme.textMuted
                         visible: searchInput.text.length > 0
                         MouseArea {
@@ -96,10 +98,11 @@ Item {
                 border.color: Theme.border
                 border.width: 1
 
-                Text {
+                LucideIcon {
                     anchors.centerIn: parent
-                    text: catalogMgr.isRefreshing ? "⏳" : "🔄"
-                    font.pixelSize: 14
+                    name: "refresh-cw"
+                    size: 14
+                    color: Theme.textPrimary
                 }
 
                 MouseArea {
@@ -238,17 +241,27 @@ Item {
                             Rectangle {
                                 visible: model.isInstalled
                                 height: 22
-                                width: instText.implicitWidth + 12
+                                width: instRow.implicitWidth + 14
                                 radius: Theme.radiusSm
                                 color: Theme.successBg
 
-                                Text {
-                                    id: instText
+                                RowLayout {
+                                    id: instRow
                                     anchors.centerIn: parent
-                                    text: "✓ " + model.installedVersion
-                                    font.pixelSize: 10
-                                    font.bold: true
-                                    color: Theme.success
+                                    spacing: 4
+
+                                    LucideIcon {
+                                        name: "check"
+                                        size: 11
+                                        color: Theme.success
+                                    }
+
+                                    Text {
+                                        text: model.installedVersion
+                                        font.pixelSize: 10
+                                        font.bold: true
+                                        color: Theme.success
+                                    }
                                 }
                             }
                         }
@@ -359,10 +372,10 @@ Item {
                                     radius: 13
                                     color: cancelArea.containsMouse ? Theme.dangerBg : Theme.surfaceElevated
 
-                                    Text {
+                                    LucideIcon {
                                         anchors.centerIn: parent
-                                        text: "✕"
-                                        font.pixelSize: 10
+                                        name: "x"
+                                        size: 11
                                         color: Theme.danger
                                     }
 
@@ -391,12 +404,20 @@ Item {
                                     border.color: Theme.warning
                                     border.width: 1
 
-                                    Text {
+                                    RowLayout {
                                         anchors.centerIn: parent
-                                        text: "Update Available"
-                                        font.pixelSize: 11
-                                        font.bold: true
-                                        color: updateArea.containsMouse ? "#000000" : Theme.warning
+                                        spacing: 4
+                                        LucideIcon {
+                                            name: "zap"
+                                            size: 12
+                                            color: updateArea.containsMouse ? "#000000" : Theme.warning
+                                        }
+                                        Text {
+                                            text: "Update Available"
+                                            font.pixelSize: 11
+                                            font.bold: true
+                                            color: updateArea.containsMouse ? "#000000" : Theme.warning
+                                        }
                                     }
 
                                     MouseArea {
@@ -416,12 +437,20 @@ Item {
                                     border.color: model.isInstalled ? Theme.border : Theme.accent
                                     border.width: 1
 
-                                    Text {
+                                    RowLayout {
                                         anchors.centerIn: parent
-                                        text: model.isInstalled ? "Reinstall" : "Download & Install"
-                                        font.pixelSize: 12
-                                        font.bold: !model.isInstalled
-                                        color: model.isInstalled ? Theme.textPrimary : Theme.textOnAccent
+                                        spacing: 6
+                                        LucideIcon {
+                                            name: model.isInstalled ? "refresh-cw" : "download"
+                                            size: 13
+                                            color: model.isInstalled ? Theme.textPrimary : Theme.textOnAccent
+                                        }
+                                        Text {
+                                            text: model.isInstalled ? "Reinstall" : "Download & Install"
+                                            font.pixelSize: 12
+                                            font.bold: !model.isInstalled
+                                            color: model.isInstalled ? Theme.textPrimary : Theme.textOnAccent
+                                        }
                                     }
 
                                     MouseArea {
@@ -437,17 +466,18 @@ Item {
                                 // Read button if installed
                                 Rectangle {
                                     visible: model.isInstalled
-                                    width: 32
+                                    width: 34
                                     height: 30
                                     radius: Theme.radiusSm
                                     color: readBtnArea.containsMouse ? Theme.surfaceHover : Theme.surfaceElevated
                                     border.color: Theme.border
                                     border.width: 1
 
-                                    Text {
+                                    LucideIcon {
                                         anchors.centerIn: parent
-                                        text: "📖"
-                                        font.pixelSize: 12
+                                        name: "book-open"
+                                        size: 13
+                                        color: Theme.textPrimary
                                     }
 
                                     MouseArea {

@@ -65,9 +65,10 @@ Item {
                 Layout.fillWidth: true
                 spacing: 10
 
-                Text {
-                    text: "🔍"
-                    font.pixelSize: 16
+                LucideIcon {
+                    name: "search"
+                    size: 16
+                    color: Theme.accent
                 }
 
                 TextField {
@@ -199,10 +200,10 @@ Item {
                             }
                         }
 
-                        Text {
-                            text: "↵"
-                            font.pixelSize: 14
-                            color: Theme.textMuted
+                        LucideIcon {
+                            name: "chevron-right"
+                            size: 14
+                            color: Theme.accent
                             visible: resultsList.currentIndex === index
                         }
                     }
@@ -227,9 +228,17 @@ Item {
                     ColumnLayout {
                         anchors.centerIn: parent
                         spacing: 8
+
+                        LucideIcon {
+                            Layout.alignment: Qt.AlignHCenter
+                            name: "zap"
+                            size: 32
+                            color: Theme.accent
+                        }
+
                         Text {
                             Layout.alignment: Qt.AlignHCenter
-                            text: "⚡ Instant Symbol & Topic Lookup"
+                            text: "Instant Symbol & Topic Lookup"
                             font.pixelSize: 14
                             font.bold: true
                             color: Theme.textSecondary
@@ -249,6 +258,14 @@ Item {
                     ColumnLayout {
                         anchors.centerIn: parent
                         spacing: 8
+
+                        LucideIcon {
+                            Layout.alignment: Qt.AlignHCenter
+                            name: "search"
+                            size: 32
+                            color: Theme.textMuted
+                        }
+
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "No symbols found for \"" + searchEngine.query + "\""

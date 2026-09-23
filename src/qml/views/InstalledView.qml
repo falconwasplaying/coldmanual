@@ -2,6 +2,7 @@ import QtQuick
 import QtQuick.Controls
 import QtQuick.Layouts
 import ".."
+import "../components"
 
 Item {
     id: root
@@ -39,7 +40,7 @@ Item {
 
             // Check Updates Button
             Rectangle {
-                width: checkText.implicitWidth + 24
+                width: checkText.implicitWidth + 34
                 height: 36
                 radius: Theme.radiusMd
                 color: checkArea.containsMouse ? Theme.surfaceHover : Theme.surface
@@ -49,9 +50,10 @@ Item {
                 RowLayout {
                     anchors.centerIn: parent
                     spacing: 6
-                    Text {
-                        text: docsetMgr.isCheckingUpdates ? "⏳" : "🔄"
-                        font.pixelSize: 12
+                    LucideIcon {
+                        name: "refresh-cw"
+                        size: 13
+                        color: Theme.textPrimary
                     }
                     Text {
                         id: checkText
@@ -73,19 +75,27 @@ Item {
 
             // Update All Button
             Rectangle {
-                width: updateAllText.implicitWidth + 24
+                width: updateAllRow.implicitWidth + 24
                 height: 36
                 radius: Theme.radiusMd
                 color: updateAllArea.containsMouse ? Theme.accentHover : Theme.accent
                 visible: docsetMgr.installedCount > 0
 
-                Text {
-                    id: updateAllText
+                RowLayout {
+                    id: updateAllRow
                     anchors.centerIn: parent
-                    text: "Update All"
-                    font.pixelSize: 12
-                    font.bold: true
-                    color: Theme.textOnAccent
+                    spacing: 6
+                    LucideIcon {
+                        name: "download"
+                        size: 13
+                        color: Theme.textOnAccent
+                    }
+                    Text {
+                        text: "Update All"
+                        font.pixelSize: 12
+                        font.bold: true
+                        color: Theme.textOnAccent
+                    }
                 }
 
                 MouseArea {
@@ -195,19 +205,27 @@ Item {
                             Rectangle {
                                 visible: model.updateAvailable
                                 height: 20
-                                width: alertText.implicitWidth + 12
+                                width: alertRow.implicitWidth + 14
                                 radius: Theme.radiusSm
                                 color: Theme.warningBg
                                 border.color: Theme.warning
                                 border.width: 1
 
-                                Text {
-                                    id: alertText
+                                RowLayout {
+                                    id: alertRow
                                     anchors.centerIn: parent
-                                    text: "⚡ v" + model.availableVersion + " Available"
-                                    font.pixelSize: 10
-                                    font.bold: true
-                                    color: Theme.warning
+                                    spacing: 4
+                                    LucideIcon {
+                                        name: "zap"
+                                        size: 10
+                                        color: Theme.warning
+                                    }
+                                    Text {
+                                        text: "v" + model.availableVersion + " Available"
+                                        font.pixelSize: 10
+                                        font.bold: true
+                                        color: Theme.warning
+                                    }
                                 }
                             }
                         }
@@ -244,19 +262,28 @@ Item {
                         // Update Now Button (if update available)
                         Rectangle {
                             visible: model.updateAvailable
-                            width: 86
+                            width: updateRow.implicitWidth + 16
                             height: 32
                             radius: Theme.radiusSm
                             color: updateNowArea.containsMouse ? Theme.warning : Theme.warningBg
                             border.color: Theme.warning
                             border.width: 1
 
-                            Text {
+                            RowLayout {
+                                id: updateRow
                                 anchors.centerIn: parent
-                                text: "Update Now"
-                                font.pixelSize: 11
-                                font.bold: true
-                                color: updateNowArea.containsMouse ? "#000000" : Theme.warning
+                                spacing: 4
+                                LucideIcon {
+                                    name: "download"
+                                    size: 11
+                                    color: updateNowArea.containsMouse ? "#000000" : Theme.warning
+                                }
+                                Text {
+                                    text: "Update Now"
+                                    font.pixelSize: 11
+                                    font.bold: true
+                                    color: updateNowArea.containsMouse ? "#000000" : Theme.warning
+                                }
                             }
 
                             MouseArea {
@@ -269,7 +296,7 @@ Item {
 
                         // Open Reader
                         Rectangle {
-                            width: 110
+                            width: 116
                             height: 32
                             radius: Theme.radiusSm
                             color: readArea.containsMouse ? Theme.accentHover : Theme.accent
@@ -277,9 +304,10 @@ Item {
                             RowLayout {
                                 anchors.centerIn: parent
                                 spacing: 6
-                                Text {
-                                    text: "📖"
-                                    font.pixelSize: 12
+                                LucideIcon {
+                                    name: "book-open"
+                                    size: 13
+                                    color: Theme.textOnAccent
                                 }
                                 Text {
                                     text: "Open Reader"
@@ -306,10 +334,11 @@ Item {
                             border.color: Theme.border
                             border.width: 1
 
-                            Text {
+                            LucideIcon {
                                 anchors.centerIn: parent
-                                text: "🗑️"
-                                font.pixelSize: 12
+                                name: "trash-2"
+                                size: 13
+                                color: Theme.danger
                             }
 
                             MouseArea {
@@ -332,10 +361,11 @@ Item {
                     anchors.centerIn: parent
                     spacing: 12
 
-                    Text {
+                    LucideIcon {
                         Layout.alignment: Qt.AlignHCenter
-                        text: "📚"
-                        font.pixelSize: 42
+                        name: "library"
+                        size: 48
+                        color: Theme.accent
                     }
 
                     Text {
