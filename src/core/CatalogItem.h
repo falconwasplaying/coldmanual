@@ -49,14 +49,27 @@ struct CatalogItem {
             QJsonObject vObj = val.toObject();
             CatalogVersion cv;
             cv.version = vObj["version"].toString();
-            cv.downloadUrl = vObj["url"].toString();
-            cv.hash = vObj["hash"].toString();
+            cv.downloadUrl = vObj.contains("download_url") ? vObj["download_url"].toString() : vObj["url"].toString();
+            cv.hash = vObj.contains("sha256") ? vObj["sha256"].toString() : vObj["hash"].toString();
             cv.sizeBytes = vObj["size_bytes"].toVariant().toLongLong();
             cv.isLatest = vObj["is_latest"].toBool(false);
             if (cv.isLatest && item.latestVersion.isEmpty()) {
                 item.latestVersion = cv.version;
             }
             item.versions.append(cv);
+
+            // Populate dynamic fetchedVersions directly from catalog manifest
+            FetchedVersion fv;
+            fv.version = cv.version;
+            fv.displayName = vObj["display_name"].toString();
+            if (fv.displayName.isEmpty()) {
+                fv.displayName = "v" + fv.version;
+            }
+            fv.isLts = vObj["is_lts"].toBool(false);
+            fv.isEol = vObj["is_eol"].toBool(false);
+            fv.releaseDate = vObj["release_date"].toString();
+            fv.downloadUrl = cv.downloadUrl;
+            item.fetchedVersions.append(fv);
         }
 
         return item;

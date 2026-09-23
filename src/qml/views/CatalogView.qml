@@ -201,7 +201,7 @@ Item {
                             spacing: 10
 
                             DocLogo {
-                                docId: model.id
+                                docId: (model.icon && model.icon !== "") ? model.icon : model.id
                                 size: 38
                             }
 

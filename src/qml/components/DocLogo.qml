@@ -28,11 +28,15 @@ Item {
             fillMode: Image.PreserveAspectFit
             smooth: true
             source: {
-                var cleanId = root.docId ? root.docId.toLowerCase().trim() : "code"
+                if (!root.docId || root.docId === "") return "qrc:/logos/code.svg"
+                if (root.docId.startsWith("http://") || root.docId.startsWith("https://") || root.docId.startsWith("file:///") || root.docId.startsWith("qrc:/")) {
+                    return root.docId
+                }
+                var cleanId = root.docId.toLowerCase().trim()
                 return "qrc:/logos/" + cleanId + ".svg"
             }
             onStatusChanged: {
-                if (status === Image.Error) {
+                if (status === Image.Error && source !== "qrc:/logos/code.svg") {
                     source = "qrc:/logos/code.svg"
                 }
             }

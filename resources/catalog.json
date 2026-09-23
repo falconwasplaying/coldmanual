@@ -1,262 +1,73 @@
 [
   {
-    "id": "python",
-    "name": "Python",
-    "category": "Languages",
-    "description": "An interpreted, high-level, general-purpose programming language emphasizing code readability.",
-    "icon": "python",
-    "latest_version": "3.12",
-    "format": "dash",
-    "versions": [
-      {
-        "version": "3.12",
-        "url": "https://kapeli.com/feeds/Python_3.tgz",
-        "hash": "py312-v1",
-        "size_bytes": 18450000,
-        "is_latest": true
-      },
-      {
-        "version": "3.11",
-        "url": "https://kapeli.com/feeds/Python_3.tgz",
-        "hash": "py311-v1",
-        "size_bytes": 17800000,
-        "is_latest": false
-      },
-      {
-        "version": "3.10",
-        "url": "https://kapeli.com/feeds/Python_3.tgz",
-        "hash": "py310-v1",
-        "size_bytes": 16900000,
-        "is_latest": false
-      }
-    ]
-  },
-  {
     "id": "cpp",
     "name": "C++",
     "category": "Languages",
     "description": "High-performance general-purpose programming language with object-oriented and generic features (cppreference).",
     "icon": "cpp",
-    "latest_version": "23",
     "format": "dash",
+    "latest_version": "26",
+    "latest_lts_version": "23",
     "versions": [
       {
+        "version": "26",
+        "display_name": "C++26 (Working Draft)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2026",
+        "download_url": "https://kapeli.com/feeds/C++.tgz",
+        "size_bytes": 42100000
+      },
+      {
         "version": "23",
-        "url": "https://kapeli.com/feeds/C++.tgz",
-        "hash": "cpp23-v1",
-        "size_bytes": 42100000,
-        "is_latest": true
+        "display_name": "C++23 (ISO/IEC 14882:2024)",
+        "is_lts": true,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2024",
+        "download_url": "https://kapeli.com/feeds/C++.tgz",
+        "size_bytes": 42100000
       },
       {
         "version": "20",
-        "url": "https://kapeli.com/feeds/C++.tgz",
-        "hash": "cpp20-v1",
-        "size_bytes": 39500000,
-        "is_latest": false
-      }
-    ]
-  },
-  {
-    "id": "rust",
-    "name": "Rust",
-    "category": "Languages",
-    "description": "A language empowering everyone to build reliable and efficient software with memory safety guarantees.",
-    "icon": "rust",
-    "latest_version": "1.77",
-    "format": "dash",
-    "versions": [
-      {
-        "version": "1.77",
-        "url": "https://kapeli.com/feeds/Rust.tgz",
-        "hash": "rust177-v1",
-        "size_bytes": 36200000,
-        "is_latest": true
+        "display_name": "C++20 (ISO/IEC 14882:2020)",
+        "is_lts": true,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2020",
+        "download_url": "https://kapeli.com/feeds/C++.tgz",
+        "size_bytes": 39500000
       },
       {
-        "version": "1.75",
-        "url": "https://kapeli.com/feeds/Rust.tgz",
-        "hash": "rust175-v1",
-        "size_bytes": 35100000,
-        "is_latest": false
-      }
-    ]
-  },
-  {
-    "id": "go",
-    "name": "Go",
-    "category": "Languages",
-    "description": "An open source programming language supported by Google for building simple, fast, and reliable software.",
-    "icon": "go",
-    "latest_version": "1.22",
-    "format": "dash",
-    "versions": [
-      {
-        "version": "1.22",
-        "url": "https://kapeli.com/feeds/Go.tgz",
-        "hash": "go122-v1",
-        "size_bytes": 21800000,
-        "is_latest": true
+        "version": "17",
+        "display_name": "C++17 (ISO/IEC 14882:2017)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2017",
+        "download_url": "https://kapeli.com/feeds/C++.tgz",
+        "size_bytes": 42100000
       },
       {
-        "version": "1.21",
-        "url": "https://kapeli.com/feeds/Go.tgz",
-        "hash": "go121-v1",
-        "size_bytes": 20900000,
-        "is_latest": false
-      }
-    ]
-  },
-  {
-    "id": "javascript",
-    "name": "JavaScript (MDN)",
-    "category": "Languages",
-    "description": "Mozilla Developer Network comprehensive documentation for JavaScript standard built-in objects and APIs.",
-    "icon": "javascript",
-    "latest_version": "ES2024",
-    "format": "dash",
-    "versions": [
-      {
-        "version": "ES2024",
-        "url": "https://kapeli.com/feeds/JavaScript.tgz",
-        "hash": "js2024-v1",
-        "size_bytes": 28400000,
-        "is_latest": true
-      }
-    ]
-  },
-  {
-    "id": "react",
-    "name": "React",
-    "category": "Frontend",
-    "description": "The library for web and native user interfaces developed by Meta.",
-    "icon": "react",
-    "latest_version": "18.3",
-    "format": "dash",
-    "versions": [
-      {
-        "version": "18.3",
-        "url": "https://kapeli.com/feeds/React.tgz",
-        "hash": "react183-v1",
-        "size_bytes": 14200000,
-        "is_latest": true
+        "version": "14",
+        "display_name": "C++14 (ISO/IEC 14882:2014)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2014",
+        "download_url": "https://kapeli.com/feeds/C++.tgz",
+        "size_bytes": 42100000
       },
       {
-        "version": "17.0",
-        "url": "https://kapeli.com/feeds/React.tgz",
-        "hash": "react170-v1",
-        "size_bytes": 12800000,
-        "is_latest": false
-      }
-    ]
-  },
-  {
-    "id": "qt",
-    "name": "Qt 6",
-    "category": "Systems",
-    "description": "Cross-platform application development framework for desktop, embedded and mobile systems.",
-    "icon": "qt",
-    "latest_version": "6.6",
-    "format": "dash",
-    "versions": [
-      {
-        "version": "6.6",
-        "url": "https://kapeli.com/feeds/Qt_6.tgz",
-        "hash": "qt66-v1",
-        "size_bytes": 88000000,
-        "is_latest": true
-      },
-      {
-        "version": "5.15",
-        "url": "https://kapeli.com/feeds/Qt_5.tgz",
-        "hash": "qt515-v1",
-        "size_bytes": 82000000,
-        "is_latest": false
-      }
-    ]
-  },
-  {
-    "id": "nodejs",
-    "name": "Node.js",
-    "category": "Backend",
-    "description": "An open-source, cross-platform JavaScript runtime environment executing V8 outside the browser.",
-    "icon": "nodejs",
-    "latest_version": "20.x",
-    "format": "dash",
-    "versions": [
-      {
-        "version": "20.x",
-        "url": "https://kapeli.com/feeds/NodeJS.tgz",
-        "hash": "node20-v1",
-        "size_bytes": 16500000,
-        "is_latest": true
-      },
-      {
-        "version": "18.x",
-        "url": "https://kapeli.com/feeds/NodeJS.tgz",
-        "hash": "node18-v1",
-        "size_bytes": 15200000,
-        "is_latest": false
-      }
-    ]
-  },
-  {
-    "id": "sqlite",
-    "name": "SQLite",
-    "category": "Databases",
-    "description": "A C-language library that implements a small, fast, self-contained, high-reliability, full-featured SQL database engine.",
-    "icon": "sqlite",
-    "latest_version": "3.45",
-    "format": "dash",
-    "versions": [
-      {
-        "version": "3.45",
-        "url": "https://kapeli.com/feeds/SQLite.tgz",
-        "hash": "sqlite345-v1",
-        "size_bytes": 11200000,
-        "is_latest": true
-      }
-    ]
-  },
-  {
-    "id": "docker",
-    "name": "Docker",
-    "category": "DevOps",
-    "description": "Set of platform as a service products using OS-level virtualization to deliver software in packages called containers.",
-    "icon": "docker",
-    "latest_version": "26.0",
-    "format": "dash",
-    "versions": [
-      {
-        "version": "26.0",
-        "url": "https://kapeli.com/feeds/Docker.tgz",
-        "hash": "docker26-v1",
-        "size_bytes": 19400000,
-        "is_latest": true
-      }
-    ]
-  },
-  {
-    "id": "postgresql",
-    "name": "PostgreSQL",
-    "category": "Databases",
-    "description": "A powerful, open source object-relational database system with over 35 years of active development.",
-    "icon": "postgresql",
-    "latest_version": "16",
-    "format": "dash",
-    "versions": [
-      {
-        "version": "16",
-        "url": "https://kapeli.com/feeds/PostgreSQL.tgz",
-        "hash": "pg16-v1",
-        "size_bytes": 22400000,
-        "is_latest": true
-      },
-      {
-        "version": "15",
-        "url": "https://kapeli.com/feeds/PostgreSQL.tgz",
-        "hash": "pg15-v1",
-        "size_bytes": 21800000,
-        "is_latest": false
+        "version": "11",
+        "display_name": "C++11 (ISO/IEC 14882:2011)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2011",
+        "download_url": "https://kapeli.com/feeds/C++.tgz",
+        "size_bytes": 42100000
       }
     ]
   },
@@ -266,22 +77,2591 @@
     "category": "Backend",
     "description": "A high-level Python web framework that encourages rapid development and clean, pragmatic design.",
     "icon": "django",
-    "latest_version": "5.0",
     "format": "dash",
+    "latest_version": "6.1",
+    "latest_lts_version": "5.2",
     "versions": [
       {
+        "version": "6.1",
+        "display_name": "v6.1 (6.1.1)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2026-08-05",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "6.0",
+        "display_name": "v6.0 (6.0.8)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2025-12-03",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "5.2",
+        "display_name": "v5.2 (5.2.17)",
+        "is_lts": true,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2025-04-02",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "5.1",
+        "display_name": "v5.1 (5.1.15)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-08-07",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
         "version": "5.0",
-        "url": "https://kapeli.com/feeds/Django.tgz",
-        "hash": "django50-v1",
-        "size_bytes": 13900000,
-        "is_latest": true
+        "display_name": "v5.0 (5.0.14)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-12-04",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
       },
       {
         "version": "4.2",
-        "url": "https://kapeli.com/feeds/Django.tgz",
-        "hash": "django42-v1",
-        "size_bytes": 13100000,
-        "is_latest": false
+        "display_name": "v4.2 (4.2.30)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-04-03",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13100000
+      },
+      {
+        "version": "4.1",
+        "display_name": "v4.1 (4.1.13)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-08-03",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "4.0",
+        "display_name": "v4.0 (4.0.10)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-12-07",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "3.2",
+        "display_name": "v3.2 (3.2.25)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-04-06",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "3.1",
+        "display_name": "v3.1 (3.1.14)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-08-04",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "3.0",
+        "display_name": "v3.0 (3.0.14)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-12-02",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "2.2",
+        "display_name": "v2.2 (2.2.28)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-04-01",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "2.1",
+        "display_name": "v2.1 (2.1.15)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-08-01",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "2.0",
+        "display_name": "v2.0 (2.0.13)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-12-02",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "1.11",
+        "display_name": "v1.11 (1.11.29)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-04-04",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "1.10",
+        "display_name": "v1.10 (1.10.8)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2016-08-01",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "1.9",
+        "display_name": "v1.9 (1.9.13)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2015-12-01",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "1.8",
+        "display_name": "v1.8 (1.8.19)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2015-04-01",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "1.7",
+        "display_name": "v1.7 (1.7.11)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2014-09-03",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "1.6",
+        "display_name": "v1.6 (1.6.11)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2013-11-06",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "1.5",
+        "display_name": "v1.5 (1.5.12)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2013-02-26",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "1.4",
+        "display_name": "v1.4 (1.4.22)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2012-03-23",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      },
+      {
+        "version": "1.3",
+        "display_name": "v1.3 (1.3.7)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2011-03-23",
+        "download_url": "https://kapeli.com/feeds/Django.tgz",
+        "size_bytes": 13900000
+      }
+    ]
+  },
+  {
+    "id": "docker",
+    "name": "Docker",
+    "category": "DevOps",
+    "description": "Set of platform as a service products using OS-level virtualization to deliver software in packages called containers.",
+    "icon": "docker",
+    "format": "dash",
+    "latest_version": "29",
+    "latest_lts_version": "",
+    "versions": [
+      {
+        "version": "29",
+        "display_name": "v29 (29.8.1)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2025-11-10",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "28",
+        "display_name": "v28 (28.5.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-02-20",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "27",
+        "display_name": "v27 (27.5.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-06-25",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "26.1",
+        "display_name": "v26.1 (26.1.5)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-04-22",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "26.0",
+        "display_name": "v26.0 (26.0.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-03-20",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "25.0",
+        "display_name": "v25.0 (25.0.17)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2024-01-19",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "24.0",
+        "display_name": "v24.0 (24.0.9)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-05-16",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "23.0",
+        "display_name": "v23.0 (23.0.18)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-02-02",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "20.10",
+        "display_name": "v20.10 (20.10.27)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-12-09",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "19.03",
+        "display_name": "v19.03 (19.03.15)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-07-22",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "18.09",
+        "display_name": "v18.09 (18.09.9)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-11-08",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "18.06",
+        "display_name": "v18.06 (18.06.3)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-07-18",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "18.05",
+        "display_name": "v18.05 (18.05.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-04-25",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "18.04",
+        "display_name": "v18.04 (18.04.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-03-27",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "18.03",
+        "display_name": "v18.03 (18.03.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-03-14",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "18.02",
+        "display_name": "v18.02 (18.02.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-01-26",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "17.12",
+        "display_name": "v17.12 (17.12.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-12-15",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "18.01",
+        "display_name": "v18.01 (18.01.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-12-12",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "17.11",
+        "display_name": "v17.11 (17.11.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-11-17",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "17.10",
+        "display_name": "v17.10 (17.10.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-10-13",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "17.09",
+        "display_name": "v17.09 (17.09.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-09-22",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "17.07",
+        "display_name": "v17.07 (17.07.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-08-28",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "17.06",
+        "display_name": "v17.06 (17.06.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-06-20",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "17.05",
+        "display_name": "v17.05 (17.05.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-05-04",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "17.04",
+        "display_name": "v17.04 (17.04.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-04-03",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      },
+      {
+        "version": "17.03",
+        "display_name": "v17.03 (17.03.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-02-23",
+        "download_url": "https://kapeli.com/feeds/Docker.tgz",
+        "size_bytes": 19400000
+      }
+    ]
+  },
+  {
+    "id": "go",
+    "name": "Go",
+    "category": "Languages",
+    "description": "An open source programming language supported by Google for building simple, fast, and reliable software.",
+    "icon": "go",
+    "format": "dash",
+    "latest_version": "1.27",
+    "latest_lts_version": "",
+    "versions": [
+      {
+        "version": "1.27",
+        "display_name": "v1.27 (1.27.1)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2026-08-19",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.26",
+        "display_name": "v1.26 (1.26.8)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2026-02-10",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.25",
+        "display_name": "v1.25 (1.25.14)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-08-12",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.24",
+        "display_name": "v1.24 (1.24.13)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-02-11",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.23",
+        "display_name": "v1.23 (1.23.12)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-08-13",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.22",
+        "display_name": "v1.22 (1.22.12)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-02-06",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.21",
+        "display_name": "v1.21 (1.21.13)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-08-08",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 20900000
+      },
+      {
+        "version": "1.20",
+        "display_name": "v1.20 (1.20.14)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-02-01",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.19",
+        "display_name": "v1.19 (1.19.13)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-08-02",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.18",
+        "display_name": "v1.18 (1.18.10)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-03-15",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.17",
+        "display_name": "v1.17 (1.17.13)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-08-16",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.16",
+        "display_name": "v1.16 (1.16.15)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-02-16",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.15",
+        "display_name": "v1.15 (1.15.15)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-08-11",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.14",
+        "display_name": "v1.14 (1.14.15)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-02-25",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.13",
+        "display_name": "v1.13 (1.13.15)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-09-03",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.12",
+        "display_name": "v1.12 (1.12.17)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-02-25",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.11",
+        "display_name": "v1.11 (1.11.13)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-08-24",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.10",
+        "display_name": "v1.10 (1.10.8)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-02-16",
+        "download_url": "https://kapeli.com/feeds/Go.tgz",
+        "size_bytes": 21800000
+      }
+    ]
+  },
+  {
+    "id": "javascript",
+    "name": "JavaScript (MDN)",
+    "category": "Languages",
+    "description": "Mozilla Developer Network comprehensive documentation for JavaScript standard built-in objects and APIs.",
+    "icon": "javascript",
+    "format": "dash",
+    "latest_version": "ES2024",
+    "latest_lts_version": "ES2024",
+    "versions": [
+      {
+        "version": "ES2024",
+        "display_name": "ES2024 (15th Edition)",
+        "is_lts": true,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2024",
+        "download_url": "https://kapeli.com/feeds/JavaScript.tgz",
+        "size_bytes": 28400000
+      },
+      {
+        "version": "ES2023",
+        "display_name": "ES2023 (14th Edition)",
+        "is_lts": true,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2023",
+        "download_url": "https://kapeli.com/feeds/JavaScript.tgz",
+        "size_bytes": 28400000
+      },
+      {
+        "version": "ES2022",
+        "display_name": "ES2022 (13th Edition)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2022",
+        "download_url": "https://kapeli.com/feeds/JavaScript.tgz",
+        "size_bytes": 28400000
+      },
+      {
+        "version": "ES2021",
+        "display_name": "ES2021 (12th Edition)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2021",
+        "download_url": "https://kapeli.com/feeds/JavaScript.tgz",
+        "size_bytes": 28400000
+      },
+      {
+        "version": "ES2020",
+        "display_name": "ES2020 (11th Edition)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2020",
+        "download_url": "https://kapeli.com/feeds/JavaScript.tgz",
+        "size_bytes": 28400000
+      },
+      {
+        "version": "ES2015",
+        "display_name": "ES6 / ES2015",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2015",
+        "download_url": "https://kapeli.com/feeds/JavaScript.tgz",
+        "size_bytes": 28400000
+      }
+    ]
+  },
+  {
+    "id": "kotlin",
+    "name": "Kotlin",
+    "category": "Languages",
+    "description": "A modern, concise and safe programming language by JetBrains, fully interoperable with Java.",
+    "icon": "kotlin",
+    "format": "dash",
+    "latest_version": "2.0",
+    "latest_lts_version": "1.9",
+    "versions": [
+      {
+        "version": "2.0",
+        "display_name": "v2.0 (2.0.21)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2024-05-21",
+        "download_url": "https://kapeli.com/feeds/Kotlin.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "1.9",
+        "display_name": "v1.9 (1.9.24)",
+        "is_lts": true,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2023-07-06",
+        "download_url": "https://kapeli.com/feeds/Kotlin.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "1.8",
+        "display_name": "v1.8 (1.8.22)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-12-28",
+        "download_url": "https://kapeli.com/feeds/Kotlin.tgz",
+        "size_bytes": 20100000
+      }
+    ]
+  },
+  {
+    "id": "nodejs",
+    "name": "Node.js",
+    "category": "Backend",
+    "description": "An open-source, cross-platform JavaScript runtime environment executing V8 outside the browser.",
+    "icon": "nodejs",
+    "format": "dash",
+    "latest_version": "26",
+    "latest_lts_version": "26",
+    "versions": [
+      {
+        "version": "26",
+        "display_name": "v26 (26.10.0)",
+        "is_lts": true,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2026-05-05",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "25",
+        "display_name": "v25 (25.9.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-10-15",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "24",
+        "display_name": "v24 (24.21.0)",
+        "is_lts": true,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2025-05-06",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "23",
+        "display_name": "v23 (23.11.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-10-16",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "22",
+        "display_name": "v22 (22.23.2)",
+        "is_lts": true,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2024-04-24",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "21",
+        "display_name": "v21 (21.7.3)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-10-17",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "20",
+        "display_name": "v20 (20.20.2)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-04-18",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "19",
+        "display_name": "v19 (19.9.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-10-18",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "18",
+        "display_name": "v18 (18.20.8)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-04-19",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "17",
+        "display_name": "v17 (17.9.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-10-19",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "16",
+        "display_name": "v16 (16.20.2)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-04-20",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "15",
+        "display_name": "v15 (15.14.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-10-20",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "14",
+        "display_name": "v14 (14.21.3)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-04-21",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "13",
+        "display_name": "v13 (13.14.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-10-22",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "12",
+        "display_name": "v12 (12.22.12)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-04-23",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "11",
+        "display_name": "v11 (11.15.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-10-23",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "10",
+        "display_name": "v10 (10.24.1)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-04-24",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "9",
+        "display_name": "v9 (9.11.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-10-31",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "8",
+        "display_name": "v8 (8.17.0)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-05-30",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "7",
+        "display_name": "v7 (7.10.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2016-10-25",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "6",
+        "display_name": "v6 (6.17.1)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2016-04-26",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "5",
+        "display_name": "v5 (5.12.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2015-10-30",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "4",
+        "display_name": "v4 (4.9.1)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2015-09-09",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "3",
+        "display_name": "v3 (3.3.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2015-08-04",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "2",
+        "display_name": "v2 (2.5.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2015-05-04",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      },
+      {
+        "version": "1",
+        "display_name": "v1 (1.8.4)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2015-01-20",
+        "download_url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "size_bytes": 16500000
+      }
+    ]
+  },
+  {
+    "id": "postgresql",
+    "name": "PostgreSQL",
+    "category": "Databases",
+    "description": "A powerful, open source object-relational database system with over 35 years of active development.",
+    "icon": "postgresql",
+    "format": "dash",
+    "latest_version": "18",
+    "latest_lts_version": "",
+    "versions": [
+      {
+        "version": "18",
+        "display_name": "v18 (18.6)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2025-09-25",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "17",
+        "display_name": "v17 (17.11)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2024-09-26",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "16",
+        "display_name": "v16 (16.15)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2023-09-14",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "15",
+        "display_name": "v15 (15.19)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2022-10-13",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 21800000
+      },
+      {
+        "version": "14",
+        "display_name": "v14 (14.24)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2021-09-30",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "13",
+        "display_name": "v13 (13.23)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-09-24",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "12",
+        "display_name": "v12 (12.22)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-10-03",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "11",
+        "display_name": "v11 (11.22)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-10-18",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "10",
+        "display_name": "v10 (10.23)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-10-05",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "9.6",
+        "display_name": "v9.6 (9.6.24)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2016-09-29",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "9.5",
+        "display_name": "v9.5 (9.5.25)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2016-01-07",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "9.4",
+        "display_name": "v9.4 (9.4.26)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2014-12-18",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "9.3",
+        "display_name": "v9.3 (9.3.25)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2013-09-09",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "9.2",
+        "display_name": "v9.2 (9.2.24)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2012-09-10",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "9.1",
+        "display_name": "v9.1 (9.1.24)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2011-09-12",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "9.0",
+        "display_name": "v9.0 (9.0.23)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2010-09-20",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "8.4",
+        "display_name": "v8.4 (8.4.22)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2009-07-01",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "8.3",
+        "display_name": "v8.3 (8.3.23)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2008-02-04",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "8.2",
+        "display_name": "v8.2 (8.2.23)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2006-12-05",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "8.1",
+        "display_name": "v8.1 (8.1.23)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2005-11-08",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "8.0",
+        "display_name": "v8.0 (8.0.26)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2005-01-19",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "7.4",
+        "display_name": "v7.4 (7.4.30)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2003-11-17",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "7.3",
+        "display_name": "v7.3 (7.3.21)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2002-11-27",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "7.2",
+        "display_name": "v7.2 (7.2.8)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2002-02-04",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "7.1",
+        "display_name": "v7.1 (7.1.3)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2001-04-13",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "7.0",
+        "display_name": "v7.0 (7.0.3)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2000-05-08",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "6.5",
+        "display_name": "v6.5 (6.5.3)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "1999-06-09",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "6.4",
+        "display_name": "v6.4 (6.4.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "1998-10-30",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      },
+      {
+        "version": "6.3",
+        "display_name": "v6.3 (6.3.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "1998-03-01",
+        "download_url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "size_bytes": 22400000
+      }
+    ]
+  },
+  {
+    "id": "python",
+    "name": "Python",
+    "category": "Languages",
+    "description": "An interpreted, high-level, general-purpose programming language emphasizing code readability.",
+    "icon": "python",
+    "format": "dash",
+    "latest_version": "3.14",
+    "latest_lts_version": "",
+    "versions": [
+      {
+        "version": "3.14",
+        "display_name": "v3.14 (3.14.7)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2025-10-07",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "3.13",
+        "display_name": "v3.13 (3.13.15)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2024-10-07",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "3.12",
+        "display_name": "v3.12 (3.12.14)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2023-10-02",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "3.11",
+        "display_name": "v3.11 (3.11.16)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2022-10-24",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 17800000
+      },
+      {
+        "version": "3.10",
+        "display_name": "v3.10 (3.10.21)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2021-10-04",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 16900000
+      },
+      {
+        "version": "3.9",
+        "display_name": "v3.9 (3.9.25)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-10-05",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "3.8",
+        "display_name": "v3.8 (3.8.20)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-10-14",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "3.7",
+        "display_name": "v3.7 (3.7.17)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-06-27",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "3.6",
+        "display_name": "v3.6 (3.6.15)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2016-12-23",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "3.5",
+        "display_name": "v3.5 (3.5.10)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2015-09-13",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "3.4",
+        "display_name": "v3.4 (3.4.10)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2014-03-16",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "3.3",
+        "display_name": "v3.3 (3.3.7)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2012-09-29",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "3.2",
+        "display_name": "v3.2 (3.2.6)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2011-02-20",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "2.7",
+        "display_name": "v2.7 (2.7.18)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2010-07-03",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "3.1",
+        "display_name": "v3.1 (3.1.5)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2009-06-27",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "3.0",
+        "display_name": "v3.0 (3.0.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2008-12-03",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      },
+      {
+        "version": "2.6",
+        "display_name": "v2.6 (2.6.9)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2008-10-01",
+        "download_url": "https://kapeli.com/feeds/Python_3.tgz",
+        "size_bytes": 18450000
+      }
+    ]
+  },
+  {
+    "id": "qt",
+    "name": "Qt 6",
+    "category": "Languages",
+    "description": "Cross-platform application development framework for desktop, embedded and mobile systems.",
+    "icon": "qt",
+    "format": "dash",
+    "latest_version": "6.11",
+    "latest_lts_version": "6.8",
+    "versions": [
+      {
+        "version": "6.11",
+        "display_name": "v6.11 (6.11.2)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2026-03-23",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "6.10",
+        "display_name": "v6.10 (6.10.3)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2025-10-07",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "6.9",
+        "display_name": "v6.9 (6.9.3)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-04-02",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "6.8",
+        "display_name": "v6.8 (6.8.3)",
+        "is_lts": true,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2024-10-07",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "6.7",
+        "display_name": "v6.7 (6.7.3)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-03-28",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "6.6",
+        "display_name": "v6.6 (6.6.3)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-10-09",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "6.5",
+        "display_name": "v6.5 (6.5.8)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-03-31",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "6.4",
+        "display_name": "v6.4 (6.4.3)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-09-28",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "6.3",
+        "display_name": "v6.3 (6.3.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-04-11",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "6.2",
+        "display_name": "v6.2 (6.2.4)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-09-30",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "6.1",
+        "display_name": "v6.1 (6.1.3)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-05-05",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "6.0",
+        "display_name": "v6.0 (6.0.4)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-12-08",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "5.15",
+        "display_name": "v5.15 (5.15.17)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-05-25",
+        "download_url": "https://kapeli.com/feeds/Qt_5.tgz",
+        "size_bytes": 82000000
+      },
+      {
+        "version": "5.14",
+        "display_name": "v5.14 (5.14.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-12-11",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "5.13",
+        "display_name": "v5.13 (5.13.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-06-18",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "5.12",
+        "display_name": "v5.12 (5.12.12)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-12-04",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "5.9",
+        "display_name": "v5.9 (5.9.9)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2017-05-29",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "5.6",
+        "display_name": "v5.6 (5.6.3)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2016-03-15",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      },
+      {
+        "version": "4.8",
+        "display_name": "v4.8 (4.8.7)",
+        "is_lts": true,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2011-12-15",
+        "download_url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "size_bytes": 88000000
+      }
+    ]
+  },
+  {
+    "id": "react",
+    "name": "React",
+    "category": "Frontend",
+    "description": "The library for web and native user interfaces developed by Meta.",
+    "icon": "react",
+    "format": "dash",
+    "latest_version": "19",
+    "latest_lts_version": "",
+    "versions": [
+      {
+        "version": "19",
+        "display_name": "v19 (19.3.0)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2024-12-05",
+        "download_url": "https://kapeli.com/feeds/React.tgz",
+        "size_bytes": 14200000
+      },
+      {
+        "version": "18",
+        "display_name": "v18 (18.3.1)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2022-03-29",
+        "download_url": "https://kapeli.com/feeds/React.tgz",
+        "size_bytes": 14200000
+      },
+      {
+        "version": "17",
+        "display_name": "v17 (17.0.2)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2020-10-20",
+        "download_url": "https://kapeli.com/feeds/React.tgz",
+        "size_bytes": 14200000
+      },
+      {
+        "version": "16",
+        "display_name": "v16 (16.14.0)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2017-09-26",
+        "download_url": "https://kapeli.com/feeds/React.tgz",
+        "size_bytes": 14200000
+      },
+      {
+        "version": "15",
+        "display_name": "v15 (15.7.0)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": false,
+        "release_date": "2016-04-07",
+        "download_url": "https://kapeli.com/feeds/React.tgz",
+        "size_bytes": 14200000
+      }
+    ]
+  },
+  {
+    "id": "rust",
+    "name": "Rust",
+    "category": "Languages",
+    "description": "A language empowering everyone to build reliable and efficient software with memory safety guarantees.",
+    "icon": "rust",
+    "format": "dash",
+    "latest_version": "1.98",
+    "latest_lts_version": "",
+    "versions": [
+      {
+        "version": "1.98",
+        "display_name": "v1.98 (1.98.1)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2026-08-20",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.97",
+        "display_name": "v1.97 (1.97.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2026-07-09",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.96",
+        "display_name": "v1.96 (1.96.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2026-05-28",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.95",
+        "display_name": "v1.95 (1.95.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2026-04-16",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.94",
+        "display_name": "v1.94 (1.94.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2026-03-06",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.93",
+        "display_name": "v1.93 (1.93.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2026-01-22",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.92",
+        "display_name": "v1.92 (1.92.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-12-11",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.91",
+        "display_name": "v1.91 (1.91.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-10-30",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.90",
+        "display_name": "v1.90 (1.90.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-09-18",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.89",
+        "display_name": "v1.89 (1.89.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-08-07",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.88",
+        "display_name": "v1.88 (1.88.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-06-26",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.87",
+        "display_name": "v1.87 (1.87.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-05-15",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.86",
+        "display_name": "v1.86 (1.86.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-04-03",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.85",
+        "display_name": "v1.85 (1.85.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-02-20",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.84",
+        "display_name": "v1.84 (1.84.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2025-01-09",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.83",
+        "display_name": "v1.83 (1.83.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-11-28",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.82",
+        "display_name": "v1.82 (1.82.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-10-17",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.81",
+        "display_name": "v1.81 (1.81.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-09-05",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.80",
+        "display_name": "v1.80 (1.80.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-07-25",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.79",
+        "display_name": "v1.79 (1.79.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-06-13",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.78",
+        "display_name": "v1.78 (1.78.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-05-02",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.77",
+        "display_name": "v1.77 (1.77.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-03-21",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.76",
+        "display_name": "v1.76 (1.76.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2024-02-08",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.75",
+        "display_name": "v1.75 (1.75.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-12-28",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 35100000
+      },
+      {
+        "version": "1.74",
+        "display_name": "v1.74 (1.74.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-11-16",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.73",
+        "display_name": "v1.73 (1.73.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-10-05",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.72",
+        "display_name": "v1.72 (1.72.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-08-24",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.71",
+        "display_name": "v1.71 (1.71.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-07-13",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.70",
+        "display_name": "v1.70 (1.70.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-06-01",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.69",
+        "display_name": "v1.69 (1.69.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-04-20",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.68",
+        "display_name": "v1.68 (1.68.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-03-09",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.67",
+        "display_name": "v1.67 (1.67.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2023-01-26",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.66",
+        "display_name": "v1.66 (1.66.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-12-15",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.65",
+        "display_name": "v1.65 (1.65.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-11-03",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.64",
+        "display_name": "v1.64 (1.64.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-09-22",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.63",
+        "display_name": "v1.63 (1.63.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-08-11",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.62",
+        "display_name": "v1.62 (1.62.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-06-30",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.61",
+        "display_name": "v1.61 (1.61.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-05-19",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.60",
+        "display_name": "v1.60 (1.60.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-04-07",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.59",
+        "display_name": "v1.59 (1.59.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-02-24",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.58",
+        "display_name": "v1.58 (1.58.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2022-01-13",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.57",
+        "display_name": "v1.57 (1.57.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-12-02",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.56",
+        "display_name": "v1.56 (1.56.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-10-21",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.55",
+        "display_name": "v1.55 (1.55.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-09-09",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.54",
+        "display_name": "v1.54 (1.54.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-07-29",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.53",
+        "display_name": "v1.53 (1.53.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-06-17",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.52",
+        "display_name": "v1.52 (1.52.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-05-06",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.51",
+        "display_name": "v1.51 (1.51.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-03-25",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.50",
+        "display_name": "v1.50 (1.50.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2021-02-11",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.49",
+        "display_name": "v1.49 (1.49.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-12-31",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.48",
+        "display_name": "v1.48 (1.48.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-11-19",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.47",
+        "display_name": "v1.47 (1.47.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-10-08",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.46",
+        "display_name": "v1.46 (1.46.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-08-27",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.45",
+        "display_name": "v1.45 (1.45.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-07-16",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.44",
+        "display_name": "v1.44 (1.44.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-06-04",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.43",
+        "display_name": "v1.43 (1.43.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-04-23",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.42",
+        "display_name": "v1.42 (1.42.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-03-12",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.41",
+        "display_name": "v1.41 (1.41.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2020-01-30",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.40",
+        "display_name": "v1.40 (1.40.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-12-19",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.39",
+        "display_name": "v1.39 (1.39.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-11-07",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.38",
+        "display_name": "v1.38 (1.38.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-09-26",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.37",
+        "display_name": "v1.37 (1.37.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-08-15",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.36",
+        "display_name": "v1.36 (1.36.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-07-04",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.35",
+        "display_name": "v1.35 (1.35.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-05-23",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.34",
+        "display_name": "v1.34 (1.34.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-04-11",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.33",
+        "display_name": "v1.33 (1.33.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-02-28",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.32",
+        "display_name": "v1.32 (1.32.0)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2019-01-17",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.31",
+        "display_name": "v1.31 (1.31.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-12-06",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.30",
+        "display_name": "v1.30 (1.30.1)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-10-25",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      },
+      {
+        "version": "1.29",
+        "display_name": "v1.29 (1.29.2)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2018-09-13",
+        "download_url": "https://kapeli.com/feeds/Rust.tgz",
+        "size_bytes": 36200000
+      }
+    ]
+  },
+  {
+    "id": "sqlite",
+    "name": "SQLite",
+    "category": "Databases",
+    "description": "A C-language library that implements a small, fast, self-contained, high-reliability, full-featured SQL database engine.",
+    "icon": "sqlite",
+    "format": "dash",
+    "latest_version": "3",
+    "latest_lts_version": "",
+    "versions": [
+      {
+        "version": "3",
+        "display_name": "v3 (3.53.4)",
+        "is_lts": false,
+        "is_eol": false,
+        "is_latest": true,
+        "release_date": "2004-09-18",
+        "download_url": "https://kapeli.com/feeds/SQLite.tgz",
+        "size_bytes": 11200000
+      },
+      {
+        "version": "2",
+        "display_name": "v2 (2.8.17)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2001-09-28",
+        "download_url": "https://kapeli.com/feeds/SQLite.tgz",
+        "size_bytes": 11200000
+      },
+      {
+        "version": "1",
+        "display_name": "v1 (1.0.32)",
+        "is_lts": false,
+        "is_eol": true,
+        "is_latest": false,
+        "release_date": "2000-08-17",
+        "download_url": "https://kapeli.com/feeds/SQLite.tgz",
+        "size_bytes": 11200000
       }
     ]
   }

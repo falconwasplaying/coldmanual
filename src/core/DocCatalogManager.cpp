@@ -218,10 +218,11 @@ void DocCatalogManager::refreshCatalog() {
     m_isRefreshing = true;
     emit isRefreshingChanged();
 
-    // ColdManual manifest endpoint or GitHub raw URL
-    QUrl url("https://raw.githubusercontent.com/coldmanual/catalog/main/catalog.json");
-    QNetworkRequest request(url);
+    // Primary: raw GitHub feed from coldmanual-db
+    QUrl primaryUrl("https://raw.githubusercontent.com/falconwasplaying/coldmanual-db/main/catalog.json");
+    QNetworkRequest request(primaryUrl);
     request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+    request.setHeader(QNetworkRequest::UserAgentHeader, "ColdManual/1.0");
 
     auto* reply = m_networkManager.get(request);
     connect(reply, &QNetworkReply::finished, this, [this, reply]() {
@@ -239,7 +240,7 @@ void DocCatalogManager::refreshCatalog() {
                 }
                 endResetModel();
 
-                // Save to cache
+                // Save to app cache
                 QString cachePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/catalog_cache.json";
                 QFile outFile(cachePath);
                 if (outFile.open(QIODevice::WriteOnly)) {
@@ -253,7 +254,42 @@ void DocCatalogManager::refreshCatalog() {
                 fetchAllDynamicVersions();
             }
         } else {
-            qWarning() << "ColdManual catalog fetch failed:" << reply->errorString();
+            qWarning() << "ColdManual primary catalog fetch failed, trying jsDelivr CDN fallback:" << reply->errorString();
+            QUrl cdnUrl("https://cdn.jsdelivr.net/gh/falconwasplaying/coldmanual-db@main/catalog.json");
+            QNetworkRequest cdnReq(cdnUrl);
+            cdnReq.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+            cdnReq.setHeader(QNetworkRequest::UserAgentHeader, "ColdManual/1.0");
+
+            auto* cdnReply = m_networkManager.get(cdnReq);
+            connect(cdnReply, &QNetworkReply::finished, this, [this, cdnReply]() {
+                if (cdnReply->error() == QNetworkReply::NoError) {
+                    QByteArray cdnData = cdnReply->readAll();
+                    QJsonDocument cdnDoc = QJsonDocument::fromJson(cdnData);
+                    if (cdnDoc.isArray()) {
+                        beginResetModel();
+                        m_allItems.clear();
+                        for (const auto& val : cdnDoc.array()) {
+                            m_allItems.append(CatalogItem::fromJson(val.toObject()));
+                        }
+                        endResetModel();
+
+                        QString cachePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/catalog_cache.json";
+                        QFile outFile(cachePath);
+                        if (outFile.open(QIODevice::WriteOnly)) {
+                            outFile.write(cdnData);
+                            outFile.close();
+                        }
+
+                        updateCategories();
+                        applyFilter();
+                        loadCachedVersions();
+                        fetchAllDynamicVersions();
+                    }
+                } else {
+                    qWarning() << "ColdManual CDN catalog fetch also failed:" << cdnReply->errorString();
+                }
+                cdnReply->deleteLater();
+            });
         }
         reply->deleteLater();
     });
@@ -350,6 +386,9 @@ void DocCatalogManager::setInstalledStatus(const QString& id, bool installed, co
 void DocCatalogManager::loadCachedVersions() {
     QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/versions_cache";
     for (int i = 0; i < m_allItems.size(); ++i) {
+        if (!m_allItems[i].fetchedVersions.isEmpty()) {
+            continue;
+        }
         QString filePath = cacheDir + "/" + m_allItems[i].id + ".json";
         QFile file(filePath);
         if (file.open(QIODevice::ReadOnly)) {
@@ -407,7 +446,9 @@ void DocCatalogManager::saveCachedVersions(const QString& docsetId, const QList<
 
 void DocCatalogManager::fetchAllDynamicVersions() {
     for (const auto& item : m_allItems) {
-        fetchDynamicVersions(item.id);
+        if (item.fetchedVersions.isEmpty()) {
+            fetchDynamicVersions(item.id);
+        }
     }
 }
 
