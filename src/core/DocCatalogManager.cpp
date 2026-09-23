@@ -489,6 +489,20 @@ void DocCatalogManager::fetchDynamicVersions(const QString& docsetId) {
                     QString latest = obj["latest"].toString();
                     QString relDate = obj["releaseDate"].toString();
 
+                    bool isLts = false;
+                    if (obj.contains("lts")) {
+                        if (obj["lts"].isBool()) isLts = obj["lts"].toBool();
+                        else if (obj["lts"].isString()) isLts = !obj["lts"].toString().isEmpty() && obj["lts"].toString() != "false";
+                    }
+
+                    bool hasExtendedSupport = false;
+                    if (obj.contains("extendedSupport") && obj["extendedSupport"].isString()) {
+                        QDate extDate = QDate::fromString(obj["extendedSupport"].toString(), Qt::ISODate);
+                        if (extDate.isValid() && extDate >= currentDate) {
+                            hasExtendedSupport = true;
+                        }
+                    }
+
                     bool isStable = false;
                     QJsonValue eolVal = obj["eol"];
                     if (eolVal.isBool()) {
@@ -500,17 +514,35 @@ void DocCatalogManager::fetchDynamicVersions(const QString& docsetId) {
                         }
                     }
 
+                    // A release is Stable if:
+                    // 1. It is an official LTS release (e.g. Qt 6.8, Qt 6.5, Qt 6.2, Qt 5.15, Node 22, Node 20)
+                    // 2. It has active extended support
+                    // 3. For Qt: all official releases in the current active Qt 6 series (Qt 6.x) are stable GA releases!
+                    // 4. For Rust: all standard 6-week train releases (1.x) are stable compiler releases!
+                    if (isLts || hasExtendedSupport) {
+                        isStable = true;
+                    }
+                    if (docsetId == "qt" && (cycle.startsWith("6.") || isLts)) {
+                        isStable = true;
+                    }
+                    if (docsetId == "rust" && cycle.startsWith("1.")) {
+                        isStable = true;
+                    }
+
                     if (isStable && topStable.isEmpty()) {
                         topStable = cycle;
                     }
 
                     FetchedVersion fv;
                     fv.version = cycle;
+                    QString baseName = QString("v%1").arg(cycle);
                     if (!latest.isEmpty() && latest != cycle) {
-                        fv.displayName = QString("v%1 (%2)").arg(cycle, latest);
-                    } else {
-                        fv.displayName = QString("v%1").arg(cycle);
+                        baseName = QString("v%1 (%2)").arg(cycle, latest);
                     }
+                    if (isLts) {
+                        baseName += " [LTS]";
+                    }
+                    fv.displayName = baseName;
                     fv.isStable = isStable;
                     fv.releaseDate = relDate;
                     fList.append(fv);
