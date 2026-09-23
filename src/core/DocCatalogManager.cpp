@@ -6,6 +6,8 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QDebug>
+#include <QDate>
+#include <QUrl>
 
 DocCatalogManager::DocCatalogManager(QObject* parent)
     : QAbstractListModel(parent)
@@ -54,13 +56,53 @@ QVariant DocCatalogManager::data(const QModelIndex& index, int role) const {
     case IconRole: return item.icon;
     case LatestVersionRole: return item.latestVersion;
     case VersionsRole: {
-        QStringList vList;
-        vList.append(QString("Latest Stable (%1)").arg(item.latestVersion));
-        for (const auto& v : item.versions) {
-            vList.append(v.version);
+        QVariantList list;
+
+        // 1. "Latest Release" (selected by default)
+        QVariantMap latestRelease;
+        latestRelease["text"] = "Latest Release";
+        latestRelease["version"] = "Latest Release";
+        latestRelease["isDivider"] = false;
+        latestRelease["isStable"] = false;
+        list.append(latestRelease);
+
+        // 2. "Latest Stable" (with green Stable tag)
+        QVariantMap latestStable;
+        latestStable["text"] = "Latest Stable";
+        latestStable["version"] = "Latest Stable";
+        latestStable["isDivider"] = false;
+        latestStable["isStable"] = true;
+        list.append(latestStable);
+
+        // 3. Divider
+        QVariantMap divider;
+        divider["text"] = "";
+        divider["version"] = "";
+        divider["isDivider"] = true;
+        divider["isStable"] = false;
+        list.append(divider);
+
+        // 4. Fetched dynamic versions
+        if (!item.fetchedVersions.isEmpty()) {
+            for (const auto& fv : item.fetchedVersions) {
+                QVariantMap vMap;
+                vMap["text"] = fv.displayName.isEmpty() ? ("v" + fv.version) : fv.displayName;
+                vMap["version"] = fv.version;
+                vMap["isDivider"] = false;
+                vMap["isStable"] = fv.isStable;
+                list.append(vMap);
+            }
+        } else {
+            for (const auto& v : item.versions) {
+                QVariantMap vMap;
+                vMap["text"] = "v" + v.version;
+                vMap["version"] = v.version;
+                vMap["isDivider"] = false;
+                vMap["isStable"] = v.isLatest;
+                list.append(vMap);
+            }
         }
-        vList.removeDuplicates();
-        return vList;
+        return list;
     }
     case IsInstalledRole: return state.isInstalled;
     case InstalledVersionRole: return state.installedVersion;
@@ -115,6 +157,8 @@ void DocCatalogManager::loadDefaultCatalog() {
             endResetModel();
             updateCategories();
             applyFilter();
+            loadCachedVersions();
+            fetchAllDynamicVersions();
         }
         file.close();
     }
@@ -200,6 +244,8 @@ void DocCatalogManager::refreshCatalog() {
 
                 updateCategories();
                 applyFilter();
+                loadCachedVersions();
+                fetchAllDynamicVersions();
             }
         } else {
             qWarning() << "ColdManual catalog fetch failed:" << reply->errorString();
@@ -232,18 +278,21 @@ QVariantMap DocCatalogManager::getItem(int index) const {
 QString DocCatalogManager::getDownloadUrl(const QString& id, const QString& version) const {
     for (const auto& item : m_allItems) {
         if (item.id == id) {
-            // Check if version is "Latest Stable (...)"
-            bool isLatestReq = version.startsWith("Latest Stable", Qt::CaseInsensitive);
+            // Check if version is "Latest Release" or "Latest Stable"
+            bool isLatestReq = version.startsWith("Latest", Qt::CaseInsensitive);
             if (isLatestReq) {
                 for (const auto& v : item.versions) {
                     if (v.isLatest || v.version == item.latestVersion) {
                         return v.downloadUrl;
                     }
                 }
+                if (!item.versions.isEmpty()) {
+                    return item.versions.first().downloadUrl;
+                }
             }
-            // Check specific version match
+            // Check specific version match or partial match
             for (const auto& v : item.versions) {
-                if (v.version == version) {
+                if (v.version == version || version.contains(v.version) || v.version.contains(version)) {
                     return v.downloadUrl;
                 }
             }
@@ -291,4 +340,207 @@ void DocCatalogManager::setInstalledStatus(const QString& id, bool installed, co
             break;
         }
     }
+}
+
+void DocCatalogManager::loadCachedVersions() {
+    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/versions_cache";
+    for (int i = 0; i < m_allItems.size(); ++i) {
+        QString filePath = cacheDir + "/" + m_allItems[i].id + ".json";
+        QFile file(filePath);
+        if (file.open(QIODevice::ReadOnly)) {
+            QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+            if (doc.isArray()) {
+                QList<FetchedVersion> fList;
+                for (const auto& val : doc.array()) {
+                    QJsonObject obj = val.toObject();
+                    FetchedVersion fv;
+                    fv.version = obj["version"].toString();
+                    fv.displayName = obj["displayName"].toString();
+                    fv.isStable = obj["isStable"].toBool(false);
+                    fv.releaseDate = obj["releaseDate"].toString();
+                    fList.append(fv);
+                }
+                if (!fList.isEmpty()) {
+                    m_allItems[i].fetchedVersions = fList;
+                }
+            }
+            file.close();
+        }
+    }
+    for (int i = 0; i < m_filteredItems.size(); ++i) {
+        for (const auto& item : m_allItems) {
+            if (item.id == m_filteredItems[i].id) {
+                m_filteredItems[i].fetchedVersions = item.fetchedVersions;
+                break;
+            }
+        }
+    }
+}
+
+void DocCatalogManager::saveCachedVersions(const QString& docsetId, const QList<FetchedVersion>& versions) {
+    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/versions_cache";
+    QDir().mkpath(cacheDir);
+
+    QJsonArray arr;
+    for (const auto& fv : versions) {
+        QJsonObject obj;
+        obj["version"] = fv.version;
+        obj["displayName"] = fv.displayName;
+        obj["isStable"] = fv.isStable;
+        obj["releaseDate"] = fv.releaseDate;
+        arr.append(obj);
+    }
+
+    QFile file(cacheDir + "/" + docsetId + ".json");
+    if (file.open(QIODevice::WriteOnly)) {
+        file.write(QJsonDocument(arr).toJson(QJsonDocument::Compact));
+        file.close();
+    }
+}
+
+void DocCatalogManager::fetchAllDynamicVersions() {
+    for (const auto& item : m_allItems) {
+        fetchDynamicVersions(item.id);
+    }
+}
+
+void DocCatalogManager::fetchDynamicVersions(const QString& docsetId) {
+    // 1. Static standard definitions for standard-based items (C++ and JavaScript)
+    if (docsetId == "cpp") {
+        QList<FetchedVersion> fList = {
+            {"26", "C++26 (Working Draft)", false, "2026", ""},
+            {"23", "C++23 (ISO/IEC 14882:2024)", true, "2024", ""},
+            {"20", "C++20 (ISO/IEC 14882:2020)", true, "2020", ""},
+            {"17", "C++17 (ISO/IEC 14882:2017)", true, "2017", ""},
+            {"14", "C++14 (ISO/IEC 14882:2014)", true, "2014", ""},
+            {"11", "C++11 (ISO/IEC 14882:2011)", true, "2011", ""}
+        };
+        for (int i = 0; i < m_allItems.size(); ++i) {
+            if (m_allItems[i].id == docsetId) {
+                m_allItems[i].fetchedVersions = fList;
+                m_allItems[i].latestVersion = "23";
+                break;
+            }
+        }
+        for (int i = 0; i < m_filteredItems.size(); ++i) {
+            if (m_filteredItems[i].id == docsetId) {
+                m_filteredItems[i].fetchedVersions = fList;
+                m_filteredItems[i].latestVersion = "23";
+                QModelIndex idx = index(i);
+                emit dataChanged(idx, idx, {VersionsRole, LatestVersionRole});
+                break;
+            }
+        }
+        saveCachedVersions(docsetId, fList);
+        return;
+    }
+
+    if (docsetId == "javascript") {
+        QList<FetchedVersion> fList = {
+            {"ES2024", "ES2024 (15th Edition)", true, "2024", ""},
+            {"ES2023", "ES2023 (14th Edition)", true, "2023", ""},
+            {"ES2022", "ES2022 (13th Edition)", true, "2022", ""},
+            {"ES2021", "ES2021 (12th Edition)", true, "2021", ""},
+            {"ES2020", "ES2020 (11th Edition)", true, "2020", ""},
+            {"ES2015", "ES6 / ES2015", true, "2015", ""}
+        };
+        for (int i = 0; i < m_allItems.size(); ++i) {
+            if (m_allItems[i].id == docsetId) {
+                m_allItems[i].fetchedVersions = fList;
+                m_allItems[i].latestVersion = "ES2024";
+                break;
+            }
+        }
+        for (int i = 0; i < m_filteredItems.size(); ++i) {
+            if (m_filteredItems[i].id == docsetId) {
+                m_filteredItems[i].fetchedVersions = fList;
+                m_filteredItems[i].latestVersion = "ES2024";
+                QModelIndex idx = index(i);
+                emit dataChanged(idx, idx, {VersionsRole, LatestVersionRole});
+                break;
+            }
+        }
+        saveCachedVersions(docsetId, fList);
+        return;
+    }
+
+    // 2. Query endoflife.date API for live release data
+    QString product = docsetId;
+    if (docsetId == "docker") product = "docker-engine";
+
+    QUrl apiUrl(QString("https://endoflife.date/api/%1.json").arg(product));
+    QNetworkRequest request(apiUrl);
+    request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
+    request.setHeader(QNetworkRequest::UserAgentHeader, "ColdManual/1.0");
+
+    auto* reply = m_networkManager.get(request);
+    connect(reply, &QNetworkReply::finished, this, [this, reply, docsetId]() {
+        if (reply->error() == QNetworkReply::NoError) {
+            QByteArray data = reply->readAll();
+            QJsonDocument doc = QJsonDocument::fromJson(data);
+            if (doc.isArray()) {
+                QList<FetchedVersion> fList;
+                QDate currentDate = QDate::currentDate();
+                QString topStable;
+
+                for (const auto& val : doc.array()) {
+                    QJsonObject obj = val.toObject();
+                    QString cycle = obj["cycle"].toString();
+                    QString latest = obj["latest"].toString();
+                    QString relDate = obj["releaseDate"].toString();
+
+                    bool isStable = false;
+                    QJsonValue eolVal = obj["eol"];
+                    if (eolVal.isBool()) {
+                        isStable = !eolVal.toBool();
+                    } else if (eolVal.isString()) {
+                        QDate eolDate = QDate::fromString(eolVal.toString(), Qt::ISODate);
+                        if (eolDate.isValid()) {
+                            isStable = (eolDate >= currentDate);
+                        }
+                    }
+
+                    if (isStable && topStable.isEmpty()) {
+                        topStable = cycle;
+                    }
+
+                    FetchedVersion fv;
+                    fv.version = cycle;
+                    if (!latest.isEmpty() && latest != cycle) {
+                        fv.displayName = QString("v%1 (%2)").arg(cycle, latest);
+                    } else {
+                        fv.displayName = QString("v%1").arg(cycle);
+                    }
+                    fv.isStable = isStable;
+                    fv.releaseDate = relDate;
+                    fList.append(fv);
+                }
+
+                if (!fList.isEmpty()) {
+                    for (int i = 0; i < m_allItems.size(); ++i) {
+                        if (m_allItems[i].id == docsetId) {
+                            m_allItems[i].fetchedVersions = fList;
+                            if (!topStable.isEmpty()) {
+                                m_allItems[i].latestVersion = topStable;
+                            }
+                            break;
+                        }
+                    }
+                    for (int i = 0; i < m_filteredItems.size(); ++i) {
+                        if (m_filteredItems[i].id == docsetId) {
+                            m_filteredItems[i].fetchedVersions = fList;
+                            if (!topStable.isEmpty()) {
+                                m_filteredItems[i].latestVersion = topStable;
+                            }
+                            QModelIndex idx = index(i);
+                            emit dataChanged(idx, idx, {VersionsRole, LatestVersionRole});
+                            break;
+                        }
+                    }
+                    saveCachedVersions(docsetId, fList);
+                }
+            }
+        }
+        reply->deleteLater();
+    });
 }

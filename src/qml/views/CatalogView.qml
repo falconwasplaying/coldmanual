@@ -277,29 +277,11 @@ Item {
                                 color: Theme.textMuted
                             }
 
-                            ComboBox {
+                            VersionSelector {
                                 id: versionPicker
                                 Layout.fillWidth: true
-                                model: model.versions
-                                currentIndex: 0
+                                versionsModel: model.versions
                                 enabled: !model.isDownloading
-
-                                background: Rectangle {
-                                    implicitHeight: 28
-                                    radius: Theme.radiusSm
-                                    color: Theme.surfaceElevated
-                                    border.color: Theme.border
-                                    border.width: 1
-                                }
-
-                                contentItem: Text {
-                                    leftPadding: 8
-                                    text: versionPicker.displayText
-                                    font.pixelSize: 11
-                                    color: Theme.textPrimary
-                                    verticalAlignment: Text.AlignVCenter
-                                    elide: Text.ElideRight
-                                }
                             }
                         }
 
@@ -446,7 +428,7 @@ Item {
                                         anchors.fill: parent
                                         hoverEnabled: true
                                         onClicked: {
-                                            docsetMgr.installDocset(model.id, versionPicker.currentText)
+                                            docsetMgr.installDocset(model.id, versionPicker.selectedVersion)
                                         }
                                     }
                                 }

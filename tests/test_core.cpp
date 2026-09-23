@@ -37,10 +37,21 @@ void testCatalogParsing() {
     assert(catalogMgr.rowCount() > 5);
 
     // Download URL resolution test
-    QString latestUrl = catalogMgr.getDownloadUrl("python", "Latest Stable (3.12)");
-    assert(!latestUrl.isEmpty());
+    QString latestReleaseUrl = catalogMgr.getDownloadUrl("python", "Latest Release");
+    assert(!latestReleaseUrl.isEmpty());
+    QString latestStableUrl = catalogMgr.getDownloadUrl("python", "Latest Stable");
+    assert(!latestStableUrl.isEmpty());
     QString specificUrl = catalogMgr.getDownloadUrl("python", "3.11");
     assert(!specificUrl.isEmpty());
+
+    // Test structured version list
+    QVariant versionsData = catalogMgr.data(catalogMgr.index(0), DocCatalogManager::VersionsRole);
+    QVariantList vList = versionsData.toList();
+    assert(vList.size() >= 3);
+    assert(vList[0].toMap()["text"].toString() == "Latest Release");
+    assert(vList[1].toMap()["text"].toString() == "Latest Stable");
+    assert(vList[1].toMap()["isStable"].toBool() == true);
+    assert(vList[2].toMap()["isDivider"].toBool() == true);
 
     std::cout << "[PASS] testCatalogParsing passed!" << std::endl;
 }

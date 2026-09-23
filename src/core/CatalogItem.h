@@ -14,6 +14,14 @@ struct CatalogVersion {
     bool isLatest{false}; // True if this is marked latest stable
 };
 
+struct FetchedVersion {
+    QString version;      // e.g. "3.12"
+    QString displayName;  // e.g. "v3.12"
+    bool isStable{false}; // True if marked stable
+    QString releaseDate;
+    QString downloadUrl;
+};
+
 struct CatalogItem {
     QString id;              // Unique identifier, e.g. "python", "rust", "react"
     QString name;            // Display name, e.g. "Python", "Rust", "React"
@@ -22,6 +30,7 @@ struct CatalogItem {
     QString icon;            // Icon name or SVG data
     QString latestVersion;   // Version string for latest stable, e.g. "3.12"
     QList<CatalogVersion> versions; // All selectable versions
+    QList<FetchedVersion> fetchedVersions; // Dynamically fetched upstream versions
     QString documentationFormat; // "dash" or "devdocs" or "html"
 
     static CatalogItem fromJson(const QJsonObject& obj) {

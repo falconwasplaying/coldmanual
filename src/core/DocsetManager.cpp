@@ -81,7 +81,7 @@ QString DocsetManager::totalStorageUsage() const {
 }
 
 void DocsetManager::installDocset(const QString& id, const QString& versionChoice) {
-    bool trackLatest = versionChoice.startsWith("Latest Stable", Qt::CaseInsensitive) || versionChoice.compare("Latest", Qt::CaseInsensitive) == 0;
+    bool trackLatest = versionChoice.startsWith("Latest", Qt::CaseInsensitive);
     QString resolvedVersion;
 
     if (trackLatest) {
