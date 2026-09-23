@@ -1,0 +1,288 @@
+[
+  {
+    "id": "python",
+    "name": "Python",
+    "category": "Languages",
+    "description": "An interpreted, high-level, general-purpose programming language emphasizing code readability.",
+    "icon": "python",
+    "latest_version": "3.12",
+    "format": "dash",
+    "versions": [
+      {
+        "version": "3.12",
+        "url": "https://kapeli.com/feeds/Python_3.tgz",
+        "hash": "py312-v1",
+        "size_bytes": 18450000,
+        "is_latest": true
+      },
+      {
+        "version": "3.11",
+        "url": "https://kapeli.com/feeds/Python_3.tgz",
+        "hash": "py311-v1",
+        "size_bytes": 17800000,
+        "is_latest": false
+      },
+      {
+        "version": "3.10",
+        "url": "https://kapeli.com/feeds/Python_3.tgz",
+        "hash": "py310-v1",
+        "size_bytes": 16900000,
+        "is_latest": false
+      }
+    ]
+  },
+  {
+    "id": "cpp",
+    "name": "C++",
+    "category": "Languages",
+    "description": "High-performance general-purpose programming language with object-oriented and generic features (cppreference).",
+    "icon": "cpp",
+    "latest_version": "23",
+    "format": "dash",
+    "versions": [
+      {
+        "version": "23",
+        "url": "https://kapeli.com/feeds/C++.tgz",
+        "hash": "cpp23-v1",
+        "size_bytes": 42100000,
+        "is_latest": true
+      },
+      {
+        "version": "20",
+        "url": "https://kapeli.com/feeds/C++.tgz",
+        "hash": "cpp20-v1",
+        "size_bytes": 39500000,
+        "is_latest": false
+      }
+    ]
+  },
+  {
+    "id": "rust",
+    "name": "Rust",
+    "category": "Languages",
+    "description": "A language empowering everyone to build reliable and efficient software with memory safety guarantees.",
+    "icon": "rust",
+    "latest_version": "1.77",
+    "format": "dash",
+    "versions": [
+      {
+        "version": "1.77",
+        "url": "https://kapeli.com/feeds/Rust.tgz",
+        "hash": "rust177-v1",
+        "size_bytes": 36200000,
+        "is_latest": true
+      },
+      {
+        "version": "1.75",
+        "url": "https://kapeli.com/feeds/Rust.tgz",
+        "hash": "rust175-v1",
+        "size_bytes": 35100000,
+        "is_latest": false
+      }
+    ]
+  },
+  {
+    "id": "go",
+    "name": "Go",
+    "category": "Languages",
+    "description": "An open source programming language supported by Google for building simple, fast, and reliable software.",
+    "icon": "go",
+    "latest_version": "1.22",
+    "format": "dash",
+    "versions": [
+      {
+        "version": "1.22",
+        "url": "https://kapeli.com/feeds/Go.tgz",
+        "hash": "go122-v1",
+        "size_bytes": 21800000,
+        "is_latest": true
+      },
+      {
+        "version": "1.21",
+        "url": "https://kapeli.com/feeds/Go.tgz",
+        "hash": "go121-v1",
+        "size_bytes": 20900000,
+        "is_latest": false
+      }
+    ]
+  },
+  {
+    "id": "javascript",
+    "name": "JavaScript (MDN)",
+    "category": "Languages",
+    "description": "Mozilla Developer Network comprehensive documentation for JavaScript standard built-in objects and APIs.",
+    "icon": "javascript",
+    "latest_version": "ES2024",
+    "format": "dash",
+    "versions": [
+      {
+        "version": "ES2024",
+        "url": "https://kapeli.com/feeds/JavaScript.tgz",
+        "hash": "js2024-v1",
+        "size_bytes": 28400000,
+        "is_latest": true
+      }
+    ]
+  },
+  {
+    "id": "react",
+    "name": "React",
+    "category": "Frontend",
+    "description": "The library for web and native user interfaces developed by Meta.",
+    "icon": "react",
+    "latest_version": "18.3",
+    "format": "dash",
+    "versions": [
+      {
+        "version": "18.3",
+        "url": "https://kapeli.com/feeds/React.tgz",
+        "hash": "react183-v1",
+        "size_bytes": 14200000,
+        "is_latest": true
+      },
+      {
+        "version": "17.0",
+        "url": "https://kapeli.com/feeds/React.tgz",
+        "hash": "react170-v1",
+        "size_bytes": 12800000,
+        "is_latest": false
+      }
+    ]
+  },
+  {
+    "id": "qt",
+    "name": "Qt 6",
+    "category": "Systems",
+    "description": "Cross-platform application development framework for desktop, embedded and mobile systems.",
+    "icon": "qt",
+    "latest_version": "6.6",
+    "format": "dash",
+    "versions": [
+      {
+        "version": "6.6",
+        "url": "https://kapeli.com/feeds/Qt_6.tgz",
+        "hash": "qt66-v1",
+        "size_bytes": 88000000,
+        "is_latest": true
+      },
+      {
+        "version": "5.15",
+        "url": "https://kapeli.com/feeds/Qt_5.tgz",
+        "hash": "qt515-v1",
+        "size_bytes": 82000000,
+        "is_latest": false
+      }
+    ]
+  },
+  {
+    "id": "nodejs",
+    "name": "Node.js",
+    "category": "Backend",
+    "description": "An open-source, cross-platform JavaScript runtime environment executing V8 outside the browser.",
+    "icon": "nodejs",
+    "latest_version": "20.x",
+    "format": "dash",
+    "versions": [
+      {
+        "version": "20.x",
+        "url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "hash": "node20-v1",
+        "size_bytes": 16500000,
+        "is_latest": true
+      },
+      {
+        "version": "18.x",
+        "url": "https://kapeli.com/feeds/NodeJS.tgz",
+        "hash": "node18-v1",
+        "size_bytes": 15200000,
+        "is_latest": false
+      }
+    ]
+  },
+  {
+    "id": "sqlite",
+    "name": "SQLite",
+    "category": "Databases",
+    "description": "A C-language library that implements a small, fast, self-contained, high-reliability, full-featured SQL database engine.",
+    "icon": "sqlite",
+    "latest_version": "3.45",
+    "format": "dash",
+    "versions": [
+      {
+        "version": "3.45",
+        "url": "https://kapeli.com/feeds/SQLite.tgz",
+        "hash": "sqlite345-v1",
+        "size_bytes": 11200000,
+        "is_latest": true
+      }
+    ]
+  },
+  {
+    "id": "docker",
+    "name": "Docker",
+    "category": "DevOps",
+    "description": "Set of platform as a service products using OS-level virtualization to deliver software in packages called containers.",
+    "icon": "docker",
+    "latest_version": "26.0",
+    "format": "dash",
+    "versions": [
+      {
+        "version": "26.0",
+        "url": "https://kapeli.com/feeds/Docker.tgz",
+        "hash": "docker26-v1",
+        "size_bytes": 19400000,
+        "is_latest": true
+      }
+    ]
+  },
+  {
+    "id": "postgresql",
+    "name": "PostgreSQL",
+    "category": "Databases",
+    "description": "A powerful, open source object-relational database system with over 35 years of active development.",
+    "icon": "postgresql",
+    "latest_version": "16",
+    "format": "dash",
+    "versions": [
+      {
+        "version": "16",
+        "url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "hash": "pg16-v1",
+        "size_bytes": 22400000,
+        "is_latest": true
+      },
+      {
+        "version": "15",
+        "url": "https://kapeli.com/feeds/PostgreSQL.tgz",
+        "hash": "pg15-v1",
+        "size_bytes": 21800000,
+        "is_latest": false
+      }
+    ]
+  },
+  {
+    "id": "django",
+    "name": "Django",
+    "category": "Backend",
+    "description": "A high-level Python web framework that encourages rapid development and clean, pragmatic design.",
+    "icon": "django",
+    "latest_version": "5.0",
+    "format": "dash",
+    "versions": [
+      {
+        "version": "5.0",
+        "url": "https://kapeli.com/feeds/Django.tgz",
+        "hash": "django50-v1",
+        "size_bytes": 13900000,
+        "is_latest": true
+      },
+      {
+        "version": "4.2",
+        "url": "https://kapeli.com/feeds/Django.tgz",
+        "hash": "django42-v1",
+        "size_bytes": 13100000,
+        "is_latest": false
+      }
+    ]
+  }
+]

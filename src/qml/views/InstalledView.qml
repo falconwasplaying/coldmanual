@@ -1,0 +1,382 @@
+import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
+import ".."
+
+Item {
+    id: root
+
+    signal openDocsetInReader(string docsetId, string docsetName)
+    signal navigateToCatalog()
+
+    ColumnLayout {
+        anchors.fill: parent
+        anchors.margins: Theme.spacingLg
+        spacing: Theme.spacingMd
+
+        // Header Row
+        RowLayout {
+            Layout.fillWidth: true
+            spacing: Theme.spacingMd
+
+            ColumnLayout {
+                spacing: 2
+                Text {
+                    text: "Installed Documentation"
+                    font.family: Theme.fontSans
+                    font.pixelSize: 22
+                    font.bold: true
+                    color: Theme.textPrimary
+                }
+                Text {
+                    text: docsetMgr.installedCount + " libraries installed • " + docsetMgr.totalStorageUsage + " on disk"
+                    font.pixelSize: 13
+                    color: Theme.textMuted
+                }
+            }
+
+            Item { Layout.fillWidth: true }
+
+            // Check Updates Button
+            Rectangle {
+                width: checkText.implicitWidth + 24
+                height: 36
+                radius: Theme.radiusMd
+                color: checkArea.containsMouse ? Theme.surfaceHover : Theme.surface
+                border.color: Theme.border
+                border.width: 1
+
+                RowLayout {
+                    anchors.centerIn: parent
+                    spacing: 6
+                    Text {
+                        text: docsetMgr.isCheckingUpdates ? "⏳" : "🔄"
+                        font.pixelSize: 12
+                    }
+                    Text {
+                        id: checkText
+                        text: docsetMgr.isCheckingUpdates ? "Checking..." : "Check for Updates"
+                        font.pixelSize: 12
+                        font.bold: true
+                        color: Theme.textPrimary
+                    }
+                }
+
+                MouseArea {
+                    id: checkArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    enabled: !docsetMgr.isCheckingUpdates
+                    onClicked: docsetMgr.checkForUpdates()
+                }
+            }
+
+            // Update All Button
+            Rectangle {
+                width: updateAllText.implicitWidth + 24
+                height: 36
+                radius: Theme.radiusMd
+                color: updateAllArea.containsMouse ? Theme.accentHover : Theme.accent
+                visible: docsetMgr.installedCount > 0
+
+                Text {
+                    id: updateAllText
+                    anchors.centerIn: parent
+                    text: "Update All"
+                    font.pixelSize: 12
+                    font.bold: true
+                    color: Theme.textOnAccent
+                }
+
+                MouseArea {
+                    id: updateAllArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    onClicked: docsetMgr.updateAll()
+                }
+            }
+        }
+
+        Rectangle {
+            Layout.fillWidth: true
+            height: 1
+            color: Theme.border
+        }
+
+        // Installed List
+        ListView {
+            id: installedList
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            clip: true
+            model: docsetMgr
+            spacing: 10
+
+            ScrollBar.vertical: ScrollBar {
+                active: true
+            }
+
+            delegate: Rectangle {
+                width: installedList.width
+                height: 84
+                radius: Theme.radiusMd
+                color: Theme.surface
+                border.color: Theme.border
+                border.width: 1
+
+                RowLayout {
+                    anchors.fill: parent
+                    anchors.margins: 14
+                    spacing: 16
+
+                    // Badge
+                    Rectangle {
+                        width: 44
+                        height: 44
+                        radius: Theme.radiusSm
+                        color: Theme.surfaceElevated
+                        border.color: Theme.border
+                        border.width: 1
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: model.name ? model.name.substring(0, 2).toUpperCase() : "??"
+                            font.pixelSize: 15
+                            font.bold: true
+                            color: Theme.accent
+                        }
+                    }
+
+                    // Info Column
+                    ColumnLayout {
+                        Layout.fillWidth: true
+                        spacing: 4
+
+                        RowLayout {
+                            spacing: 8
+                            Text {
+                                text: model.name
+                                font.pixelSize: 16
+                                font.bold: true
+                                color: Theme.textPrimary
+                            }
+
+                            Rectangle {
+                                height: 20
+                                width: verText.implicitWidth + 10
+                                radius: Theme.radiusSm
+                                color: Theme.surfaceElevated
+
+                                Text {
+                                    id: verText
+                                    anchors.centerIn: parent
+                                    text: "v" + model.installedVersion
+                                    font.pixelSize: 10
+                                    color: Theme.textSecondary
+                                }
+                            }
+
+                            Rectangle {
+                                height: 20
+                                width: sizeText.implicitWidth + 10
+                                radius: Theme.radiusSm
+                                color: Theme.surfaceElevated
+
+                                Text {
+                                    id: sizeText
+                                    anchors.centerIn: parent
+                                    text: model.sizeFormatted
+                                    font.pixelSize: 10
+                                    color: Theme.textMuted
+                                }
+                            }
+
+                            // Update Available Alert
+                            Rectangle {
+                                visible: model.updateAvailable
+                                height: 20
+                                width: alertText.implicitWidth + 12
+                                radius: Theme.radiusSm
+                                color: Theme.warningBg
+                                border.color: Theme.warning
+                                border.width: 1
+
+                                Text {
+                                    id: alertText
+                                    anchors.centerIn: parent
+                                    text: "⚡ v" + model.availableVersion + " Available"
+                                    font.pixelSize: 10
+                                    font.bold: true
+                                    color: Theme.warning
+                                }
+                            }
+                        }
+
+                        Text {
+                            text: "Installed: " + model.installedAt + " • Last checked: " + model.lastChecked
+                            font.pixelSize: 11
+                            color: Theme.textMuted
+                        }
+                    }
+
+                    // Auto-update latest toggle
+                    RowLayout {
+                        spacing: 8
+
+                        Text {
+                            text: "Auto-update latest"
+                            font.pixelSize: 12
+                            color: model.trackLatest ? Theme.textPrimary : Theme.textMuted
+                        }
+
+                        Switch {
+                            checked: model.trackLatest
+                            onToggled: {
+                                docsetMgr.setTrackLatest(model.id, checked)
+                            }
+                        }
+                    }
+
+                    // Action buttons
+                    RowLayout {
+                        spacing: 8
+
+                        // Update Now Button (if update available)
+                        Rectangle {
+                            visible: model.updateAvailable
+                            width: 86
+                            height: 32
+                            radius: Theme.radiusSm
+                            color: updateNowArea.containsMouse ? Theme.warning : Theme.warningBg
+                            border.color: Theme.warning
+                            border.width: 1
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "Update Now"
+                                font.pixelSize: 11
+                                font.bold: true
+                                color: updateNowArea.containsMouse ? "#000000" : Theme.warning
+                            }
+
+                            MouseArea {
+                                id: updateNowArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: docsetMgr.updateDocset(model.id)
+                            }
+                        }
+
+                        // Open Reader
+                        Rectangle {
+                            width: 110
+                            height: 32
+                            radius: Theme.radiusSm
+                            color: readArea.containsMouse ? Theme.accentHover : Theme.accent
+
+                            RowLayout {
+                                anchors.centerIn: parent
+                                spacing: 6
+                                Text {
+                                    text: "📖"
+                                    font.pixelSize: 12
+                                }
+                                Text {
+                                    text: "Open Reader"
+                                    font.pixelSize: 12
+                                    font.bold: true
+                                    color: Theme.textOnAccent
+                                }
+                            }
+
+                            MouseArea {
+                                id: readArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: root.openDocsetInReader(model.id, model.name)
+                            }
+                        }
+
+                        // Delete
+                        Rectangle {
+                            width: 32
+                            height: 32
+                            radius: Theme.radiusSm
+                            color: delArea.containsMouse ? Theme.dangerBg : Theme.surfaceElevated
+                            border.color: Theme.border
+                            border.width: 1
+
+                            Text {
+                                anchors.centerIn: parent
+                                text: "🗑️"
+                                font.pixelSize: 12
+                            }
+
+                            MouseArea {
+                                id: delArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                onClicked: docsetMgr.removeDocset(model.id)
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Empty state
+            Item {
+                anchors.centerIn: parent
+                visible: installedList.count === 0
+
+                ColumnLayout {
+                    anchors.centerIn: parent
+                    spacing: 12
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: "📚"
+                        font.pixelSize: 42
+                    }
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: "No documentation sets installed yet"
+                        font.pixelSize: 16
+                        font.bold: true
+                        color: Theme.textPrimary
+                    }
+
+                    Text {
+                        Layout.alignment: Qt.AlignHCenter
+                        text: "Visit the Browse tab to download offline docs for languages and frameworks."
+                        font.pixelSize: 13
+                        color: Theme.textMuted
+                    }
+
+                    Rectangle {
+                        Layout.alignment: Qt.AlignHCenter
+                        width: 180
+                        height: 36
+                        radius: Theme.radiusMd
+                        color: browseBtnArea.containsMouse ? Theme.accentHover : Theme.accent
+
+                        Text {
+                            anchors.centerIn: parent
+                            text: "Browse Documentation"
+                            font.pixelSize: 13
+                            font.bold: true
+                            color: Theme.textOnAccent
+                        }
+
+                        MouseArea {
+                            id: browseBtnArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: root.navigateToCatalog()
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

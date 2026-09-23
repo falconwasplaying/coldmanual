@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resources/catalog.json</file>
+        <file alias="qmldir">src/qml/qmldir</file>
+        <file alias="Theme.qml">src/qml/Theme.qml</file>
+        <file alias="Main.qml">src/qml/Main.qml</file>
+        <file alias="components/OmniSearchModal.qml">src/qml/components/OmniSearchModal.qml</file>
+        <file alias="views/ReaderView.qml">src/qml/views/ReaderView.qml</file>
+        <file alias="views/CatalogView.qml">src/qml/views/CatalogView.qml</file>
+        <file alias="views/InstalledView.qml">src/qml/views/InstalledView.qml</file>
+        <file alias="views/SettingsView.qml">src/qml/views/SettingsView.qml</file>
+    </qresource>
+</RCC>
