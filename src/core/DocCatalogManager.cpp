@@ -503,31 +503,23 @@ void DocCatalogManager::fetchDynamicVersions(const QString& docsetId) {
                         }
                     }
 
-                    bool isStable = false;
-                    QJsonValue eolVal = obj["eol"];
-                    if (eolVal.isBool()) {
-                        isStable = !eolVal.toBool();
-                    } else if (eolVal.isString()) {
-                        QDate eolDate = QDate::fromString(eolVal.toString(), Qt::ISODate);
-                        if (eolDate.isValid()) {
-                            isStable = (eolDate >= currentDate);
+                    // Check if it's an unreleased future version or pre-release / preview / draft
+                    bool isPreview = false;
+                    QString lowerCycle = cycle.toLower();
+                    if (lowerCycle.contains("rc") || lowerCycle.contains("beta") ||
+                        lowerCycle.contains("alpha") || lowerCycle.contains("preview") ||
+                        lowerCycle.contains("draft")) {
+                        isPreview = true;
+                    }
+                    if (!relDate.isEmpty()) {
+                        QDate releaseQDate = QDate::fromString(relDate, Qt::ISODate);
+                        if (releaseQDate.isValid() && releaseQDate > currentDate) {
+                            isPreview = true;
                         }
                     }
 
-                    // A release is Stable if:
-                    // 1. It is an official LTS release (e.g. Qt 6.8, Qt 6.5, Qt 6.2, Qt 5.15, Node 22, Node 20)
-                    // 2. It has active extended support
-                    // 3. For Qt: all official releases in the current active Qt 6 series (Qt 6.x) are stable GA releases!
-                    // 4. For Rust: all standard 6-week train releases (1.x) are stable compiler releases!
-                    if (isLts || hasExtendedSupport) {
-                        isStable = true;
-                    }
-                    if (docsetId == "qt" && (cycle.startsWith("6.") || isLts)) {
-                        isStable = true;
-                    }
-                    if (docsetId == "rust" && cycle.startsWith("1.")) {
-                        isStable = true;
-                    }
+                    // In official documentation feeds, all published General Availability (GA) versions are Stable!
+                    bool isStable = !isPreview;
 
                     if (isStable && topStable.isEmpty()) {
                         topStable = cycle;
