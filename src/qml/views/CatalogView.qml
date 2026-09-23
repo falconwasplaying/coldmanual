@@ -97,18 +97,30 @@ Item {
                 color: refreshArea.containsMouse ? Theme.surfaceHover : Theme.surface
                 border.color: Theme.border
                 border.width: 1
+                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                 LucideIcon {
+                    id: refreshIcon
                     anchors.centerIn: parent
                     name: "refresh-cw"
                     size: 14
                     color: Theme.textPrimary
+                    rotation: 0
+
+                    RotationAnimation on rotation {
+                        running: catalogMgr.isRefreshing
+                        loops: Animation.Infinite
+                        from: 0
+                        to: 360
+                        duration: 800
+                    }
                 }
 
                 MouseArea {
                     id: refreshArea
                     anchors.fill: parent
                     hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
                     onClicked: catalogMgr.refreshCatalog()
                 }
             }
@@ -131,6 +143,9 @@ Item {
                     border.color: (catalogMgr.selectedCategory === modelData) ? Theme.accent : Theme.border
                     border.width: 1
 
+                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                    Behavior on border.color { ColorAnimation { duration: Theme.animDurationFast } }
+
                     Text {
                         id: catText
                         anchors.centerIn: parent
@@ -138,12 +153,14 @@ Item {
                         font.pixelSize: 12
                         font.bold: catalogMgr.selectedCategory === modelData
                         color: (catalogMgr.selectedCategory === modelData) ? Theme.textOnAccent : Theme.textSecondary
+                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                     }
 
                     MouseArea {
                         id: catArea
                         anchors.fill: parent
                         hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
                         onClicked: catalogMgr.selectedCategory = modelData
                     }
                 }
@@ -183,6 +200,12 @@ Item {
                     color: Theme.surface
                     border.color: cardHoverArea.containsMouse ? Theme.accent : Theme.border
                     border.width: 1
+                    scale: cardHoverArea.containsMouse ? 1.015 : 1.0
+                    y: cardHoverArea.containsMouse ? -2 : 0
+
+                    Behavior on border.color { ColorAnimation { duration: Theme.animDurationFast } }
+                    Behavior on scale { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
+                    Behavior on y { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
 
                     MouseArea {
                         id: cardHoverArea
@@ -317,6 +340,9 @@ Item {
                                                 height: parent.height
                                                 radius: 3
                                                 color: Theme.accent
+                                                Behavior on width {
+                                                    NumberAnimation { duration: 160; easing.type: Theme.animEasingDecel }
+                                                }
                                             }
                                         }
                                     }
@@ -343,6 +369,9 @@ Item {
                                     height: 26
                                     radius: 13
                                     color: cancelArea.containsMouse ? Theme.dangerBg : Theme.surfaceElevated
+                                    scale: cancelArea.pressed ? 0.92 : 1.0
+                                    Behavior on scale { NumberAnimation { duration: 80 } }
+                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                                     LucideIcon {
                                         anchors.centerIn: parent
@@ -355,6 +384,7 @@ Item {
                                         id: cancelArea
                                         anchors.fill: parent
                                         hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
                                         onClicked: downloader.cancelDownload(model.id)
                                     }
                                 }
@@ -375,6 +405,9 @@ Item {
                                     color: updateArea.containsMouse ? Theme.warning : Theme.warningBg
                                     border.color: Theme.warning
                                     border.width: 1
+                                    scale: updateArea.pressed ? 0.96 : 1.0
+                                    Behavior on scale { NumberAnimation { duration: 80 } }
+                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                                     RowLayout {
                                         anchors.centerIn: parent
@@ -396,6 +429,7 @@ Item {
                                         id: updateArea
                                         anchors.fill: parent
                                         hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
                                         onClicked: docsetMgr.installDocset(model.id, "Latest Stable")
                                     }
                                 }
@@ -408,6 +442,9 @@ Item {
                                     color: instBtnArea.containsMouse ? Theme.accentHover : (model.isInstalled ? Theme.surfaceElevated : Theme.accent)
                                     border.color: model.isInstalled ? Theme.border : Theme.accent
                                     border.width: 1
+                                    scale: instBtnArea.pressed ? 0.96 : 1.0
+                                    Behavior on scale { NumberAnimation { duration: 80 } }
+                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                                     RowLayout {
                                         anchors.centerIn: parent
@@ -429,6 +466,7 @@ Item {
                                         id: instBtnArea
                                         anchors.fill: parent
                                         hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             docsetMgr.installDocset(model.id, versionPicker.selectedVersion)
                                         }
@@ -444,6 +482,9 @@ Item {
                                     color: readBtnArea.containsMouse ? Theme.surfaceHover : Theme.surfaceElevated
                                     border.color: Theme.border
                                     border.width: 1
+                                    scale: readBtnArea.pressed ? 0.94 : 1.0
+                                    Behavior on scale { NumberAnimation { duration: 80 } }
+                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                                     LucideIcon {
                                         anchors.centerIn: parent
@@ -456,6 +497,7 @@ Item {
                                         id: readBtnArea
                                         anchors.fill: parent
                                         hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
                                         onClicked: {
                                             root.openDocsetInReader(model.id, model.name)
                                         }

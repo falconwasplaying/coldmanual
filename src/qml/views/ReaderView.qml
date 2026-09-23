@@ -236,6 +236,7 @@ Item {
                                 color: (selectedSymbolType === model.type) ? Theme.accent : Theme.surface
                                 border.color: Theme.border
                                 border.width: 1
+                                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                                 Text {
                                     id: typeLabel
@@ -244,10 +245,13 @@ Item {
                                     font.pixelSize: 10
                                     font.bold: selectedSymbolType === model.type
                                     color: (selectedSymbolType === model.type) ? Theme.textOnAccent : Theme.textSecondary
+                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
 
                                 MouseArea {
                                     anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
                                     onClicked: {
                                         selectedSymbolType = model.type
                                         loadSymbols()
@@ -276,6 +280,7 @@ Item {
                         height: 30
                         radius: Theme.radiusSm
                         color: symMouseArea.containsMouse ? Theme.surfaceHover : "transparent"
+                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                         RowLayout {
                             anchors.fill: parent
@@ -297,6 +302,7 @@ Item {
                             id: symMouseArea
                             anchors.fill: parent
                             hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
                             onClicked: {
                                 root.openDocument(currentDocsetId, currentDocsetName, model.fullFilePath, model.name)
                             }
@@ -344,6 +350,9 @@ Item {
                             radius: Theme.radiusSm
                             color: backArea.containsMouse ? Theme.surfaceHover : "transparent"
                             opacity: historyIndex > 0 ? 1.0 : 0.4
+                            scale: backArea.pressed ? 0.92 : 1.0
+                            Behavior on scale { NumberAnimation { duration: 80 } }
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                             LucideIcon {
                                 anchors.centerIn: parent
@@ -356,6 +365,7 @@ Item {
                                 id: backArea
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                cursorShape: historyIndex > 0 ? Qt.PointingHandCursor : Qt.ArrowCursor
                                 enabled: historyIndex > 0
                                 onClicked: root.goBack()
                             }
@@ -367,6 +377,9 @@ Item {
                             radius: Theme.radiusSm
                             color: fwdArea.containsMouse ? Theme.surfaceHover : "transparent"
                             opacity: historyIndex < history.length - 1 ? 1.0 : 0.4
+                            scale: fwdArea.pressed ? 0.92 : 1.0
+                            Behavior on scale { NumberAnimation { duration: 80 } }
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                             LucideIcon {
                                 anchors.centerIn: parent
@@ -379,6 +392,7 @@ Item {
                                 id: fwdArea
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                cursorShape: (historyIndex < history.length - 1) ? Qt.PointingHandCursor : Qt.ArrowCursor
                                 enabled: historyIndex < history.length - 1
                                 onClicked: root.goForward()
                             }
@@ -389,6 +403,9 @@ Item {
                             height: 28
                             radius: Theme.radiusSm
                             color: reloadArea.containsMouse ? Theme.surfaceHover : "transparent"
+                            scale: reloadArea.pressed ? 0.92 : 1.0
+                            Behavior on scale { NumberAnimation { duration: 80 } }
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                             LucideIcon {
                                 anchors.centerIn: parent
@@ -401,6 +418,7 @@ Item {
                                 id: reloadArea
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     if (currentFilePath) loadPage(currentFilePath)
                                 }
@@ -433,6 +451,9 @@ Item {
                             height: 26
                             radius: Theme.radiusSm
                             color: zoomOutArea.containsMouse ? Theme.surfaceHover : "transparent"
+                            scale: zoomOutArea.pressed ? 0.92 : 1.0
+                            Behavior on scale { NumberAnimation { duration: 80 } }
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                             LucideIcon {
                                 anchors.centerIn: parent
@@ -445,6 +466,7 @@ Item {
                                 id: zoomOutArea
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     zoomFactor = Math.max(0.7, zoomFactor - 0.1)
                                 }
@@ -462,6 +484,9 @@ Item {
                             height: 26
                             radius: Theme.radiusSm
                             color: zoomInArea.containsMouse ? Theme.surfaceHover : "transparent"
+                            scale: zoomInArea.pressed ? 0.92 : 1.0
+                            Behavior on scale { NumberAnimation { duration: 80 } }
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                             LucideIcon {
                                 anchors.centerIn: parent
@@ -474,6 +499,7 @@ Item {
                                 id: zoomInArea
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
                                 onClicked: {
                                     zoomFactor = Math.min(1.8, zoomFactor + 0.1)
                                 }

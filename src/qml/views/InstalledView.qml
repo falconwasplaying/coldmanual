@@ -46,6 +46,9 @@ Item {
                 color: checkArea.containsMouse ? Theme.surfaceHover : Theme.surface
                 border.color: Theme.border
                 border.width: 1
+                scale: checkArea.pressed ? 0.96 : 1.0
+                Behavior on scale { NumberAnimation { duration: 80 } }
+                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                 RowLayout {
                     anchors.centerIn: parent
@@ -54,6 +57,15 @@ Item {
                         name: "refresh-cw"
                         size: 13
                         color: Theme.textPrimary
+                        rotation: 0
+
+                        RotationAnimation on rotation {
+                            running: docsetMgr.isCheckingUpdates
+                            loops: Animation.Infinite
+                            from: 0
+                            to: 360
+                            duration: 800
+                        }
                     }
                     Text {
                         id: checkText
@@ -68,6 +80,7 @@ Item {
                     id: checkArea
                     anchors.fill: parent
                     hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
                     enabled: !docsetMgr.isCheckingUpdates
                     onClicked: docsetMgr.checkForUpdates()
                 }
@@ -80,6 +93,9 @@ Item {
                 radius: Theme.radiusMd
                 color: updateAllArea.containsMouse ? Theme.accentHover : Theme.accent
                 visible: docsetMgr.installedCount > 0
+                scale: updateAllArea.pressed ? 0.96 : 1.0
+                Behavior on scale { NumberAnimation { duration: 80 } }
+                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                 RowLayout {
                     id: updateAllRow
@@ -102,6 +118,7 @@ Item {
                     id: updateAllArea
                     anchors.fill: parent
                     hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
                     onClicked: docsetMgr.updateAll()
                 }
             }
@@ -127,12 +144,21 @@ Item {
             }
 
             delegate: Rectangle {
+                id: cardItem
                 width: installedList.width
                 height: 84
                 radius: Theme.radiusMd
-                color: Theme.surface
-                border.color: Theme.border
+                color: cardArea.containsMouse ? Theme.surfaceHover : Theme.surface
+                border.color: cardArea.containsMouse ? Theme.accent : Theme.border
                 border.width: 1
+                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                Behavior on border.color { ColorAnimation { duration: Theme.animDurationFast } }
+
+                MouseArea {
+                    id: cardArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                }
 
                 RowLayout {
                     anchors.fill: parent
@@ -257,6 +283,9 @@ Item {
                             color: updateNowArea.containsMouse ? Theme.warning : Theme.warningBg
                             border.color: Theme.warning
                             border.width: 1
+                            scale: updateNowArea.pressed ? 0.95 : 1.0
+                            Behavior on scale { NumberAnimation { duration: 80 } }
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                             RowLayout {
                                 id: updateRow
@@ -279,6 +308,7 @@ Item {
                                 id: updateNowArea
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
                                 onClicked: docsetMgr.updateDocset(model.id)
                             }
                         }
@@ -289,6 +319,9 @@ Item {
                             height: 32
                             radius: Theme.radiusSm
                             color: readArea.containsMouse ? Theme.accentHover : Theme.accent
+                            scale: readArea.pressed ? 0.95 : 1.0
+                            Behavior on scale { NumberAnimation { duration: 80 } }
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                             RowLayout {
                                 anchors.centerIn: parent
@@ -310,6 +343,7 @@ Item {
                                 id: readArea
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
                                 onClicked: root.openDocsetInReader(model.id, model.name)
                             }
                         }
@@ -322,6 +356,9 @@ Item {
                             color: delArea.containsMouse ? Theme.dangerBg : Theme.surfaceElevated
                             border.color: Theme.border
                             border.width: 1
+                            scale: delArea.pressed ? 0.92 : 1.0
+                            Behavior on scale { NumberAnimation { duration: 80 } }
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                             LucideIcon {
                                 anchors.centerIn: parent
@@ -334,6 +371,7 @@ Item {
                                 id: delArea
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
                                 onClicked: docsetMgr.removeDocset(model.id)
                             }
                         }

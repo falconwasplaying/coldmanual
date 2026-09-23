@@ -51,4 +51,11 @@ QtObject {
     readonly property int spacingSm: 6
     readonly property int spacingMd: 12
     readonly property int spacingLg: 20
+
+    // Motion & Animation Constants
+    readonly property int animDurationFast: 110
+    readonly property int animDurationNormal: 180
+    readonly property int animDurationSlow: 260
+    readonly property int animEasingDecel: Easing.OutCubic
+    readonly property int animEasingAccel: Easing.InQuad
 }

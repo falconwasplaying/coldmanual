@@ -83,11 +83,19 @@ Item {
             }
 
             LucideIcon {
-                name: dropdownPopup.opened ? "chevron-up" : "chevron-down"
+                id: chevronIcon
+                name: "chevron-down"
                 size: 11
                 color: Theme.textMuted
+                rotation: dropdownPopup.opened ? 180 : 0
+                Behavior on rotation {
+                    NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel }
+                }
             }
         }
+
+        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+        Behavior on border.color { ColorAnimation { duration: Theme.animDurationFast } }
 
         MouseArea {
             id: selectorMouseArea
@@ -116,6 +124,14 @@ Item {
         modal: false
         focus: true
         closePolicy: Popup.CloseOnEscape | Popup.CloseOnPressOutside | Popup.CloseOnPressOutsideParent
+
+        enter: Transition {
+            NumberAnimation { property: "opacity"; from: 0.0; to: 1.0; duration: Theme.animDurationFast; easing.type: Easing.OutQuad }
+            NumberAnimation { property: "scale"; from: 0.96; to: 1.0; duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel }
+        }
+        exit: Transition {
+            NumberAnimation { property: "opacity"; from: 1.0; to: 0.0; duration: 100; easing.type: Easing.InQuad }
+        }
 
         background: Rectangle {
             radius: Theme.radiusMd
@@ -171,6 +187,7 @@ Item {
                     visible: !parent.isDivider
                     radius: Theme.radiusSm
                     color: isSelected ? Theme.surfaceHover : (itemMouse.containsMouse ? Theme.surface : "transparent")
+                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                     RowLayout {
                         anchors.fill: parent

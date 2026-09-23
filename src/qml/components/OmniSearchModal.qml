@@ -44,11 +44,19 @@ Item {
         height: Math.min(parent.height - 80, 520)
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top
-        anchors.topMargin: 60
+        anchors.topMargin: (root.opacity > 0.01) ? 60 : 36
+        scale: (root.opacity > 0.01) ? 1.0 : 0.95
         radius: Theme.radiusLg
         color: Theme.surface
         border.color: Theme.border
         border.width: 1
+
+        Behavior on anchors.topMargin {
+            NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel }
+        }
+        Behavior on scale {
+            NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel }
+        }
 
         // Consume mouse clicks inside card
         MouseArea {
@@ -145,6 +153,7 @@ Item {
                     height: 48
                     radius: Theme.radiusSm
                     color: (resultsList.currentIndex === index || mouseArea.containsMouse) ? Theme.surfaceHover : "transparent"
+                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                     RowLayout {
                         anchors.fill: parent
