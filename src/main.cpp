@@ -6,6 +6,8 @@
 #include <QQuickWindow>
 #include <QPalette>
 #include <QColor>
+#include <QTimer>
+#include <memory>
 
 #ifdef Q_OS_WIN
 #ifndef WIN32_LEAN_AND_MEAN
@@ -16,6 +18,16 @@
 #endif
 #include <windows.h>
 #include <dwmapi.h>
+
+#ifndef DWMWA_CLOAK
+#define DWMWA_CLOAK 13
+#endif
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE
+#define DWMWA_USE_IMMERSIVE_DARK_MODE 20
+#endif
+#ifndef DWMWA_USE_IMMERSIVE_DARK_MODE_OLD
+#define DWMWA_USE_IMMERSIVE_DARK_MODE_OLD 19
+#endif
 #endif
 
 #include "core/SettingsManager.h"
@@ -96,20 +108,42 @@ int main(int argc, char* argv[]) {
 #ifdef Q_OS_WIN
         HWND hwnd = reinterpret_cast<HWND>(window->winId());
         if (hwnd) {
-            // 1. Assign dark background brush to Win32 window class so Windows never paints white on erase
+            // 1. Cloak the window from DWM desktop composition before showing so Windows never composites unrendered white frames
+            BOOL cloak = TRUE;
+            DwmSetWindowAttribute(hwnd, DWMWA_CLOAK, &cloak, sizeof(cloak));
+
+            // 2. Assign dark background brush to Win32 window class
             HBRUSH winBrush = CreateSolidBrush(RGB(initialBgColor.red(), initialBgColor.green(), initialBgColor.blue()));
             SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, reinterpret_cast<LONG_PTR>(winBrush));
 
-            // 2. Enable Windows 10/11 Immersive Dark Mode for native title bar
+            // 3. Enable Windows 10/11 Immersive Dark Mode for native title bar
             if (isDark) {
                 BOOL darkMode = TRUE;
-                DwmSetWindowAttribute(hwnd, 20, &darkMode, sizeof(darkMode)); // Windows 10 build 18985+ and Windows 11
-                DwmSetWindowAttribute(hwnd, 19, &darkMode, sizeof(darkMode)); // Older Windows 10 builds
+                DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode)); // Windows 10 build 18985+ and Windows 11
+                DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, &darkMode, sizeof(darkMode)); // Older Windows 10 builds
             }
         }
 #endif
 
         window->show();
+
+#ifdef Q_OS_WIN
+        if (hwnd) {
+            auto connection = std::make_shared<QMetaObject::Connection>();
+            *connection = QObject::connect(window, &QQuickWindow::frameSwapped, window, [hwnd, connection]() {
+                QObject::disconnect(*connection);
+                BOOL uncloak = FALSE;
+                DwmSetWindowAttribute(hwnd, DWMWA_CLOAK, &uncloak, sizeof(uncloak));
+            }, Qt::QueuedConnection);
+
+            // Safety fallback: uncloak after 250ms in case frameSwapped is delayed
+            QTimer::singleShot(250, window, [hwnd, connection]() {
+                QObject::disconnect(*connection);
+                BOOL uncloak = FALSE;
+                DwmSetWindowAttribute(hwnd, DWMWA_CLOAK, &uncloak, sizeof(uncloak));
+            });
+        }
+#endif
     }
 
     int ret = app.exec();
