@@ -13,6 +13,7 @@ class SettingsManager : public QObject {
     Q_PROPERTY(QString themeMode READ themeMode WRITE setThemeMode NOTIFY themeModeChanged)
     Q_PROPERTY(int readerFontSize READ readerFontSize WRITE setReaderFontSize NOTIFY readerFontSizeChanged)
     Q_PROPERTY(int checkIntervalHours READ checkIntervalHours WRITE setCheckIntervalHours NOTIFY checkIntervalHoursChanged)
+    Q_PROPERTY(QString windowDisplayMode READ windowDisplayMode WRITE setWindowDisplayMode NOTIFY windowDisplayModeChanged)
     Q_PROPERTY(int windowX READ windowX CONSTANT)
     Q_PROPERTY(int windowY READ windowY CONSTANT)
     Q_PROPERTY(int windowWidth READ windowWidth CONSTANT)
@@ -37,6 +38,9 @@ public:
     int checkIntervalHours() const;
     void setCheckIntervalHours(int hours);
 
+    QString windowDisplayMode() const;
+    void setWindowDisplayMode(const QString& mode);
+
     int windowX() const;
     int windowY() const;
     int windowWidth() const;
@@ -52,6 +56,7 @@ signals:
     void themeModeChanged(const QString& mode);
     void readerFontSizeChanged(int size);
     void checkIntervalHoursChanged(int hours);
+    void windowDisplayModeChanged(const QString& mode);
 
 private:
     QSettings m_settings;
@@ -60,6 +65,7 @@ private:
     QString m_themeMode{"dark"};
     int m_readerFontSize{15};
     int m_checkIntervalHours{24};
+    QString m_windowDisplayMode{"windowed"};
     int m_windowX{-1};
     int m_windowY{-1};
     int m_windowWidth{1200};

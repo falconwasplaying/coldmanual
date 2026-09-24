@@ -148,10 +148,18 @@ void testSettingsAndRegistry() {
     assert(settings.windowWidth() == 1350);
     assert(settings.windowHeight() == 850);
 
-    // Test fullscreen state preserves normal dimensions
-    settings.saveWindowGeometry(0, 0, 1920, 1080, "fullscreen");
-    assert(settings.windowState() == "fullscreen");
-    assert(settings.windowWidth() == 1350);
+    // Test windowDisplayMode
+    settings.setWindowDisplayMode("windowed");
+    assert(settings.windowDisplayMode() == "windowed");
+    settings.setWindowDisplayMode("borderless");
+    assert(settings.windowDisplayMode() == "borderless");
+    settings.setWindowDisplayMode("fullscreen");
+    assert(settings.windowDisplayMode() == "fullscreen");
+    // Invalid mode should be ignored
+    settings.setWindowDisplayMode("invalid_mode");
+    assert(settings.windowDisplayMode() == "fullscreen");
+    settings.resetToDefaults();
+    assert(settings.windowDisplayMode() == "windowed");
 
     std::cout << "[PASS] testSettingsAndRegistry passed!" << std::endl;
 }

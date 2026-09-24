@@ -8,6 +8,7 @@
         <file alias="components/LucideIcon.qml">src/qml/components/LucideIcon.qml</file>
         <file alias="components/DocLogo.qml">src/qml/components/DocLogo.qml</file>
         <file alias="components/VersionSelector.qml">src/qml/components/VersionSelector.qml</file>
+        <file alias="components/WindowModePill.qml">src/qml/components/WindowModePill.qml</file>
         <file alias="views/ReaderView.qml">src/qml/views/ReaderView.qml</file>
         <file alias="views/CatalogView.qml">src/qml/views/CatalogView.qml</file>
         <file alias="views/InstalledView.qml">src/qml/views/InstalledView.qml</file>

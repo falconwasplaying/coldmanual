@@ -51,6 +51,29 @@ ApplicationWindow {
         sequence: "Ctrl+3"
         onActivated: currentTab = 2
     }
+    property string previousNonFullscreenMode: (settingsMgr.windowDisplayMode === "borderless") ? "borderless" : "windowed"
+
+    Connections {
+        target: settingsMgr
+        function onWindowDisplayModeChanged(mode) {
+            if (mode === "fullscreen") {
+                window.showFullScreen()
+            } else if (mode === "borderless") {
+                if (window.visibility === Window.FullScreen) {
+                    window.showNormal()
+                }
+                window.flags = Qt.Window | Qt.FramelessWindowHint
+                window.visible = true
+            } else { // "windowed"
+                if (window.visibility === Window.FullScreen) {
+                    window.showNormal()
+                }
+                window.flags = Qt.Window
+                window.visible = true
+            }
+        }
+    }
+
     Shortcut {
         sequence: "Ctrl+,"
         onActivated: currentTab = 3
@@ -58,11 +81,19 @@ ApplicationWindow {
     Shortcut {
         sequence: "F11"
         onActivated: {
-            if (window.visibility === Window.FullScreen) {
-                window.visibility = Window.Windowed
+            if (settingsMgr.windowDisplayMode === "fullscreen" || window.visibility === Window.FullScreen) {
+                settingsMgr.windowDisplayMode = previousNonFullscreenMode
             } else {
-                window.visibility = Window.FullScreen
+                previousNonFullscreenMode = settingsMgr.windowDisplayMode
+                settingsMgr.windowDisplayMode = "fullscreen"
             }
+        }
+    }
+    Shortcut {
+        sequence: "Esc"
+        enabled: settingsMgr.windowDisplayMode === "fullscreen" || window.visibility === Window.FullScreen
+        onActivated: {
+            settingsMgr.windowDisplayMode = previousNonFullscreenMode
         }
     }
 
@@ -76,9 +107,144 @@ ApplicationWindow {
         settingsMgr.saveWindowGeometry(window.x, window.y, window.width, window.height, stateStr)
     }
 
-    RowLayout {
+    ColumnLayout {
         anchors.fill: parent
         spacing: 0
+
+        // Top Header Bar for Frameless Borderless Mode
+        Rectangle {
+            id: borderlessTitleBar
+            Layout.fillWidth: true
+            Layout.preferredHeight: (settingsMgr.windowDisplayMode === "borderless" && window.visibility !== Window.FullScreen) ? 32 : 0
+            visible: Layout.preferredHeight > 0
+            color: Theme.sidebarBg
+            border.color: Theme.border
+            border.width: 1
+            clip: true
+
+            RowLayout {
+                anchors.fill: parent
+                spacing: 0
+
+                // Native System Move Area
+                MouseArea {
+                    Layout.fillWidth: true
+                    Layout.fillHeight: true
+                    onPressed: window.startSystemMove()
+                    onDoubleClicked: {
+                        if (window.visibility === Window.Maximized) {
+                            window.showNormal()
+                        } else {
+                            window.showMaximized()
+                        }
+                    }
+
+                    RowLayout {
+                        anchors.left: parent.left
+                        anchors.leftMargin: 12
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 8
+
+                        LucideIcon {
+                            name: "snowflake"
+                            size: 13
+                            color: Theme.accent
+                        }
+
+                        Text {
+                            text: "ColdManual"
+                            font.family: Theme.fontSans
+                            font.pixelSize: 11
+                            font.bold: true
+                            color: Theme.textMuted
+                        }
+                    }
+                }
+
+                // Window Control Buttons
+                Row {
+                    Layout.fillHeight: true
+                    spacing: 0
+
+                    // Minimize
+                    Rectangle {
+                        width: 44
+                        height: 32
+                        color: minArea.containsMouse ? Theme.surfaceHover : "transparent"
+                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+
+                        LucideIcon {
+                            anchors.centerIn: parent
+                            name: "minimize"
+                            size: 12
+                            color: minArea.containsMouse ? Theme.textPrimary : Theme.textMuted
+                        }
+
+                        MouseArea {
+                            id: minArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: window.showMinimized()
+                        }
+                    }
+
+                    // Maximize / Restore
+                    Rectangle {
+                        width: 44
+                        height: 32
+                        color: maxArea.containsMouse ? Theme.surfaceHover : "transparent"
+                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+
+                        LucideIcon {
+                            anchors.centerIn: parent
+                            name: window.visibility === Window.Maximized ? "app-window" : "square"
+                            size: 12
+                            color: maxArea.containsMouse ? Theme.textPrimary : Theme.textMuted
+                        }
+
+                        MouseArea {
+                            id: maxArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: {
+                                if (window.visibility === Window.Maximized) {
+                                    window.showNormal()
+                                } else {
+                                    window.showMaximized()
+                                }
+                            }
+                        }
+                    }
+
+                    // Close
+                    Rectangle {
+                        width: 44
+                        height: 32
+                        color: closeArea.containsMouse ? Theme.danger : "transparent"
+                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+
+                        LucideIcon {
+                            anchors.centerIn: parent
+                            name: "x"
+                            size: 13
+                            color: closeArea.containsMouse ? "#ffffff" : Theme.textMuted
+                        }
+
+                        MouseArea {
+                            id: closeArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            onClicked: window.close()
+                        }
+                    }
+                }
+            }
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 0
 
         // Sidebar Navigation
         Rectangle {
@@ -507,6 +673,7 @@ ApplicationWindow {
                 Behavior on y { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
             }
         }
+    }
     }
 
     // Global Floating Omni-Search Modal

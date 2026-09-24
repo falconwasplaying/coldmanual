@@ -244,6 +244,69 @@ Item {
                     }
                 }
 
+                // Window Display Mode Section
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: windowModeCol.implicitHeight + 28
+                    radius: Theme.radiusMd
+                    color: Theme.surface
+                    border.color: Theme.border
+                    border.width: 1
+
+                    ColumnLayout {
+                        id: windowModeCol
+                        anchors.fill: parent
+                        anchors.margins: 14
+                        spacing: 12
+
+                        RowLayout {
+                            spacing: 8
+                            LucideIcon {
+                                name: "app-window"
+                                size: 16
+                                color: Theme.accent
+                            }
+                            Text {
+                                text: "Window Display Mode"
+                                font.pixelSize: 15
+                                font.bold: true
+                                color: Theme.textPrimary
+                            }
+                        }
+
+                        Text {
+                            text: "Select your preferred window presentation. You can also toggle fullscreen at any time using F11."
+                            font.pixelSize: 12
+                            color: Theme.textMuted
+                        }
+
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 14
+
+                            WindowModePill {
+                                id: windowModePill
+                            }
+
+                            Item { Layout.fillWidth: true }
+
+                            Text {
+                                text: {
+                                    if (settingsMgr.windowDisplayMode === "borderless") {
+                                        return "Frameless window with custom controls"
+                                    } else if (settingsMgr.windowDisplayMode === "fullscreen") {
+                                        return "Distraction-free fullscreen view"
+                                    } else {
+                                        return "Standard operating system window"
+                                    }
+                                }
+                                font.pixelSize: 12
+                                color: Theme.textMuted
+                            }
+                        }
+                    }
+                }
+
                 // Appearance & Reader Section
                 Rectangle {
                     Layout.fillWidth: true

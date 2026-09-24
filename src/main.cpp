@@ -112,6 +112,14 @@ int main(int argc, char* argv[]) {
         int winW = settingsMgr.windowWidth();
         int winH = settingsMgr.windowHeight();
         const QString winState = settingsMgr.windowState();
+        const QString displayMode = settingsMgr.windowDisplayMode();
+
+        // Apply initial display mode flags
+        if (displayMode == "borderless") {
+            window->setFlags(Qt::Window | Qt::FramelessWindowHint);
+        } else {
+            window->setFlags(Qt::Window);
+        }
 
         // Enforce sensible minimums
         winW = std::max(960, winW);
@@ -205,11 +213,27 @@ int main(int argc, char* argv[]) {
         }
 #endif
 
+        // Dynamic Display Mode changes at runtime
+        QObject::connect(&settingsMgr, &SettingsManager::windowDisplayModeChanged, window, [window, isDark, initialBgColor](const QString& mode) {
+#ifdef Q_OS_WIN
+            HWND h = reinterpret_cast<HWND>(window->winId());
+            if (h) {
+                HBRUSH winBrush = CreateSolidBrush(RGB(initialBgColor.red(), initialBgColor.green(), initialBgColor.blue()));
+                SetClassLongPtr(h, GCLP_HBRBACKGROUND, reinterpret_cast<LONG_PTR>(winBrush));
+                if (isDark) {
+                    BOOL darkMode = TRUE;
+                    DwmSetWindowAttribute(h, DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
+                    DwmSetWindowAttribute(h, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, &darkMode, sizeof(darkMode));
+                }
+            }
+#endif
+        });
+
         // Show window with its restored state (Maximized, FullScreen, or Normal)
-        if (winState == "maximized") {
-            window->showMaximized();
-        } else if (winState == "fullscreen") {
+        if (displayMode == "fullscreen" || winState == "fullscreen") {
             window->showFullScreen();
+        } else if (winState == "maximized") {
+            window->showMaximized();
         } else {
             window->showNormal();
         }

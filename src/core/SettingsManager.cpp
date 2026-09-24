@@ -11,6 +11,10 @@ SettingsManager::SettingsManager(QObject* parent)
     m_readerFontSize = m_settings.value("readerFontSize", 15).toInt();
     m_checkIntervalHours = m_settings.value("checkIntervalHours", 24).toInt();
 
+    m_windowDisplayMode = m_settings.value("window/displayMode", "windowed").toString();
+    if (m_windowDisplayMode != "windowed" && m_windowDisplayMode != "borderless" && m_windowDisplayMode != "fullscreen") {
+        m_windowDisplayMode = "windowed";
+    }
     m_windowX = m_settings.value("window/x", -1).toInt();
     m_windowY = m_settings.value("window/y", -1).toInt();
     m_windowWidth = m_settings.value("window/width", 1200).toInt();
@@ -88,6 +92,22 @@ void SettingsManager::setCheckIntervalHours(int hours) {
     }
 }
 
+QString SettingsManager::windowDisplayMode() const {
+    return m_windowDisplayMode;
+}
+
+void SettingsManager::setWindowDisplayMode(const QString& mode) {
+    if (mode != "windowed" && mode != "borderless" && mode != "fullscreen") {
+        return;
+    }
+    if (m_windowDisplayMode != mode) {
+        m_windowDisplayMode = mode;
+        m_settings.setValue("window/displayMode", m_windowDisplayMode);
+        m_settings.sync();
+        emit windowDisplayModeChanged(m_windowDisplayMode);
+    }
+}
+
 int SettingsManager::windowX() const {
     return m_windowX;
 }
@@ -134,6 +154,7 @@ void SettingsManager::resetToDefaults() {
     setThemeMode("dark");
     setReaderFontSize(15);
     setCheckIntervalHours(24);
+    setWindowDisplayMode("windowed");
     m_windowX = -1;
     m_windowY = -1;
     m_windowWidth = 1200;
