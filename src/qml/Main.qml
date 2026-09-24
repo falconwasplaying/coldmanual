@@ -55,6 +55,26 @@ ApplicationWindow {
         sequence: "Ctrl+,"
         onActivated: currentTab = 3
     }
+    Shortcut {
+        sequence: "F11"
+        onActivated: {
+            if (window.visibility === Window.FullScreen) {
+                window.visibility = Window.Windowed
+            } else {
+                window.visibility = Window.FullScreen
+            }
+        }
+    }
+
+    onClosing: function(close) {
+        var stateStr = "normal"
+        if (window.visibility === Window.Maximized) {
+            stateStr = "maximized"
+        } else if (window.visibility === Window.FullScreen) {
+            stateStr = "fullscreen"
+        }
+        settingsMgr.saveWindowGeometry(window.x, window.y, window.width, window.height, stateStr)
+    }
 
     RowLayout {
         anchors.fill: parent

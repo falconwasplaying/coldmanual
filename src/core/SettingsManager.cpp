@@ -11,6 +11,12 @@ SettingsManager::SettingsManager(QObject* parent)
     m_readerFontSize = m_settings.value("readerFontSize", 15).toInt();
     m_checkIntervalHours = m_settings.value("checkIntervalHours", 24).toInt();
 
+    m_windowX = m_settings.value("window/x", -1).toInt();
+    m_windowY = m_settings.value("window/y", -1).toInt();
+    m_windowWidth = m_settings.value("window/width", 1200).toInt();
+    m_windowHeight = m_settings.value("window/height", 800).toInt();
+    m_windowState = m_settings.value("window/state", "normal").toString();
+
     ensureStoragePathExists();
 }
 
@@ -82,6 +88,45 @@ void SettingsManager::setCheckIntervalHours(int hours) {
     }
 }
 
+int SettingsManager::windowX() const {
+    return m_windowX;
+}
+
+int SettingsManager::windowY() const {
+    return m_windowY;
+}
+
+int SettingsManager::windowWidth() const {
+    return m_windowWidth;
+}
+
+int SettingsManager::windowHeight() const {
+    return m_windowHeight;
+}
+
+QString SettingsManager::windowState() const {
+    return m_windowState;
+}
+
+void SettingsManager::saveWindowGeometry(int x, int y, int width, int height, const QString& state) {
+    if (state == "normal") {
+        if (width >= 400 && height >= 300) {
+            m_windowX = x;
+            m_windowY = y;
+            m_windowWidth = width;
+            m_windowHeight = height;
+        }
+    }
+    m_windowState = state;
+
+    m_settings.setValue("window/x", m_windowX);
+    m_settings.setValue("window/y", m_windowY);
+    m_settings.setValue("window/width", m_windowWidth);
+    m_settings.setValue("window/height", m_windowHeight);
+    m_settings.setValue("window/state", m_windowState);
+    m_settings.sync();
+}
+
 void SettingsManager::resetToDefaults() {
     QString defaultStorage = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/docsets";
     setStoragePath(defaultStorage);
@@ -89,4 +134,11 @@ void SettingsManager::resetToDefaults() {
     setThemeMode("dark");
     setReaderFontSize(15);
     setCheckIntervalHours(24);
+    m_windowX = -1;
+    m_windowY = -1;
+    m_windowWidth = 1200;
+    m_windowHeight = 800;
+    m_windowState = "normal";
+    m_settings.remove("window");
+    m_settings.sync();
 }

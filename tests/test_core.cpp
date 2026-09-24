@@ -131,6 +131,28 @@ void testSettingsAndRegistry() {
     assert(settings.readerFontSize() == 18);
     settings.setAutoUpdateEnabled(true);
     assert(settings.autoUpdateEnabled() == true);
+
+    // Test persistent window geometry & state
+    settings.saveWindowGeometry(300, 200, 1350, 850, "normal");
+    assert(settings.windowX() == 300);
+    assert(settings.windowY() == 200);
+    assert(settings.windowWidth() == 1350);
+    assert(settings.windowHeight() == 850);
+    assert(settings.windowState() == "normal");
+
+    // Test maximized state preserves normal dimensions
+    settings.saveWindowGeometry(0, 0, 1920, 1080, "maximized");
+    assert(settings.windowState() == "maximized");
+    assert(settings.windowX() == 300);
+    assert(settings.windowY() == 200);
+    assert(settings.windowWidth() == 1350);
+    assert(settings.windowHeight() == 850);
+
+    // Test fullscreen state preserves normal dimensions
+    settings.saveWindowGeometry(0, 0, 1920, 1080, "fullscreen");
+    assert(settings.windowState() == "fullscreen");
+    assert(settings.windowWidth() == 1350);
+
     std::cout << "[PASS] testSettingsAndRegistry passed!" << std::endl;
 }
 

@@ -4,6 +4,7 @@
 #include <QIcon>
 #include <QQuickStyle>
 #include <QQuickWindow>
+#include <QScreen>
 #include <QPalette>
 #include <QColor>
 #include <QTimer>
@@ -105,6 +106,85 @@ int main(int argc, char* argv[]) {
     if (auto* window = qobject_cast<QQuickWindow*>(rootObj)) {
         window->setColor(initialBgColor);
 
+        // 1. Calculate and restore window geometry and state (screen-aware)
+        int winX = settingsMgr.windowX();
+        int winY = settingsMgr.windowY();
+        int winW = settingsMgr.windowWidth();
+        int winH = settingsMgr.windowHeight();
+        const QString winState = settingsMgr.windowState();
+
+        // Enforce sensible minimums
+        winW = std::max(960, winW);
+        winH = std::max(640, winH);
+
+        bool onValidScreen = false;
+        const QRect targetRect(winX, winY, winW, winH);
+
+        if (winX != -1 && winY != -1) {
+            for (QScreen* screen : QGuiApplication::screens()) {
+                const QRect avail = screen->availableGeometry();
+                if (avail.intersects(targetRect)) {
+                    const QRect inter = avail.intersected(targetRect);
+                    // Ensure at least 150px of title bar / window area is visible on an active monitor
+                    if (inter.width() >= 150 && inter.height() >= 60) {
+                        onValidScreen = true;
+                        break;
+                    }
+                }
+            }
+        }
+
+        if (!onValidScreen) {
+            // Center on primary screen if saved position is invalid or monitor was disconnected
+            QScreen* primary = QGuiApplication::primaryScreen();
+            if (primary) {
+                const QRect avail = primary->availableGeometry();
+                winW = std::min(winW, avail.width() - 40);
+                winH = std::min(winH, avail.height() - 40);
+                winX = avail.x() + (avail.width() - winW) / 2;
+                winY = avail.y() + (avail.height() - winH) / 2;
+            } else {
+                winX = 100;
+                winY = 100;
+            }
+        }
+
+        // Apply normal geometry
+        window->setGeometry(winX, winY, winW, winH);
+
+        // Track window movements & state transitions continuously
+        auto updateNormalGeometry = [window, &settingsMgr]() {
+            if (window->visibility() == QWindow::Windowed && window->windowState() == Qt::WindowNoState) {
+                settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "normal");
+            }
+        };
+
+        QObject::connect(window, &QWindow::xChanged, window, updateNormalGeometry);
+        QObject::connect(window, &QWindow::yChanged, window, updateNormalGeometry);
+        QObject::connect(window, &QWindow::widthChanged, window, updateNormalGeometry);
+        QObject::connect(window, &QWindow::heightChanged, window, updateNormalGeometry);
+
+        QObject::connect(window, &QWindow::windowStateChanged, window, [window, &settingsMgr](Qt::WindowState state) {
+            if (state == Qt::WindowMaximized) {
+                settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "maximized");
+            } else if (state == Qt::WindowFullScreen) {
+                settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "fullscreen");
+            } else if (state == Qt::WindowNoState) {
+                settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "normal");
+            }
+        });
+
+        // Save state on window close
+        QObject::connect(window, &QQuickWindow::closing, window, [window, &settingsMgr](QQuickCloseEvent*) {
+            QString stateStr = "normal";
+            if (window->visibility() == QWindow::Maximized || window->windowState() == Qt::WindowMaximized) {
+                stateStr = "maximized";
+            } else if (window->visibility() == QWindow::FullScreen || window->windowState() == Qt::WindowFullScreen) {
+                stateStr = "fullscreen";
+            }
+            settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), stateStr);
+        });
+
 #ifdef Q_OS_WIN
         HWND hwnd = reinterpret_cast<HWND>(window->winId());
         if (hwnd) {
@@ -125,7 +205,14 @@ int main(int argc, char* argv[]) {
         }
 #endif
 
-        window->show();
+        // Show window with its restored state (Maximized, FullScreen, or Normal)
+        if (winState == "maximized") {
+            window->showMaximized();
+        } else if (winState == "fullscreen") {
+            window->showFullScreen();
+        } else {
+            window->showNormal();
+        }
 
 #ifdef Q_OS_WIN
         if (hwnd) {
