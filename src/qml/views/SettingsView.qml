@@ -293,7 +293,7 @@ Item {
                             Text {
                                 text: {
                                     if (settingsMgr.windowDisplayMode === "borderless") {
-                                        return "Frameless window with custom controls"
+                                        return "Frameless window covering the entire screen"
                                     } else if (settingsMgr.windowDisplayMode === "fullscreen") {
                                         return "Distraction-free fullscreen view"
                                     } else {

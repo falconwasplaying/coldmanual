@@ -160,9 +160,76 @@ int main(int argc, char* argv[]) {
         // Apply normal geometry
         window->setGeometry(winX, winY, winW, winH);
 
-        // Track window movements & state transitions continuously
+        auto applyDisplayMode = [window, &settingsMgr, isDark, initialBgColor](const QString& mode) {
+            if (mode == "fullscreen") {
+                window->setFlags(Qt::Window);
+                window->showFullScreen();
+            } else if (mode == "borderless") {
+                window->setFlags(Qt::Window | Qt::FramelessWindowHint);
+                QScreen* screen = window->screen();
+                if (!screen) screen = QGuiApplication::primaryScreen();
+                if (screen) {
+                    const QRect screenRect = screen->geometry();
+                    window->setGeometry(screenRect);
+                }
+                window->showNormal();
+#ifdef Q_OS_WIN
+                HWND hwnd = reinterpret_cast<HWND>(window->winId());
+                if (hwnd && screen) {
+                    const QRect r = screen->geometry();
+                    SetWindowPos(hwnd, HWND_TOP, r.x(), r.y(), r.width(), r.height(), SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+                }
+#endif
+            } else { // "windowed"
+                window->setFlags(Qt::Window);
+                int winX = settingsMgr.windowX();
+                int winY = settingsMgr.windowY();
+                int winW = settingsMgr.windowWidth();
+                int winH = settingsMgr.windowHeight();
+                if (winW < 400 || winH < 300) {
+                    winW = 1200;
+                    winH = 800;
+                }
+                QScreen* screen = window->screen();
+                if (!screen) screen = QGuiApplication::primaryScreen();
+                if (screen) {
+                    const QRect avail = screen->availableGeometry();
+                    winW = std::min(winW, avail.width() - 40);
+                    winH = std::min(winH, avail.height() - 40);
+                    if (winX < avail.x() || winX > avail.right() - 100 || winY < avail.y() || winY > avail.bottom() - 100) {
+                        winX = avail.x() + (avail.width() - winW) / 2;
+                        winY = avail.y() + (avail.height() - winH) / 2;
+                    }
+                }
+                window->setGeometry(winX, winY, winW, winH);
+                window->showNormal();
+#ifdef Q_OS_WIN
+                HWND hwnd = reinterpret_cast<HWND>(window->winId());
+                if (hwnd) {
+                    SetWindowPos(hwnd, HWND_TOP, winX, winY, winW, winH, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+                }
+#endif
+            }
+
+#ifdef Q_OS_WIN
+            HWND hwnd = reinterpret_cast<HWND>(window->winId());
+            if (hwnd) {
+                HBRUSH winBrush = CreateSolidBrush(RGB(initialBgColor.red(), initialBgColor.green(), initialBgColor.blue()));
+                SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, reinterpret_cast<LONG_PTR>(winBrush));
+                if (isDark) {
+                    BOOL darkMode = TRUE;
+                    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
+                    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, &darkMode, sizeof(darkMode));
+                }
+            }
+#endif
+        };
+
+        // Track window movements & state transitions continuously (only in windowed mode)
         auto updateNormalGeometry = [window, &settingsMgr]() {
-            if (window->visibility() == QWindow::Windowed && window->windowState() == Qt::WindowNoState) {
+            if (settingsMgr.windowDisplayMode() == "windowed" &&
+                window->visibility() == QWindow::Windowed &&
+                window->windowState() == Qt::WindowNoState) {
                 settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "normal");
             }
         };
@@ -173,24 +240,28 @@ int main(int argc, char* argv[]) {
         QObject::connect(window, &QWindow::heightChanged, window, updateNormalGeometry);
 
         QObject::connect(window, &QWindow::windowStateChanged, window, [window, &settingsMgr](Qt::WindowState state) {
-            if (state == Qt::WindowMaximized) {
-                settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "maximized");
-            } else if (state == Qt::WindowFullScreen) {
-                settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "fullscreen");
-            } else if (state == Qt::WindowNoState) {
-                settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "normal");
+            if (settingsMgr.windowDisplayMode() == "windowed") {
+                if (state == Qt::WindowMaximized) {
+                    settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "maximized");
+                } else if (state == Qt::WindowFullScreen) {
+                    settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "fullscreen");
+                } else if (state == Qt::WindowNoState) {
+                    settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "normal");
+                }
             }
         });
 
         // Save state on window close
         QObject::connect(window, &QQuickWindow::closing, window, [window, &settingsMgr](QQuickCloseEvent*) {
-            QString stateStr = "normal";
-            if (window->visibility() == QWindow::Maximized || window->windowState() == Qt::WindowMaximized) {
-                stateStr = "maximized";
-            } else if (window->visibility() == QWindow::FullScreen || window->windowState() == Qt::WindowFullScreen) {
-                stateStr = "fullscreen";
+            if (settingsMgr.windowDisplayMode() == "windowed") {
+                QString stateStr = "normal";
+                if (window->visibility() == QWindow::Maximized || window->windowState() == Qt::WindowMaximized) {
+                    stateStr = "maximized";
+                } else if (window->visibility() == QWindow::FullScreen || window->windowState() == Qt::WindowFullScreen) {
+                    stateStr = "fullscreen";
+                }
+                settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), stateStr);
             }
-            settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), stateStr);
         });
 
 #ifdef Q_OS_WIN
@@ -214,28 +285,23 @@ int main(int argc, char* argv[]) {
 #endif
 
         // Dynamic Display Mode changes at runtime
-        QObject::connect(&settingsMgr, &SettingsManager::windowDisplayModeChanged, window, [window, isDark, initialBgColor](const QString& mode) {
-#ifdef Q_OS_WIN
-            HWND h = reinterpret_cast<HWND>(window->winId());
-            if (h) {
-                HBRUSH winBrush = CreateSolidBrush(RGB(initialBgColor.red(), initialBgColor.green(), initialBgColor.blue()));
-                SetClassLongPtr(h, GCLP_HBRBACKGROUND, reinterpret_cast<LONG_PTR>(winBrush));
-                if (isDark) {
-                    BOOL darkMode = TRUE;
-                    DwmSetWindowAttribute(h, DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
-                    DwmSetWindowAttribute(h, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, &darkMode, sizeof(darkMode));
-                }
-            }
-#endif
+        QObject::connect(&settingsMgr, &SettingsManager::windowDisplayModeChanged, window, [applyDisplayMode](const QString& mode) {
+            applyDisplayMode(mode);
         });
 
-        // Show window with its restored state (Maximized, FullScreen, or Normal)
-        if (displayMode == "fullscreen" || winState == "fullscreen") {
-            window->showFullScreen();
-        } else if (winState == "maximized") {
-            window->showMaximized();
+        // Show window with its initial state according to display mode
+        if (displayMode == "borderless") {
+            applyDisplayMode("borderless");
+        } else if (displayMode == "fullscreen" || winState == "fullscreen") {
+            applyDisplayMode("fullscreen");
         } else {
-            window->showNormal();
+            window->setFlags(Qt::Window);
+            window->setGeometry(winX, winY, winW, winH);
+            if (winState == "maximized") {
+                window->showMaximized();
+            } else {
+                window->showNormal();
+            }
         }
 
 #ifdef Q_OS_WIN
