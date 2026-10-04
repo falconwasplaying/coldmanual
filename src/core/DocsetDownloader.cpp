@@ -34,6 +34,37 @@ void DocsetDownloader::startDownload(const QString& id, const QString& version, 
 
     QDir().mkpath(destinationDir);
 
+    // Direct local manual resolution (e.g. from local coldmanual-db repository)
+    QString localFilePath;
+    if (url.startsWith("file:///", Qt::CaseInsensitive)) {
+        localFilePath = QUrl(url).toLocalFile();
+    } else if (QFile::exists(url)) {
+        localFilePath = url;
+    }
+
+    if (!localFilePath.isEmpty() && QFile::exists(localFilePath)) {
+        emit downloadProgress(id, 0.5, "Extracting local manual...");
+        auto task = m_currentTask;
+        QThreadPool::globalInstance()->start([this, localFilePath, task]() {
+            QString targetDir = task.destinationDir + "/" + task.id;
+            QDir().mkpath(targetDir);
+
+            QString errorStr;
+            bool ok = extractArchive(localFilePath, targetDir, &errorStr);
+
+            QMetaObject::invokeMethod(this, [this, ok, task, targetDir, errorStr]() {
+                m_isBusy = false;
+                emit isBusyChanged(false);
+                if (ok) {
+                    emit downloadCompleted(task.id, task.version, task.trackLatest, targetDir);
+                } else {
+                    emit downloadFailed(task.id, "Extraction error: " + errorStr);
+                }
+            });
+        });
+        return;
+    }
+
     QString tempFilePath = destinationDir + "/" + id + "_temp_archive.download";
     m_tempFile = new QFile(tempFilePath);
     if (!m_tempFile->open(QIODevice::WriteOnly)) {

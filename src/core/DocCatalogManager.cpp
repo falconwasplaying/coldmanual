@@ -141,14 +141,21 @@ void DocCatalogManager::setSelectedCategory(const QString& category) {
 }
 
 void DocCatalogManager::loadDefaultCatalog() {
-    // 1. Try loading cached catalog from app data
-    QString cachePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/catalog_cache.json";
-    QFile file(cachePath);
-    if (!file.exists()) {
-        // Fall back to bundled catalog.json in resources/ or working dir
-        file.setFileName(":/resources/catalog.json");
+    // 0. Prefer local coldmanual-db development repository if available
+    QString localCatalog = "C:/falcon/Projects/Windows/coldmanual-db/catalog.json";
+    QFile file;
+    if (QFile::exists(localCatalog)) {
+        file.setFileName(localCatalog);
+    } else {
+        // 1. Try loading cached catalog from app data
+        QString cachePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/catalog_cache.json";
+        file.setFileName(cachePath);
         if (!file.exists()) {
-            file.setFileName("resources/catalog.json");
+            // Fall back to bundled catalog.json in resources/ or working dir
+            file.setFileName(":/resources/catalog.json");
+            if (!file.exists()) {
+                file.setFileName("resources/catalog.json");
+            }
         }
     }
 
@@ -322,6 +329,12 @@ QVariantMap DocCatalogManager::getItem(int index) const {
 }
 
 QString DocCatalogManager::getDownloadUrl(const QString& id, const QString& version) const {
+    // 1. Direct local repository check: if coldmanual-db exists locally on the machine
+    QString localManual = "C:/falcon/Projects/Windows/coldmanual-db/manuals/" + id + ".tgz";
+    if (QFile::exists(localManual)) {
+        return "file:///" + localManual;
+    }
+
     for (const auto& item : m_allItems) {
         if (item.id == id) {
             // Check if version is "Latest Release" or "Latest Stable"

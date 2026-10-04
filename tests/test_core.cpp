@@ -6,6 +6,7 @@
 #include <QSqlDatabase>
 #include <QSqlQuery>
 #include <QSqlError>
+#include <QThread>
 
 #include "core/SettingsManager.h"
 #include "core/CatalogItem.h"
@@ -164,12 +165,50 @@ void testSettingsAndRegistry() {
     std::cout << "[PASS] testSettingsAndRegistry passed!" << std::endl;
 }
 
+void testManualExtractionFromLocalDb() {
+    std::cout << "[TEST] Running testManualExtractionFromLocalDb..." << std::endl;
+    DocCatalogManager catalogMgr;
+    QString sqliteUrl = catalogMgr.getDownloadUrl("sqlite", "Latest Release");
+    std::cout << "  Resolved SQLite URL: " << sqliteUrl.toStdString() << std::endl;
+    assert(sqliteUrl.contains("coldmanual-db/manuals/sqlite.tgz"));
+
+    QString tempExtractDir = QDir::tempPath() + "/coldmanual_test_manuals_extract";
+    QDir(tempExtractDir).removeRecursively();
+    QDir().mkpath(tempExtractDir);
+
+    DocsetDownloader downloader;
+    bool completed = false;
+    QString completedTarget;
+
+    QObject::connect(&downloader, &DocsetDownloader::downloadCompleted, [&](const QString& id, const QString& version, bool trackLatest, const QString& targetDir) {
+        completed = true;
+        completedTarget = targetDir;
+    });
+
+    downloader.startDownload("sqlite", "3", false, sqliteUrl, tempExtractDir);
+
+    // Wait up to 5 seconds for background thread extraction
+    for (int i = 0; i < 50 && !completed; ++i) {
+        QThread::msleep(100);
+        QCoreApplication::processEvents();
+    }
+
+    assert(completed);
+    assert(QFile::exists(tempExtractDir + "/sqlite/SQLite.docset/Contents/Resources/docSet.dsidx"));
+    std::cout << "  Extracted SQLite docset verified at: " << completedTarget.toStdString() << std::endl;
+
+    // Cleanup
+    QDir(tempExtractDir).removeRecursively();
+    std::cout << "[PASS] testManualExtractionFromLocalDb passed!" << std::endl;
+}
+
 int main(int argc, char* argv[]) {
     QCoreApplication app(argc, argv);
 
     testCatalogParsing();
     testSearchEngineWithSqlite();
     testSettingsAndRegistry();
+    testManualExtractionFromLocalDb();
 
     std::cout << "\nALL TESTS PASSED SUCCESSFULLY! (ColdManual Engine Verified)" << std::endl;
     return 0;
