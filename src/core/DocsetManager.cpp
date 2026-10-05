@@ -378,8 +378,95 @@ void DocsetManager::loadInstalledRegistry() {
         file.close();
     }
 
+    // Auto-discover any installed docsets on disk not yet in registry
+    scanInstalledFolder();
+
     emit installedCountChanged();
     emit storageUsageChanged();
+}
+
+void DocsetManager::scanInstalledFolder() {
+    QDir storageDir(m_settingsMgr->storagePath());
+    if (!storageDir.exists()) return;
+
+    QStringList subDirs = storageDir.entryList(QDir::Dirs | QDir::NoDotAndDotDot);
+    bool addedAny = false;
+
+    for (const QString& subDirName : subDirs) {
+        QString subDirPath = storageDir.filePath(subDirName);
+
+        // Check if already in m_installedList
+        bool alreadyInstalled = false;
+        for (const auto& existing : m_installedList) {
+            if (existing.id == subDirName || existing.localPath == subDirPath) {
+                alreadyInstalled = true;
+                break;
+            }
+        }
+        if (alreadyInstalled) continue;
+
+        // Check if this directory contains a .docset
+        QDir subDir(subDirPath);
+        QStringList docsets = subDir.entryList(QStringList() << "*.docset", QDir::Dirs);
+        if (!docsets.isEmpty()) {
+            // Find dsidx and index.html
+            QString dsidxPath;
+            QString documentsDir = subDirPath;
+            QString indexPath;
+
+            QDirIterator it(subDirPath, QStringList() << "*.dsidx", QDir::Files, QDirIterator::Subdirectories);
+            if (it.hasNext()) {
+                dsidxPath = it.next();
+                QFileInfo dsidxInfo(dsidxPath);
+                QDir resDir = dsidxInfo.dir();
+                if (resDir.exists("Documents")) {
+                    documentsDir = resDir.filePath("Documents");
+                } else {
+                    documentsDir = resDir.absolutePath();
+                }
+            }
+
+            if (QFile::exists(documentsDir + "/index.html")) {
+                indexPath = documentsDir + "/index.html";
+            } else {
+                QDirIterator idxIt(documentsDir, QStringList() << "index.html", QDir::Files, QDirIterator::Subdirectories);
+                if (idxIt.hasNext()) {
+                    indexPath = idxIt.next();
+                } else {
+                    QDirIterator htmlIt(documentsDir, QStringList() << "*.html", QDir::Files, QDirIterator::Subdirectories);
+                    if (htmlIt.hasNext()) {
+                        indexPath = htmlIt.next();
+                    }
+                }
+            }
+
+            InstalledDocset doc;
+            doc.id = subDirName;
+            doc.name = m_catalogMgr ? m_catalogMgr->getItemName(subDirName) : subDirName;
+            doc.installedVersion = "Latest";
+            doc.trackLatest = true;
+            doc.localPath = subDirPath;
+            doc.indexPath = indexPath;
+            doc.dsidxPath = dsidxPath;
+            doc.logoPath = subDirPath + "/logo.svg";
+            doc.sizeBytes = calculateDirectorySize(subDirPath);
+            doc.installedAt = QDateTime::currentDateTime();
+            doc.lastChecked = QDateTime::currentDateTime();
+            doc.updateAvailable = false;
+
+            beginInsertRows(QModelIndex(), m_installedList.size(), m_installedList.size());
+            m_installedList.append(doc);
+            endInsertRows();
+
+            registerWithSearchEngine(doc);
+            m_catalogMgr->setInstalledStatus(doc.id, true, doc.installedVersion, doc.trackLatest, false);
+            addedAny = true;
+        }
+    }
+
+    if (addedAny) {
+        saveInstalledRegistry();
+    }
 }
 
 void DocsetManager::saveInstalledRegistry() {

@@ -37,42 +37,14 @@ Item {
         currentFilePath = path
         var rawHtml = searchEngine.readFileContent(path)
         if (rawHtml.length > 0) {
-            // Apply lightweight CSS styles suitable for theme
-            var styledHtml = injectThemeStyles(rawHtml)
+            // Preprocess HTML for reader: strip web chrome, neutralize bright styles, inject theme CSS
+            var styledHtml = searchEngine.prepareHtmlForReader(rawHtml, Theme.isDark)
             docArea.text = styledHtml
             docScroll.contentY = 0
         } else {
             docArea.text = "<div style='color: " + Theme.textMuted + "; padding: 40px; text-align: center;'>" +
                            "<h3>Document Not Found</h3><p>" + path + "</p></div>"
         }
-    }
-
-    function injectThemeStyles(html) {
-        var isDark = Theme.isDark
-        var bgColor = isDark ? "#141416" : "#ffffff"
-        var textColor = isDark ? "#e4e4e7" : "#18181b"
-        var linkColor = Theme.accent
-        var codeBg = isDark ? "#1f1f23" : "#f1f5f9"
-        var borderColor = isDark ? "#2e2e33" : "#e2e8f0"
-
-        var styleHeader = "<style>" +
-            "body { background-color: " + bgColor + "; color: " + textColor + "; font-family: Segoe UI, sans-serif; line-height: 1.6; padding: 24px; margin: 0; }" +
-            "h1, h2, h3, h4, h5, h6 { color: " + (isDark ? "#ffffff" : "#09090b") + "; margin-top: 24px; margin-bottom: 12px; }" +
-            "a { color: " + linkColor + "; text-decoration: none; }" +
-            "a:hover { text-decoration: underline; }" +
-            "code, pre { font-family: Cascadia Code, Consolas, monospace; background-color: " + codeBg + "; border-radius: 4px; padding: 2px 6px; }" +
-            "pre { padding: 14px; overflow-x: auto; border: 1px solid " + borderColor + "; }" +
-            "table { border-collapse: collapse; width: 100%; margin: 16px 0; }" +
-            "th, td { border: 1px solid " + borderColor + "; padding: 8px 12px; text-align: left; }" +
-            "th { background-color: " + (isDark ? "#1c1c20" : "#f8fafc") + "; }" +
-            "</style>"
-
-        // If html already has <head>, inject before </head>, else prepend
-        var headIdx = html.indexOf("</head>")
-        if (headIdx >= 0) {
-            return html.substring(0, headIdx) + styleHeader + html.substring(headIdx)
-        }
-        return styleHeader + html
     }
 
     function goBack() {
@@ -101,14 +73,16 @@ Item {
         if (!currentDocsetId) return
         var types = searchEngine.getSymbolTypes(currentDocsetId)
         symbolTypesModel.clear()
-        symbolTypesModel.append({ type: "All", count: 0 })
+        var totalCount = 0
         for (var i = 0; i < types.length; ++i) {
-            symbolTypesModel.append(types[i])
+            totalCount += types[i].count
         }
-        if (symbolTypesModel.count > 0) {
-            selectedSymbolType = "All"
-            loadSymbols()
+        symbolTypesModel.append({ type: "All", count: totalCount })
+        for (var j = 0; j < types.length; ++j) {
+            symbolTypesModel.append(types[j])
         }
+        selectedSymbolType = "All"
+        loadSymbols()
     }
 
     property string selectedSymbolType: "All"
@@ -120,7 +94,8 @@ Item {
         if (!currentDocsetId) return
 
         var typeToQuery = (selectedSymbolType === "All") ? "" : selectedSymbolType
-        var results = searchEngine.getSymbolsByType(currentDocsetId, typeToQuery, 150)
+        var filterText = (typeof symbolSearchInput !== "undefined" && symbolSearchInput) ? symbolSearchInput.text : ""
+        var results = searchEngine.getSymbolsFiltered(currentDocsetId, typeToQuery, filterText, 200)
         for (var i = 0; i < results.length; ++i) {
             symbolsListModel.append(results[i])
         }
@@ -206,6 +181,7 @@ Item {
                             font.pixelSize: 11
                             color: Theme.textPrimary
                             clip: true
+                            onTextChanged: root.loadSymbols()
 
                             Text {
                                 anchors.fill: parent
@@ -537,6 +513,7 @@ Item {
                         textFormat: TextEdit.RichText
                         wrapMode: TextEdit.Wrap
                         color: Theme.textPrimary
+                        baseUrl: currentFilePath ? ("file:///" + currentFilePath.substring(0, currentFilePath.lastIndexOf('/') + 1)) : ""
                         font.family: Theme.fontSans
                         font.pixelSize: Math.round(settingsMgr.readerFontSize * root.zoomFactor)
 

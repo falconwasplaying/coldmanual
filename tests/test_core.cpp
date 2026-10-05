@@ -132,6 +132,72 @@ void testSearchEngineWithSqlite() {
     std::cout << "[PASS] testSearchEngineWithSqlite passed!" << std::endl;
 }
 
+void testSearchEngineWithCoreData() {
+    std::cout << "[TEST] Running testSearchEngineWithCoreData..." << std::endl;
+
+    QString testDir = QDir::tempPath() + "/coldmanual_test_coredata_docset";
+    QDir().mkpath(testDir + "/Contents/Resources/Documents");
+
+    QString dbPath = testDir + "/Contents/Resources/docSet.dsidx";
+    {
+        QSqlDatabase db = QSqlDatabase::addDatabase("QSQLITE", "test_coredata_setup");
+        db.setDatabaseName(dbPath);
+        bool ok = db.open();
+        assert(ok);
+
+        QSqlQuery q(db);
+        q.exec("CREATE TABLE ZTOKENTYPE (Z_PK INTEGER PRIMARY KEY, ZTYPENAME VARCHAR);");
+        q.exec("INSERT INTO ZTOKENTYPE VALUES(1, 'cl');");
+        q.exec("INSERT INTO ZTOKENTYPE VALUES(2, 'clm');");
+        q.exec("INSERT INTO ZTOKENTYPE VALUES(3, 'func');");
+
+        q.exec("CREATE TABLE ZFILEPATH (Z_PK INTEGER PRIMARY KEY, ZPATH VARCHAR);");
+        q.exec("INSERT INTO ZFILEPATH VALUES(1, '<dash_entry_name=vector>std::vector.html');");
+        q.exec("INSERT INTO ZFILEPATH VALUES(2, '<dash_entry_name=push_back>std::vector.html');");
+
+        q.exec("CREATE TABLE ZTOKENMETAINFORMATION (Z_PK INTEGER PRIMARY KEY, ZFILE INTEGER, ZANCHOR VARCHAR);");
+        q.exec("INSERT INTO ZTOKENMETAINFORMATION VALUES(1, 1, '');");
+        q.exec("INSERT INTO ZTOKENMETAINFORMATION VALUES(2, 2, 'push_back');");
+
+        q.exec("CREATE TABLE ZTOKEN (Z_PK INTEGER PRIMARY KEY, ZTOKENTYPE INTEGER, ZFILE INTEGER, ZMETAINFORMATION INTEGER, ZTOKENNAME VARCHAR);");
+        q.exec("INSERT INTO ZTOKEN VALUES(1, 1, 1, 1, 'std::vector');");
+        q.exec("INSERT INTO ZTOKEN VALUES(2, 2, 2, 2, 'std::vector::push_back');");
+        db.close();
+    }
+    QSqlDatabase::removeDatabase("test_coredata_setup");
+
+    DocsetSearchEngine searchEngine;
+    searchEngine.registerDocset("cpp", "C++", dbPath, testDir + "/Contents/Resources/Documents");
+
+    // Test symbol types
+    QVariantList types = searchEngine.getSymbolTypes("cpp");
+    assert(types.size() >= 2);
+
+    // Test getSymbolsFiltered for All
+    QVariantList allSymbols = searchEngine.getSymbolsFiltered("cpp", "All", "", 50);
+    assert(allSymbols.size() == 2);
+    assert(allSymbols[0].toMap()["path"].toString() == "std::vector.html");
+    assert(allSymbols[1].toMap()["path"].toString() == "std::vector.html#push_back");
+
+    // Test filtering by text
+    QVariantList filtered = searchEngine.getSymbolsFiltered("cpp", "All", "push", 50);
+    assert(filtered.size() == 1);
+    assert(filtered[0].toMap()["name"].toString() == "std::vector::push_back");
+
+    // Test HTML preprocessing
+    QString rawHtml = "<html><head><style>body{background:white !important}</style></head>"
+                      "<body><!-- header --><div id=\"mw-head\">Login</div><!-- /header -->"
+                      "<div id=\"cpp-content-base\"><h1>Vector</h1></div></body></html>";
+    QString cleanedHtml = searchEngine.prepareHtmlForReader(rawHtml, true);
+    assert(!cleanedHtml.contains("mw-head"));
+    assert(!cleanedHtml.contains("background:white !important"));
+    assert(cleanedHtml.contains("#141416")); // dark theme injected
+
+    searchEngine.unregisterDocset("cpp");
+    QDir(testDir).removeRecursively();
+    std::cout << "[PASS] testSearchEngineWithCoreData passed!" << std::endl;
+}
+
 void testSettingsAndRegistry() {
     std::cout << "[TEST] Running testSettingsAndRegistry..." << std::endl;
     SettingsManager settings;
@@ -217,6 +283,7 @@ void testManualExtractionFromLocalDb() {
     // Test DocsetManager indexing and logo handling
     DocsetSearchEngine searchEngine;
     SettingsManager settings;
+    QString originalStorage = settings.storagePath();
     settings.setStoragePath(tempExtractDir);
     DocsetManager docsetMgr(&catalogMgr, &downloader, &searchEngine, &settings);
 
@@ -234,6 +301,7 @@ void testManualExtractionFromLocalDb() {
     assert(installed["indexPath"].toString().endsWith("index.html"));
     std::cout << "  SQLite indexPath resolved correctly to: " << installed["indexPath"].toString().toStdString() << std::endl;
     QDir(tempExtractDir).removeRecursively();
+    settings.setStoragePath(originalStorage);
     std::cout << "[PASS] testManualExtractionFromLocalDb passed!" << std::endl;
 }
 
@@ -380,11 +448,14 @@ int main(int argc, char* argv[]) {
 #ifdef Q_OS_WIN
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 #endif
+    QCoreApplication::setOrganizationName("ColdManualTest");
+    QCoreApplication::setApplicationName("ColdManualTest");
     QCoreApplication app(argc, argv);
 
     generateAppIco();
     testCatalogParsing();
     testSearchEngineWithSqlite();
+    testSearchEngineWithCoreData();
     testSettingsAndRegistry();
     testManualExtractionFromLocalDb();
     testNetworkDownloadAndExtraction();

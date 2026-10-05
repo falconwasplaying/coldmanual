@@ -51,8 +51,10 @@ public:
     // Sidebar navigation helpers
     Q_INVOKABLE QVariantList getSymbolTypes(const QString& docsetId);
     Q_INVOKABLE QVariantList getSymbolsByType(const QString& docsetId, const QString& type, int limit = 100);
+    Q_INVOKABLE QVariantList getSymbolsFiltered(const QString& docsetId, const QString& type, const QString& filterText, int limit = 100);
     Q_INVOKABLE QVariantMap getResult(int index) const;
     Q_INVOKABLE QString readFileContent(const QString& filePath);
+    Q_INVOKABLE QString prepareHtmlForReader(const QString& rawHtml, bool isDark);
 
 signals:
     void queryChanged();
