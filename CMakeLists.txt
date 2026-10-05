@@ -35,6 +35,8 @@ set(SOURCES
     src/core/DocsetSearchEngine.cpp
     src/core/SettingsManager.h
     src/core/SettingsManager.cpp
+    src/core/NetworkManager.h
+    src/core/NetworkManager.cpp
     resources.qrc
 )
 
@@ -64,7 +66,7 @@ target_link_libraries(coldmanual PRIVATE
 )
 
 if(WIN32)
-    target_link_libraries(coldmanual PRIVATE dwmapi gdi32)
+    target_link_libraries(coldmanual PRIVATE dwmapi gdi32 wininet)
 endif()
 
 # if(WIN32)
@@ -87,6 +89,8 @@ add_executable(test_core
     src/core/DocsetSearchEngine.cpp
     src/core/SettingsManager.h
     src/core/SettingsManager.cpp
+    src/core/NetworkManager.h
+    src/core/NetworkManager.cpp
     resources.qrc
 )
 
@@ -108,3 +112,7 @@ target_link_libraries(test_core PRIVATE
     Qt6::Concurrent
     ${LibArchive_LIBRARIES}
 )
+
+if(WIN32)
+    target_link_libraries(test_core PRIVATE wininet)
+endif()

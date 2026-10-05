@@ -22,6 +22,27 @@ ApplicationWindow {
 
     property int currentTab: 1 // Default to Browse Catalog on first run if no docs, or Reader
 
+    function showToast(title, message, iconName, duration) {
+        toastNotification.show(title, message, iconName || "wifi-off", duration || 4000)
+    }
+
+    onCurrentTabChanged: {
+        if (currentTab === 1 && !networkMgr.isOnline) {
+            currentTab = (docsetMgr.installedCount > 0) ? 0 : 2
+            showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
+        }
+    }
+
+    Connections {
+        target: networkMgr
+        function onIsOnlineChanged() {
+            if (!networkMgr.isOnline && currentTab === 1) {
+                currentTab = (docsetMgr.installedCount > 0) ? 0 : 2
+                showToast("Connection Lost", "Catalog was closed because you went offline.", "wifi-off")
+            }
+        }
+    }
+
     Component.onCompleted: {
         if (docsetMgr.installedCount > 0) {
             currentTab = 0
@@ -30,7 +51,12 @@ ApplicationWindow {
                 readerView.openDocument(firstDoc.id, firstDoc.name, firstDoc.indexPath, firstDoc.name)
             }
         } else {
-            currentTab = 1
+            if (networkMgr.isOnline) {
+                currentTab = 1
+            } else {
+                currentTab = 2
+                showToast("Offline Mode", "You are currently offline. Connect to the internet to browse the catalog.", "wifi-off")
+            }
         }
     }
 
@@ -45,7 +71,13 @@ ApplicationWindow {
     }
     Shortcut {
         sequence: "Ctrl+2"
-        onActivated: currentTab = 1
+        onActivated: {
+            if (networkMgr.isOnline) {
+                currentTab = 1
+            } else {
+                showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
+            }
+        }
     }
     Shortcut {
         sequence: "Ctrl+3"
@@ -370,6 +402,8 @@ ApplicationWindow {
                             anchors.leftMargin: 12
                             anchors.rightMargin: 12
                             spacing: 10
+                            opacity: networkMgr.isOnline ? 1.0 : 0.5
+                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
 
                             LucideIcon {
                                 name: "compass"
@@ -386,14 +420,47 @@ ApplicationWindow {
                                 color: (currentTab === 1) ? Theme.accent : Theme.textPrimary
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             }
+
+                            Rectangle {
+                                visible: !networkMgr.isOnline
+                                height: 18
+                                radius: 9
+                                width: offlineBadgeRow.implicitWidth + 10
+                                color: Theme.surfaceElevated
+                                border.color: Theme.border
+                                border.width: 1
+
+                                RowLayout {
+                                    id: offlineBadgeRow
+                                    anchors.centerIn: parent
+                                    spacing: 3
+                                    LucideIcon {
+                                        name: "wifi-off"
+                                        size: 9
+                                        color: Theme.textMuted
+                                    }
+                                    Text {
+                                        text: "Offline"
+                                        font.pixelSize: 9
+                                        font.bold: true
+                                        color: Theme.textMuted
+                                    }
+                                }
+                            }
                         }
 
                         MouseArea {
                             id: navCatalogArea
                             anchors.fill: parent
                             hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: currentTab = 1
+                            cursorShape: networkMgr.isOnline ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+                            onClicked: {
+                                if (!networkMgr.isOnline) {
+                                    showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
+                                    return
+                                }
+                                currentTab = 1
+                            }
                         }
                     }
 
@@ -561,7 +628,13 @@ ApplicationWindow {
                 y: (window.currentTab === 0) ? 0 : 6
                 Behavior on opacity { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutQuad } }
                 Behavior on y { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
-                onNavigateToCatalog: window.currentTab = 1
+                onNavigateToCatalog: {
+                    if (networkMgr.isOnline) {
+                        window.currentTab = 1
+                    } else {
+                        showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
+                    }
+                }
             }
 
             CatalogView {
@@ -596,7 +669,13 @@ ApplicationWindow {
                     }
                     window.currentTab = 0
                 }
-                onNavigateToCatalog: window.currentTab = 1
+                onNavigateToCatalog: {
+                    if (networkMgr.isOnline) {
+                        window.currentTab = 1
+                    } else {
+                        showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
+                    }
+                }
             }
 
             SettingsView {
@@ -620,6 +699,11 @@ ApplicationWindow {
             readerView.openDocument(docsetId, docsetName, fullFilePath, title)
             window.currentTab = 0
         }
+    }
+
+    // Global Floating Toast Notification
+    Toast {
+        id: toastNotification
     }
 
     // Minimalist App Loading Splash Screen

@@ -36,6 +36,7 @@
 #include "core/DocsetDownloader.h"
 #include "core/DocsetSearchEngine.h"
 #include "core/DocsetManager.h"
+#include "core/NetworkManager.h"
 
 int main(int argc, char* argv[]) {
     QGuiApplication::setOrganizationName("ColdManual");
@@ -49,6 +50,7 @@ int main(int argc, char* argv[]) {
 
     // Initialize backend core singletons
     SettingsManager settingsMgr;
+    NetworkManager networkMgr;
     DocCatalogManager catalogMgr;
     DocsetDownloader downloader;
     DocsetSearchEngine searchEngine;
@@ -75,6 +77,7 @@ int main(int argc, char* argv[]) {
     // Expose backend instances to QML root context
     auto* ctx = engine.rootContext();
     ctx->setContextProperty("settingsMgr", &settingsMgr);
+    ctx->setContextProperty("networkMgr", &networkMgr);
     ctx->setContextProperty("catalogMgr", &catalogMgr);
     ctx->setContextProperty("downloader", &downloader);
     ctx->setContextProperty("searchEngine", &searchEngine);

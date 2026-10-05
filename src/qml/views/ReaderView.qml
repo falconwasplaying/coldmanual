@@ -586,23 +586,35 @@ Item {
 
                         Rectangle {
                             Layout.alignment: Qt.AlignHCenter
-                            width: 170
+                            width: 180
                             height: 36
                             radius: Theme.radiusMd
-                            color: browseLibArea.containsMouse ? Theme.accentHover : Theme.accent
+                            color: !networkMgr.isOnline ? Theme.surfaceElevated : (browseLibArea.containsMouse ? Theme.accentHover : Theme.accent)
+                            border.color: !networkMgr.isOnline ? Theme.border : "transparent"
+                            border.width: 1
 
-                            Text {
+                            RowLayout {
                                 anchors.centerIn: parent
-                                text: "Browse Libraries"
-                                font.pixelSize: 13
-                                font.bold: true
-                                color: Theme.textOnAccent
+                                spacing: 6
+                                LucideIcon {
+                                    visible: !networkMgr.isOnline
+                                    name: "wifi-off"
+                                    size: 13
+                                    color: Theme.textMuted
+                                }
+                                Text {
+                                    text: networkMgr.isOnline ? "Browse Libraries" : "Browse (Offline)"
+                                    font.pixelSize: 13
+                                    font.bold: true
+                                    color: networkMgr.isOnline ? Theme.textOnAccent : Theme.textMuted
+                                }
                             }
 
                             MouseArea {
                                 id: browseLibArea
                                 anchors.fill: parent
                                 hoverEnabled: true
+                                cursorShape: networkMgr.isOnline ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                                 onClicked: root.navigateToCatalog()
                             }
                         }

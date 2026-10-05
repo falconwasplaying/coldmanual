@@ -80,9 +80,15 @@ Item {
                     id: checkArea
                     anchors.fill: parent
                     hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
+                    cursorShape: networkMgr.isOnline ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                     enabled: !docsetMgr.isCheckingUpdates
-                    onClicked: docsetMgr.checkForUpdates()
+                    onClicked: {
+                        if (!networkMgr.isOnline) {
+                            window.showToast("Offline Mode", "Cannot check for updates while offline.", "wifi-off")
+                            return
+                        }
+                        docsetMgr.checkForUpdates()
+                    }
                 }
             }
 
@@ -412,23 +418,35 @@ Item {
 
                     Rectangle {
                         Layout.alignment: Qt.AlignHCenter
-                        width: 180
+                        width: 190
                         height: 36
                         radius: Theme.radiusMd
-                        color: browseBtnArea.containsMouse ? Theme.accentHover : Theme.accent
+                        color: !networkMgr.isOnline ? Theme.surfaceElevated : (browseBtnArea.containsMouse ? Theme.accentHover : Theme.accent)
+                        border.color: !networkMgr.isOnline ? Theme.border : "transparent"
+                        border.width: 1
 
-                        Text {
+                        RowLayout {
                             anchors.centerIn: parent
-                            text: "Browse Documentation"
-                            font.pixelSize: 13
-                            font.bold: true
-                            color: Theme.textOnAccent
+                            spacing: 6
+                            LucideIcon {
+                                visible: !networkMgr.isOnline
+                                name: "wifi-off"
+                                size: 13
+                                color: Theme.textMuted
+                            }
+                            Text {
+                                text: networkMgr.isOnline ? "Browse Documentation" : "Browse (Offline)"
+                                font.pixelSize: 13
+                                font.bold: true
+                                color: networkMgr.isOnline ? Theme.textOnAccent : Theme.textMuted
+                            }
                         }
 
                         MouseArea {
                             id: browseBtnArea
                             anchors.fill: parent
                             hoverEnabled: true
+                            cursorShape: networkMgr.isOnline ? Qt.PointingHandCursor : Qt.ForbiddenCursor
                             onClicked: root.navigateToCatalog()
                         }
                     }

@@ -18,6 +18,7 @@
 #include "core/DocsetSearchEngine.h"
 #include "core/DocsetDownloader.h"
 #include "core/DocsetManager.h"
+#include "core/NetworkManager.h"
 
 void testCatalogParsing() {
     std::cout << "[TEST] Running testCatalogParsing..." << std::endl;
@@ -265,6 +266,29 @@ void generateAppIco() {
     }
 }
 
+void testNetworkManager() {
+    std::cout << "[TEST] Running testNetworkManager..." << std::endl;
+    NetworkManager netMgr;
+    std::cout << "  NetworkManager initial status: " << (netMgr.isOnline() ? "Online" : "Offline") << " (" << netMgr.statusMessage().toStdString() << ")" << std::endl;
+
+    bool lostReceived = false;
+    bool restoredReceived = false;
+    QObject::connect(&netMgr, &NetworkManager::connectivityLost, [&lostReceived]() {
+        lostReceived = true;
+    });
+    QObject::connect(&netMgr, &NetworkManager::connectivityRestored, [&restoredReceived]() {
+        restoredReceived = true;
+    });
+
+    netMgr.setSimulateOffline(true);
+    assert(!netMgr.isOnline());
+    assert(lostReceived);
+
+    netMgr.setSimulateOffline(false);
+    assert(netMgr.simulateOffline() == false);
+    std::cout << "  NetworkManager offline simulation and signal handling verified." << std::endl;
+}
+
 int main(int argc, char* argv[]) {
     QCoreApplication app(argc, argv);
 
@@ -273,6 +297,7 @@ int main(int argc, char* argv[]) {
     testSearchEngineWithSqlite();
     testSettingsAndRegistry();
     testManualExtractionFromLocalDb();
+    testNetworkManager();
 
     std::cout << "\nALL TESTS PASSED SUCCESSFULLY! (ColdManual Engine Verified)" << std::endl;
     return 0;

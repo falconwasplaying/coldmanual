@@ -510,4 +510,104 @@ Item {
             }
         }
     }
+
+    // Offline Overlay State
+    Rectangle {
+        id: offlineOverlay
+        anchors.fill: parent
+        color: Theme.background
+        visible: !networkMgr.isOnline
+        z: 100
+
+        ColumnLayout {
+            anchors.centerIn: parent
+            spacing: 16
+            width: Math.min(parent.width - 64, 460)
+
+            Rectangle {
+                Layout.alignment: Qt.AlignHCenter
+                width: 64
+                height: 64
+                radius: 32
+                color: Theme.surfaceElevated
+                border.color: Theme.border
+                border.width: 1
+
+                LucideIcon {
+                    anchors.centerIn: parent
+                    name: "wifi-off"
+                    size: 28
+                    color: Theme.textMuted
+                }
+            }
+
+            Text {
+                Layout.alignment: Qt.AlignHCenter
+                text: "Catalog Unavailable Offline"
+                font.family: Theme.fontSans
+                font.pixelSize: 18
+                font.bold: true
+                color: Theme.textPrimary
+            }
+
+            Text {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.fillWidth: true
+                horizontalAlignment: Text.AlignHCenter
+                text: "An active internet connection is required to browse the documentation catalog and download manuals."
+                font.pixelSize: 13
+                color: Theme.textSecondary
+                wrapMode: Text.WordWrap
+            }
+
+            Rectangle {
+                Layout.alignment: Qt.AlignHCenter
+                Layout.topMargin: 8
+                width: retryRow.implicitWidth + 32
+                height: 38
+                radius: Theme.radiusMd
+                color: retryArea.containsMouse ? Theme.accentHover : Theme.accent
+                scale: retryArea.pressed ? 0.96 : 1.0
+                Behavior on scale { NumberAnimation { duration: 80 } }
+                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+
+                RowLayout {
+                    id: retryRow
+                    anchors.centerIn: parent
+                    spacing: 8
+
+                    LucideIcon {
+                        name: "refresh-cw"
+                        size: 14
+                        color: Theme.textOnAccent
+                        rotation: 0
+
+                        RotationAnimation on rotation {
+                            running: networkMgr.isChecking
+                            loops: Animation.Infinite
+                            from: 0
+                            to: 360
+                            duration: 800
+                        }
+                    }
+
+                    Text {
+                        text: networkMgr.isChecking ? "Checking Connection..." : "Check Connection"
+                        font.pixelSize: 13
+                        font.bold: true
+                        color: Theme.textOnAccent
+                    }
+                }
+
+                MouseArea {
+                    id: retryArea
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    enabled: !networkMgr.isChecking
+                    onClicked: networkMgr.checkConnectivity()
+                }
+            }
+        }
+    }
 }
