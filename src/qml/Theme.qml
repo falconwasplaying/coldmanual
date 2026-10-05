@@ -7,6 +7,10 @@ QtObject {
     // Colors
     readonly property bool isDark: (typeof settingsMgr !== "undefined") ? (settingsMgr.themeMode !== "light") : true
 
+    // App Branding Icons (cmw for dark mode, cmb for white/light mode, cmi for OS/Windows)
+    readonly property string logoUrl: isDark ? "qrc:/resources/cmw.svg" : "qrc:/resources/cmb.svg"
+    readonly property string appIconUrl: "qrc:/resources/cmi.svg"
+
     readonly property color background: isDark ? "#121214" : "#f8fafc"
     readonly property color sidebarBg: isDark ? "#18181b" : "#f1f5f9"
     readonly property color surface: isDark ? "#202024" : "#ffffff"

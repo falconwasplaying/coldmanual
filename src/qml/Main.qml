@@ -204,7 +204,7 @@ ApplicationWindow {
                     Image {
                         width: 32
                         height: 32
-                        source: "qrc:/resources/coldmanual.svg"
+                        source: Theme.logoUrl
                         sourceSize.width: 64
                         sourceSize.height: 64
                         fillMode: Image.PreserveAspectFit
@@ -655,7 +655,7 @@ ApplicationWindow {
                 Layout.alignment: Qt.AlignHCenter
                 width: 54
                 height: 54
-                source: "qrc:/resources/coldmanual.svg"
+                source: Theme.logoUrl
                 sourceSize.width: 108
                 sourceSize.height: 108
                 fillMode: Image.PreserveAspectFit

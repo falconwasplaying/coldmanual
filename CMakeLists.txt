@@ -38,6 +38,10 @@ set(SOURCES
     resources.qrc
 )
 
+if(WIN32)
+    list(APPEND SOURCES resources/app.rc)
+endif()
+
 add_executable(coldmanual WIN32 ${SOURCES})
 
 target_include_directories(coldmanual PRIVATE

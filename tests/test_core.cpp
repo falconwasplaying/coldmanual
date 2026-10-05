@@ -7,6 +7,10 @@
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QThread>
+#include <QSvgRenderer>
+#include <QPainter>
+#include <QImage>
+#include <QBuffer>
 
 #include "core/SettingsManager.h"
 #include "core/CatalogItem.h"
@@ -202,9 +206,69 @@ void testManualExtractionFromLocalDb() {
     std::cout << "[PASS] testManualExtractionFromLocalDb passed!" << std::endl;
 }
 
+void generateAppIco() {
+    std::cout << "[ICON] Generating multi-size Windows app icon from cmi.svg..." << std::endl;
+    QSvgRenderer renderer(QString("resources/cmi.svg"));
+    if (!renderer.isValid()) {
+        renderer.load(QString(":/resources/cmi.svg"));
+    }
+    assert(renderer.isValid());
+
+    QImage img256(256, 256, QImage::Format_ARGB32);
+    img256.fill(Qt::transparent);
+    QPainter p(&img256);
+    p.setRenderHint(QPainter::Antialiasing, true);
+    p.setRenderHint(QPainter::SmoothPixmapTransform, true);
+    renderer.render(&p);
+    p.end();
+
+    QDir().mkpath("resources");
+    img256.save("resources/app.png", "PNG");
+
+    // Write Windows ICO format with 256x256 PNG payload
+    QByteArray pngData;
+    QBuffer buf(&pngData);
+    buf.open(QIODevice::WriteOnly);
+    img256.save(&buf, "PNG");
+    buf.close();
+
+    QFile icoFile("resources/app.ico");
+    if (icoFile.open(QIODevice::WriteOnly)) {
+        quint16 reserved = 0;
+        quint16 type = 1;  // 1 = ICO
+        quint16 count = 1; // 1 image
+        icoFile.write(reinterpret_cast<const char*>(&reserved), 2);
+        icoFile.write(reinterpret_cast<const char*>(&type), 2);
+        icoFile.write(reinterpret_cast<const char*>(&count), 2);
+
+        quint8 width = 0;   // 0 = 256px
+        quint8 height = 0;  // 0 = 256px
+        quint8 colorCount = 0;
+        quint8 reserved2 = 0;
+        quint16 planes = 1;
+        quint16 bpp = 32;
+        quint32 bytesInRes = static_cast<quint32>(pngData.size());
+        quint32 imageOffset = 22; // 6 byte header + 16 byte dir entry
+
+        icoFile.write(reinterpret_cast<const char*>(&width), 1);
+        icoFile.write(reinterpret_cast<const char*>(&height), 1);
+        icoFile.write(reinterpret_cast<const char*>(&colorCount), 1);
+        icoFile.write(reinterpret_cast<const char*>(&reserved2), 1);
+        icoFile.write(reinterpret_cast<const char*>(&planes), 2);
+        icoFile.write(reinterpret_cast<const char*>(&bpp), 2);
+        icoFile.write(reinterpret_cast<const char*>(&bytesInRes), 4);
+        icoFile.write(reinterpret_cast<const char*>(&imageOffset), 4);
+
+        icoFile.write(pngData);
+        icoFile.close();
+        std::cout << "  Generated resources/app.ico (" << icoFile.size() << " bytes)" << std::endl;
+    }
+}
+
 int main(int argc, char* argv[]) {
     QCoreApplication app(argc, argv);
 
+    generateAppIco();
     testCatalogParsing();
     testSearchEngineWithSqlite();
     testSettingsAndRegistry();
