@@ -235,7 +235,7 @@ ApplicationWindow {
         // Sidebar Navigation
         Rectangle {
             id: sidebarRect
-            Layout.preferredWidth: window.sidebarMinimized ? 64 : 230
+            Layout.preferredWidth: window.sidebarMinimized ? 52 : 230
             Layout.fillHeight: true
             color: Theme.sidebarBg
             border.color: Theme.border
@@ -244,88 +244,90 @@ ApplicationWindow {
 
             Behavior on Layout.preferredWidth {
                 NumberAnimation {
-                    duration: 220
+                    duration: 200
                     easing.type: Easing.OutCubic
                 }
             }
 
-            ColumnLayout {
+            Item {
                 anchors.fill: parent
-                anchors.leftMargin: window.sidebarMinimized ? 12 : 14
-                anchors.rightMargin: window.sidebarMinimized ? 12 : 14
-                anchors.topMargin: 14
-                anchors.bottomMargin: 14
-                spacing: 12
 
-                // Logo
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.alignment: window.sidebarMinimized ? Qt.AlignHCenter : Qt.AlignLeft
+                // Top section (Logo, Search, Divider, Nav items)
+                Column {
+                    anchors.top: parent.top
+                    anchors.topMargin: 12
+                    anchors.left: parent.left
+                    anchors.right: parent.right
                     spacing: 10
 
-                    Image {
-                        width: 32
-                        height: 32
-                        source: Theme.logoUrl
-                        sourceSize.width: 64
-                        sourceSize.height: 64
-                        fillMode: Image.PreserveAspectFit
-                        smooth: true
-                        mipmap: true
-                        Layout.alignment: window.sidebarMinimized ? Qt.AlignHCenter : Qt.AlignVCenter
-                    }
-
-                    ColumnLayout {
-                        visible: !window.sidebarMinimized
-                        opacity: window.sidebarMinimized ? 0.0 : 1.0
-                        Behavior on opacity { NumberAnimation { duration: 150 } }
-                        spacing: 0
-                        Layout.fillWidth: true
-
-                        Text {
-                            text: "ColdManual"
-                            font.family: Theme.fontSans
-                            font.pixelSize: 17
-                            font.bold: true
-                            color: Theme.textPrimary
-                        }
-                        Text {
-                            text: "Offline Docs"
-                            font.pixelSize: 10
-                            color: Theme.textMuted
-                        }
-                    }
-                }
-
-                // Omni-Search Trigger Button
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 36
-                    radius: Theme.radiusMd
-                    color: omniArea.containsMouse ? Theme.surfaceHover : Theme.surface
-                    border.color: omniArea.containsMouse ? Theme.accent : Theme.border
-                    border.width: 1
-                    Behavior on border.color { ColorAnimation { duration: Theme.animDurationFast } }
-                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-
-                    ToolTip.text: "Search symbols (Ctrl+K)"
-                    ToolTip.visible: omniArea.containsMouse && window.sidebarMinimized
-                    ToolTip.delay: 400
-
+                    // 1. Logo
                     Item {
-                        anchors.fill: parent
+                        width: parent.width
+                        height: 34
+
+                        Image {
+                            id: logoImg
+                            width: 28
+                            height: 28
+                            source: Theme.logoUrl
+                            sourceSize.width: 56
+                            sourceSize.height: 56
+                            fillMode: Image.PreserveAspectFit
+                            smooth: true
+                            mipmap: true
+                            anchors.verticalCenter: parent.verticalCenter
+                            x: window.sidebarMinimized ? Math.round((parent.width - width) / 2) : 12
+                            Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                        }
+
+                        Column {
+                            visible: !window.sidebarMinimized
+                            anchors.left: logoImg.right
+                            anchors.leftMargin: 10
+                            anchors.verticalCenter: parent.verticalCenter
+                            spacing: 1
+
+                            Text {
+                                text: "ColdManual"
+                                font.family: Theme.fontSans
+                                font.pixelSize: 16
+                                font.bold: true
+                                color: Theme.textPrimary
+                            }
+                            Text {
+                                text: "Offline Docs"
+                                font.pixelSize: 10
+                                color: Theme.textMuted
+                            }
+                        }
+                    }
+
+                    // 2. OmniSearch Button
+                    Rectangle {
+                        id: omniBtn
+                        width: window.sidebarMinimized ? 36 : (parent.width - 20)
+                        height: 34
+                        radius: Theme.radiusMd
+                        color: omniArea.containsMouse ? Theme.surfaceHover : Theme.surface
+                        border.color: omniArea.containsMouse ? Theme.accent : Theme.border
+                        border.width: 1
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                        Behavior on border.color { ColorAnimation { duration: Theme.animDurationFast } }
 
                         LucideIcon {
                             id: searchIcon
+                            name: "search"
+                            size: 14
+                            color: omniArea.containsMouse ? Theme.accent : Theme.textMuted
                             anchors.verticalCenter: parent.verticalCenter
                             x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 10
                             Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                            name: "search"
-                            size: 13
-                            color: omniArea.containsMouse ? Theme.accent : Theme.textMuted
                         }
 
                         Text {
+                            visible: !window.sidebarMinimized
                             anchors.left: searchIcon.right
                             anchors.leftMargin: 8
                             anchors.right: ctrlKBadge.left
@@ -334,24 +336,19 @@ ApplicationWindow {
                             text: "Search symbols..."
                             font.pixelSize: 12
                             color: Theme.textMuted
-                            visible: opacity > 0.01
-                            opacity: window.sidebarMinimized ? 0.0 : 1.0
-                            Behavior on opacity { NumberAnimation { duration: 150 } }
                             elide: Text.ElideRight
                         }
 
                         Rectangle {
                             id: ctrlKBadge
+                            visible: !window.sidebarMinimized
                             anchors.right: parent.right
                             anchors.rightMargin: 8
                             anchors.verticalCenter: parent.verticalCenter
-                            width: 48
-                            height: 20
+                            width: 44
+                            height: 18
                             radius: Theme.radiusSm
                             color: Theme.surfaceElevated
-                            visible: opacity > 0.01
-                            opacity: window.sidebarMinimized ? 0.0 : 1.0
-                            Behavior on opacity { NumberAnimation { duration: 150 } }
 
                             Text {
                                 anchors.centerIn: parent
@@ -361,136 +358,128 @@ ApplicationWindow {
                                 color: Theme.textMuted
                             }
                         }
-                    }
 
-                    MouseArea {
-                        id: omniArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: omniSearch.open()
-                    }
-                }
-
-                Rectangle {
-                    Layout.fillWidth: true
-                    height: 1
-                    color: Theme.border
-                }
-
-                // Nav Items
-                ColumnLayout {
-                    Layout.fillWidth: true
-                    spacing: 4
-
-                    // Tab 0: Reader
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 38
-                        radius: Theme.radiusSm
-                        color: (currentTab === 0) ? Theme.accentDim : (navReaderArea.containsMouse ? Theme.surfaceHover : "transparent")
-                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-
-                        ToolTip.text: "Reader (Ctrl+1)"
-                        ToolTip.visible: navReaderArea.containsMouse && window.sidebarMinimized
-                        ToolTip.delay: 400
-
-                        // Active Indicator Pill
-                        Rectangle {
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 3
-                            height: (currentTab === 0) ? 18 : 0
-                            radius: 1.5
-                            color: Theme.accent
-                            opacity: (currentTab === 0) ? 1.0 : 0.0
-                            Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
-                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
-                        }
-
-                        Item {
+                        MouseArea {
+                            id: omniArea
                             anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: omniSearch.open()
+                        }
+                    }
+
+                    // Divider
+                    Rectangle {
+                        width: window.sidebarMinimized ? (parent.width - 16) : (parent.width - 20)
+                        height: 1
+                        color: Theme.border
+                        anchors.horizontalCenter: parent.horizontalCenter
+                    }
+
+                    // Nav Items
+                    Column {
+                        width: parent.width
+                        spacing: 4
+
+                        // Tab 0: Reader
+                        Rectangle {
+                            width: window.sidebarMinimized ? 38 : (parent.width - 16)
+                            height: 38
+                            radius: Theme.radiusSm
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            color: (currentTab === 0) ? Theme.accentDim : (navReaderArea.containsMouse ? Theme.surfaceHover : "transparent")
+                            Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+
+                            // Active indicator pill
+                            Rectangle {
+                                visible: !window.sidebarMinimized
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 3
+                                height: (currentTab === 0) ? 18 : 0
+                                radius: 1.5
+                                color: Theme.accent
+                                opacity: (currentTab === 0) ? 1.0 : 0.0
+                                Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
+                                Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                            }
 
                             LucideIcon {
                                 id: tab0Icon
+                                name: "book-open"
+                                size: 16
+                                color: (currentTab === 0) ? Theme.accent : Theme.textSecondary
                                 anchors.verticalCenter: parent.verticalCenter
                                 x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 12
                                 Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                                name: "book-open"
-                                size: 15
-                                color: (currentTab === 0) ? Theme.accent : Theme.textSecondary
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             }
 
                             Text {
+                                visible: !window.sidebarMinimized
                                 anchors.left: tab0Icon.right
                                 anchors.leftMargin: 10
                                 anchors.right: parent.right
-                                anchors.rightMargin: 12
+                                anchors.rightMargin: 10
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "Reader"
                                 font.pixelSize: 13
                                 font.bold: currentTab === 0
                                 color: (currentTab === 0) ? Theme.accent : Theme.textPrimary
-                                visible: opacity > 0.01
-                                opacity: window.sidebarMinimized ? 0.0 : 1.0
-                                Behavior on opacity { NumberAnimation { duration: 150 } }
+                                elide: Text.ElideRight
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                            }
+
+                            MouseArea {
+                                id: navReaderArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: currentTab = 0
                             }
                         }
 
-                        MouseArea {
-                            id: navReaderArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: currentTab = 0
-                        }
-                    }
-
-                    // Tab 1: Browse Catalog
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 38
-                        radius: Theme.radiusSm
-                        color: (currentTab === 1) ? Theme.accentDim : (navCatalogArea.containsMouse ? Theme.surfaceHover : "transparent")
-                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-
-                        ToolTip.text: networkMgr.isOnline ? "Browse Catalog (Ctrl+2)" : "Browse Catalog (Offline)"
-                        ToolTip.visible: navCatalogArea.containsMouse && window.sidebarMinimized
-                        ToolTip.delay: 400
-
-                        // Active Indicator Pill
+                        // Tab 1: Browse Catalog
                         Rectangle {
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 3
-                            height: (currentTab === 1) ? 18 : 0
-                            radius: 1.5
-                            color: Theme.accent
-                            opacity: (currentTab === 1) ? 1.0 : 0.0
-                            Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
-                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
-                        }
-
-                        Item {
-                            anchors.fill: parent
+                            width: window.sidebarMinimized ? 38 : (parent.width - 16)
+                            height: 38
+                            radius: Theme.radiusSm
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            color: (currentTab === 1) ? Theme.accentDim : (navCatalogArea.containsMouse ? Theme.surfaceHover : "transparent")
                             opacity: networkMgr.isOnline ? 1.0 : 0.5
+                            Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+
+                            // Active indicator pill
+                            Rectangle {
+                                visible: !window.sidebarMinimized
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 3
+                                height: (currentTab === 1) ? 18 : 0
+                                radius: 1.5
+                                color: Theme.accent
+                                opacity: (currentTab === 1) ? 1.0 : 0.0
+                                Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
+                                Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                            }
 
                             LucideIcon {
                                 id: tab1Icon
+                                name: "compass"
+                                size: 16
+                                color: (currentTab === 1) ? Theme.accent : Theme.textSecondary
                                 anchors.verticalCenter: parent.verticalCenter
                                 x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 12
                                 Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                                name: "compass"
-                                size: 15
-                                color: (currentTab === 1) ? Theme.accent : Theme.textSecondary
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             }
 
+                            // Minimized offline dot
                             Rectangle {
-                                visible: !networkMgr.isOnline && window.sidebarMinimized
+                                visible: window.sidebarMinimized && !networkMgr.isOnline
                                 width: 6
                                 height: 6
                                 radius: 3
@@ -502,6 +491,7 @@ ApplicationWindow {
                             }
 
                             Text {
+                                visible: !window.sidebarMinimized
                                 anchors.left: tab1Icon.right
                                 anchors.leftMargin: 10
                                 anchors.right: offlineBadge.left
@@ -511,18 +501,15 @@ ApplicationWindow {
                                 font.pixelSize: 13
                                 font.bold: currentTab === 1
                                 color: (currentTab === 1) ? Theme.accent : Theme.textPrimary
-                                visible: opacity > 0.01
-                                opacity: window.sidebarMinimized ? 0.0 : 1.0
-                                Behavior on opacity { NumberAnimation { duration: 150 } }
-                                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 elide: Text.ElideRight
+                                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             }
 
                             Rectangle {
                                 id: offlineBadge
                                 visible: !networkMgr.isOnline && !window.sidebarMinimized
                                 anchors.right: parent.right
-                                anchors.rightMargin: 10
+                                anchors.rightMargin: 8
                                 anchors.verticalCenter: parent.verticalCenter
                                 height: 18
                                 radius: 9
@@ -548,62 +535,58 @@ ApplicationWindow {
                                     }
                                 }
                             }
-                        }
 
-                        MouseArea {
-                            id: navCatalogArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: networkMgr.isOnline ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                            onClicked: {
-                                if (!networkMgr.isOnline) {
-                                    showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
-                                    return
+                            MouseArea {
+                                id: navCatalogArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: networkMgr.isOnline ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+                                onClicked: {
+                                    if (!networkMgr.isOnline) {
+                                        showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
+                                        return
+                                    }
+                                    currentTab = 1
                                 }
-                                currentTab = 1
                             }
                         }
-                    }
 
-                    // Tab 2: Installed & Updates
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 38
-                        radius: Theme.radiusSm
-                        color: (currentTab === 2) ? Theme.accentDim : (navInstArea.containsMouse ? Theme.surfaceHover : "transparent")
-                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-
-                        ToolTip.text: "Installed Docs (" + docsetMgr.installedCount + ") (Ctrl+3)"
-                        ToolTip.visible: navInstArea.containsMouse && window.sidebarMinimized
-                        ToolTip.delay: 400
-
-                        // Active Indicator Pill
+                        // Tab 2: Installed & Updates
                         Rectangle {
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 3
-                            height: (currentTab === 2) ? 18 : 0
-                            radius: 1.5
-                            color: Theme.accent
-                            opacity: (currentTab === 2) ? 1.0 : 0.0
-                            Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
-                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
-                        }
+                            width: window.sidebarMinimized ? 38 : (parent.width - 16)
+                            height: 38
+                            radius: Theme.radiusSm
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            color: (currentTab === 2) ? Theme.accentDim : (navInstArea.containsMouse ? Theme.surfaceHover : "transparent")
+                            Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
-                        Item {
-                            anchors.fill: parent
+                            // Active indicator pill
+                            Rectangle {
+                                visible: !window.sidebarMinimized
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 3
+                                height: (currentTab === 2) ? 18 : 0
+                                radius: 1.5
+                                color: Theme.accent
+                                opacity: (currentTab === 2) ? 1.0 : 0.0
+                                Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
+                                Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                            }
 
                             LucideIcon {
                                 id: tab2Icon
+                                name: "download"
+                                size: 16
+                                color: (currentTab === 2) ? Theme.accent : Theme.textSecondary
                                 anchors.verticalCenter: parent.verticalCenter
                                 x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 12
                                 Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                                name: "download"
-                                size: 15
-                                color: (currentTab === 2) ? Theme.accent : Theme.textSecondary
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             }
 
+                            // Minimized installed badge dot
                             Rectangle {
                                 visible: window.sidebarMinimized && docsetMgr.installedCount > 0
                                 width: 6
@@ -617,6 +600,7 @@ ApplicationWindow {
                             }
 
                             Text {
+                                visible: !window.sidebarMinimized
                                 anchors.left: tab2Icon.right
                                 anchors.leftMargin: 10
                                 anchors.right: instBadge.left
@@ -626,11 +610,8 @@ ApplicationWindow {
                                 font.pixelSize: 13
                                 font.bold: currentTab === 2
                                 color: (currentTab === 2) ? Theme.accent : Theme.textPrimary
-                                visible: opacity > 0.01
-                                opacity: window.sidebarMinimized ? 0.0 : 1.0
-                                Behavior on opacity { NumberAnimation { duration: 150 } }
-                                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 elide: Text.ElideRight
+                                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             }
 
                             // Count badge (expanded)
@@ -638,7 +619,7 @@ ApplicationWindow {
                                 id: instBadge
                                 visible: !window.sidebarMinimized
                                 anchors.right: parent.right
-                                anchors.rightMargin: 10
+                                anchors.rightMargin: 8
                                 anchors.verticalCenter: parent.verticalCenter
                                 width: Math.max(20, instBadgeText.implicitWidth + 8)
                                 height: 18
@@ -654,155 +635,154 @@ ApplicationWindow {
                                     color: Theme.textSecondary
                                 }
                             }
+
+                            MouseArea {
+                                id: navInstArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: currentTab = 2
+                            }
                         }
 
-                        MouseArea {
-                            id: navInstArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            onClicked: currentTab = 2
-                        }
-                    }
-
-                    // Tab 3: Settings
-                    Rectangle {
-                        Layout.fillWidth: true
-                        height: 38
-                        radius: Theme.radiusSm
-                        color: (currentTab === 3) ? Theme.accentDim : (navSettingsArea.containsMouse ? Theme.surfaceHover : "transparent")
-                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-
-                        ToolTip.text: "Settings (Ctrl+,)"
-                        ToolTip.visible: navSettingsArea.containsMouse && window.sidebarMinimized
-                        ToolTip.delay: 400
-
-                        // Active Indicator Pill
+                        // Tab 3: Settings
                         Rectangle {
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: 3
-                            height: (currentTab === 3) ? 18 : 0
-                            radius: 1.5
-                            color: Theme.accent
-                            opacity: (currentTab === 3) ? 1.0 : 0.0
-                            Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
-                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
-                        }
+                            width: window.sidebarMinimized ? 38 : (parent.width - 16)
+                            height: 38
+                            radius: Theme.radiusSm
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            color: (currentTab === 3) ? Theme.accentDim : (navSettingsArea.containsMouse ? Theme.surfaceHover : "transparent")
+                            Behavior on width { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
-                        Item {
-                            anchors.fill: parent
+                            // Active indicator pill
+                            Rectangle {
+                                visible: !window.sidebarMinimized
+                                anchors.left: parent.left
+                                anchors.verticalCenter: parent.verticalCenter
+                                width: 3
+                                height: (currentTab === 3) ? 18 : 0
+                                radius: 1.5
+                                color: Theme.accent
+                                opacity: (currentTab === 3) ? 1.0 : 0.0
+                                Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
+                                Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                            }
 
                             LucideIcon {
                                 id: tab3Icon
+                                name: "settings"
+                                size: 16
+                                color: (currentTab === 3) ? Theme.accent : Theme.textSecondary
                                 anchors.verticalCenter: parent.verticalCenter
                                 x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 12
                                 Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
-                                name: "settings"
-                                size: 15
-                                color: (currentTab === 3) ? Theme.accent : Theme.textSecondary
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             }
 
                             Text {
+                                visible: !window.sidebarMinimized
                                 anchors.left: tab3Icon.right
                                 anchors.leftMargin: 10
                                 anchors.right: parent.right
-                                anchors.rightMargin: 12
+                                anchors.rightMargin: 10
                                 anchors.verticalCenter: parent.verticalCenter
                                 text: "Settings"
                                 font.pixelSize: 13
                                 font.bold: currentTab === 3
                                 color: (currentTab === 3) ? Theme.accent : Theme.textPrimary
-                                visible: opacity > 0.01
-                                opacity: window.sidebarMinimized ? 0.0 : 1.0
-                                Behavior on opacity { NumberAnimation { duration: 150 } }
+                                elide: Text.ElideRight
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             }
+
+                            MouseArea {
+                                id: navSettingsArea
+                                anchors.fill: parent
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                onClicked: currentTab = 3
+                            }
+                        }
+                    }
+                }
+
+                // Bottom section (Arrow + Storage & Version)
+                Column {
+                    anchors.bottom: parent.bottom
+                    anchors.bottomMargin: 10
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    spacing: 8
+
+                    // Arrow with Long Tail (toggles collapse/expand)
+                    Item {
+                        id: collapseArrowItem
+                        width: parent.width
+                        height: 22
+
+                        // Tail: horizontal line right above storage & version
+                        Rectangle {
+                            id: arrowTail
+                            visible: !window.sidebarMinimized
+                            anchors.left: parent.left
+                            anchors.leftMargin: 12
+                            anchors.right: arrowHead.left
+                            anchors.rightMargin: -4
+                            anchors.verticalCenter: parent.verticalCenter
+                            height: arrowMouseArea.containsMouse ? 2 : 1
+                            color: arrowMouseArea.containsMouse ? Theme.accent : Theme.border
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                            Behavior on height { NumberAnimation { duration: 100 } }
+                        }
+
+                        // Arrow Tip: chevron pointing right
+                        LucideIcon {
+                            id: arrowHead
+                            name: "chevron-right"
+                            size: 14
+                            color: arrowMouseArea.containsMouse ? Theme.accent : (window.sidebarMinimized ? Theme.textSecondary : Theme.border)
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.right: window.sidebarMinimized ? undefined : parent.right
+                            anchors.rightMargin: window.sidebarMinimized ? 0 : 10
+                            anchors.horizontalCenter: window.sidebarMinimized ? parent.horizontalCenter : undefined
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                         }
 
                         MouseArea {
-                            id: navSettingsArea
+                            id: arrowMouseArea
                             anchors.fill: parent
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
-                            onClicked: currentTab = 3
-                        }
-                    }
-                }
-
-                Item { Layout.fillHeight: true }
-
-                // Arrow pointing right with a long tail (toggles minimized / expanded view)
-                Item {
-                    id: collapseArrowItem
-                    Layout.fillWidth: true
-                    Layout.preferredHeight: 24
-
-                    // Long Tail of the arrow (horizontal line across the width)
-                    Rectangle {
-                        id: arrowTail
-                        anchors.left: parent.left
-                        anchors.right: arrowHead.left
-                        anchors.rightMargin: -5
-                        anchors.verticalCenter: parent.verticalCenter
-                        height: arrowMouseArea.containsMouse ? 2 : 1
-                        color: arrowMouseArea.containsMouse ? Theme.accent : Theme.border
-                        visible: !window.sidebarMinimized
-                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-                        Behavior on height { NumberAnimation { duration: 100 } }
-                    }
-
-                    // Arrow Tip (pointing right)
-                    LucideIcon {
-                        id: arrowHead
-                        name: "chevron-right"
-                        size: 14
-                        color: arrowMouseArea.containsMouse ? Theme.accent : (window.sidebarMinimized ? Theme.textSecondary : Theme.border)
-                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.right: window.sidebarMinimized ? undefined : parent.right
-                        anchors.horizontalCenter: window.sidebarMinimized ? parent.horizontalCenter : undefined
-                    }
-
-                    MouseArea {
-                        id: arrowMouseArea
-                        anchors.fill: parent
-                        hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
-                        onClicked: {
-                            window.sidebarMinimized = !window.sidebarMinimized
+                            onClicked: {
+                                window.sidebarMinimized = !window.sidebarMinimized
+                            }
                         }
                     }
 
-                    ToolTip.text: window.sidebarMinimized ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"
-                    ToolTip.visible: arrowMouseArea.containsMouse
-                    ToolTip.delay: 400
-                }
-
-                // Sidebar Footer info (storage & version)
-                RowLayout {
-                    Layout.fillWidth: true
-                    Layout.alignment: window.sidebarMinimized ? Qt.AlignHCenter : Qt.AlignLeft
-
-                    Text {
-                        visible: !window.sidebarMinimized
-                        text: "Storage: " + docsetMgr.totalStorageUsage
-                        font.pixelSize: 11
-                        color: Theme.textMuted
-                    }
-
+                    // Footer info (Storage & Version)
                     Item {
-                        visible: !window.sidebarMinimized
-                        Layout.fillWidth: true
-                    }
+                        width: parent.width
+                        height: 16
 
-                    Text {
-                        text: "v1.0"
-                        font.pixelSize: 11
-                        color: Theme.textMuted
-                        Layout.alignment: window.sidebarMinimized ? Qt.AlignHCenter : Qt.AlignRight
+                        Text {
+                            visible: !window.sidebarMinimized
+                            anchors.left: parent.left
+                            anchors.leftMargin: 12
+                            anchors.verticalCenter: parent.verticalCenter
+                            text: "Storage: " + docsetMgr.totalStorageUsage
+                            font.pixelSize: 11
+                            color: Theme.textMuted
+                        }
+
+                        Text {
+                            text: "v1.0"
+                            font.pixelSize: 11
+                            color: Theme.textMuted
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.right: window.sidebarMinimized ? undefined : parent.right
+                            anchors.rightMargin: window.sidebarMinimized ? 0 : 12
+                            anchors.horizontalCenter: window.sidebarMinimized ? parent.horizontalCenter : undefined
+                        }
                     }
                 }
             }
