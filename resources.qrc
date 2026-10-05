@@ -5,6 +5,8 @@
         <file>resources/cmi.svg</file>
         <file>resources/app.ico</file>
         <file>resources/app.png</file>
+        <file>resources/line.svg</file>
+        <file>resources/move-right.svg</file>
         <file alias="qmldir">src/qml/qmldir</file>
         <file alias="Theme.qml">src/qml/Theme.qml</file>
         <file alias="Main.qml">src/qml/Main.qml</file>

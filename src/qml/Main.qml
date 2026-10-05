@@ -718,34 +718,50 @@ ApplicationWindow {
                     Item {
                         id: collapseArrowItem
                         width: parent.width
-                        height: 22
+                        height: 24
 
-                        // Tail: horizontal line right above storage & version
-                        Rectangle {
-                            id: arrowTail
+                        // Dynamic SVG Arrow with adjustable line length + Lucide chevron
+                        Image {
+                            id: arrowSvgImg
+                            anchors.fill: parent
                             visible: !window.sidebarMinimized
-                            anchors.left: parent.left
-                            anchors.leftMargin: 12
-                            anchors.right: arrowHead.left
-                            anchors.rightMargin: -4
-                            anchors.verticalCenter: parent.verticalCenter
-                            height: arrowMouseArea.containsMouse ? 2 : 1
-                            color: arrowMouseArea.containsMouse ? Theme.accent : Theme.border
-                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-                            Behavior on height { NumberAnimation { duration: 100 } }
+                            smooth: true
+                            mipmap: true
+                            source: {
+                                var w = Math.max(40, collapseArrowItem.width)
+                                var h = collapseArrowItem.height
+                                var colorHex = arrowMouseArea.containsMouse ? Theme.accent : Theme.textPrimary
+                                var lineStart = 12
+                                var arrowTipX = w - 12
+                                var wingX = arrowTipX - 6
+                                var midY = h / 2
+                                var wingTopY = midY - 5
+                                var wingBottomY = midY + 5
+                                
+                                var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='" + w + "' height='" + h + "' viewBox='0 0 " + w + " " + h + "' fill='none'>" +
+                                          "<path d='M" + lineStart + " " + midY + " H" + arrowTipX + "' stroke='" + colorHex + "' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/>" +
+                                          "<path d='M" + wingX + " " + wingTopY + " L" + arrowTipX + " " + midY + " L" + wingX + " " + wingBottomY + "' stroke='" + colorHex + "' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/>" +
+                                          "</svg>"
+                                return "data:image/svg+xml;utf8," + encodeURIComponent(svg)
+                            }
                         }
 
-                        // Arrow Tip: chevron pointing right
-                        LucideIcon {
-                            id: arrowHead
-                            name: "chevron-right"
-                            size: 14
-                            color: arrowMouseArea.containsMouse ? Theme.accent : (window.sidebarMinimized ? Theme.textSecondary : Theme.border)
-                            anchors.verticalCenter: parent.verticalCenter
-                            anchors.right: window.sidebarMinimized ? undefined : parent.right
-                            anchors.rightMargin: window.sidebarMinimized ? 0 : 10
-                            anchors.horizontalCenter: window.sidebarMinimized ? parent.horizontalCenter : undefined
-                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                        // Arrow Tip in minimized rail (centered Lucide chevron)
+                        Image {
+                            id: minArrowSvgImg
+                            visible: window.sidebarMinimized
+                            anchors.centerIn: parent
+                            width: 24
+                            height: 24
+                            smooth: true
+                            mipmap: true
+                            source: {
+                                var colorHex = arrowMouseArea.containsMouse ? Theme.accent : Theme.textPrimary
+                                var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='" + colorHex + "' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'>" +
+                                          "<path d='M9 18 L15 12 L9 6'/>" +
+                                          "</svg>"
+                                return "data:image/svg+xml;utf8," + encodeURIComponent(svg)
+                            }
                         }
 
                         MouseArea {
