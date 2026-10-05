@@ -1,6 +1,7 @@
 <RCC>
     <qresource prefix="/">
         <file>resources/catalog.json</file>
+        <file>resources/coldmanual.svg</file>
         <file alias="qmldir">src/qml/qmldir</file>
         <file alias="Theme.qml">src/qml/Theme.qml</file>
         <file alias="Main.qml">src/qml/Main.qml</file>

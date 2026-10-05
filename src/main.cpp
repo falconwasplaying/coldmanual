@@ -45,6 +45,7 @@ int main(int argc, char* argv[]) {
     QQuickStyle::setStyle("Basic");
 
     QGuiApplication app(argc, argv);
+    app.setWindowIcon(QIcon(":/resources/coldmanual.svg"));
 
     // Initialize backend core singletons
     SettingsManager settingsMgr;
@@ -105,6 +106,7 @@ int main(int argc, char* argv[]) {
     auto* rootObj = engine.rootObjects().first();
     if (auto* window = qobject_cast<QQuickWindow*>(rootObj)) {
         window->setColor(initialBgColor);
+        window->setIcon(QIcon(":/resources/coldmanual.svg"));
 
         // 1. Calculate and restore window geometry and state (screen-aware)
         int winX = settingsMgr.windowX();

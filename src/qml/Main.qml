@@ -201,18 +201,15 @@ ApplicationWindow {
                 // Logo
                 RowLayout {
                     spacing: 10
-                    Rectangle {
-                        width: 34
-                        height: 34
-                        radius: Theme.radiusSm
-                        color: Theme.accent
-
-                        LucideIcon {
-                            anchors.centerIn: parent
-                            name: "snowflake"
-                            size: 18
-                            color: "#ffffff"
-                        }
+                    Image {
+                        width: 32
+                        height: 32
+                        source: "qrc:/resources/coldmanual.svg"
+                        sourceSize.width: 64
+                        sourceSize.height: 64
+                        fillMode: Image.PreserveAspectFit
+                        smooth: true
+                        mipmap: true
                     }
 
                     ColumnLayout {
@@ -654,19 +651,16 @@ ApplicationWindow {
             anchors.centerIn: parent
             spacing: 14
 
-            Rectangle {
+            Image {
                 Layout.alignment: Qt.AlignHCenter
-                width: 48
-                height: 48
-                radius: Theme.radiusMd
-                color: Theme.accent
-
-                LucideIcon {
-                    anchors.centerIn: parent
-                    name: "snowflake"
-                    size: 26
-                    color: "#ffffff"
-                }
+                width: 54
+                height: 54
+                source: "qrc:/resources/coldmanual.svg"
+                sourceSize.width: 108
+                sourceSize.height: 108
+                fillMode: Image.PreserveAspectFit
+                smooth: true
+                mipmap: true
 
                 // Breathing pulse on the emblem
                 SequentialAnimation on scale {
