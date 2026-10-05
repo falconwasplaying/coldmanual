@@ -65,6 +65,10 @@ void testCatalogParsing() {
     QVariant logoRoleVal = catalogMgr.data(catalogMgr.index(0), DocCatalogManager::LogoUrlRole);
     assert(!logoRoleVal.toString().isEmpty());
 
+    // Test getItemName
+    assert(catalogMgr.getItemName("python") == "Python");
+    assert(catalogMgr.getItemName("sqlite") == "SQLite");
+
     std::cout << "[PASS] testCatalogParsing passed!" << std::endl;
 }
 
@@ -175,7 +179,7 @@ void testManualExtractionFromLocalDb() {
     DocCatalogManager catalogMgr;
     QString sqliteUrl = catalogMgr.getDownloadUrl("sqlite", "Latest Release");
     std::cout << "  Resolved SQLite URL: " << sqliteUrl.toStdString() << std::endl;
-    assert(sqliteUrl.contains("coldmanual-db/manuals/sqlite.tgz"));
+    assert(sqliteUrl.contains("sqlite.tgz"));
 
     QString tempExtractDir = QDir::tempPath() + "/coldmanual_test_manuals_extract";
     QDir(tempExtractDir).removeRecursively();
@@ -202,9 +206,44 @@ void testManualExtractionFromLocalDb() {
     assert(QFile::exists(tempExtractDir + "/sqlite/SQLite.docset/Contents/Resources/docSet.dsidx"));
     std::cout << "  Extracted SQLite docset verified at: " << completedTarget.toStdString() << std::endl;
 
+    // Test DocsetManager indexing and logo handling
+    DocsetSearchEngine searchEngine;
+    SettingsManager settings;
+    settings.setStoragePath(tempExtractDir);
+    DocsetManager docsetMgr(&catalogMgr, &downloader, &searchEngine, &settings);
+
+    docsetMgr.metaObject()->invokeMethod(&docsetMgr, "onDownloadCompleted",
+        Q_ARG(QString, "sqlite"),
+        Q_ARG(QString, "3"),
+        Q_ARG(bool, false),
+        Q_ARG(QString, tempExtractDir + "/sqlite"));
+
+    assert(docsetMgr.installedCount() == 1);
+    QVariantMap installed = docsetMgr.getInstalledDocset("sqlite");
+    assert(installed["id"].toString() == "sqlite");
+    assert(installed["name"].toString() == "SQLite");
+    assert(!installed["indexPath"].toString().isEmpty());
+    assert(installed["indexPath"].toString().endsWith("index.html"));
+    std::cout << "  SQLite indexPath resolved correctly to: " << installed["indexPath"].toString().toStdString() << std::endl;
+
     // Cleanup
     QDir(tempExtractDir).removeRecursively();
     std::cout << "[PASS] testManualExtractionFromLocalDb passed!" << std::endl;
+}
+
+void testNoDiskCaching() {
+    std::cout << "[TEST] Running testNoDiskCaching..." << std::endl;
+    // Verify bundled catalog is completely removed from resources and local files
+    assert(!QFile::exists(":/resources/catalog.json"));
+    assert(!QFile::exists("resources/catalog.json"));
+
+    // Verify AppData has no catalog_cache.json, versions_cache/, or logos/
+    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    assert(!QFile::exists(appData + "/catalog_cache.json"));
+    assert(!QDir(appData + "/versions_cache").exists());
+    assert(!QDir(appData + "/logos").exists());
+
+    std::cout << "[PASS] testNoDiskCaching passed! (Zero unauthorized disk caching verified)" << std::endl;
 }
 
 void generateAppIco() {
@@ -289,7 +328,14 @@ void testNetworkManager() {
     std::cout << "  NetworkManager offline simulation and signal handling verified." << std::endl;
 }
 
+#ifdef Q_OS_WIN
+#include <objbase.h>
+#endif
+
 int main(int argc, char* argv[]) {
+#ifdef Q_OS_WIN
+    CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+#endif
     QCoreApplication app(argc, argv);
 
     generateAppIco();
@@ -298,6 +344,7 @@ int main(int argc, char* argv[]) {
     testSettingsAndRegistry();
     testManualExtractionFromLocalDb();
     testNetworkManager();
+    testNoDiskCaching();
 
     std::cout << "\nALL TESTS PASSED SUCCESSFULLY! (ColdManual Engine Verified)" << std::endl;
     return 0;

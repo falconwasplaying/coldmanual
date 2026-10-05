@@ -13,6 +13,7 @@
 #endif
 #include <windows.h>
 #include <wininet.h>
+#include <objbase.h>
 #endif
 
 NetworkManager::NetworkManager(QObject* parent)
@@ -42,10 +43,19 @@ NetworkManager::NetworkManager(QObject* parent)
 }
 
 NetworkManager::~NetworkManager() {
+    if (m_periodicTimer) {
+        m_periodicTimer->stop();
+    }
+    if (m_usesNetworkInfo) {
+        auto* netInfo = QNetworkInformation::instance();
+        if (netInfo) {
+            netInfo->disconnect(this);
+        }
+    }
     if (m_activeProbeReply) {
         m_activeProbeReply->disconnect();
         m_activeProbeReply->abort();
-        m_activeProbeReply->deleteLater();
+        delete m_activeProbeReply;
         m_activeProbeReply = nullptr;
     }
 }
@@ -84,19 +94,11 @@ void NetworkManager::checkConnectivity() {
 }
 
 void NetworkManager::setupNetworkInformation() {
-    if (QNetworkInformation::loadDefaultBackend()) {
+#ifndef Q_OS_WIN
+    if (QNetworkInformation::instance() || QNetworkInformation::loadDefaultBackend()) {
         auto* netInfo = QNetworkInformation::instance();
         if (netInfo) {
             m_usesNetworkInfo = true;
-            qDebug() << "NetworkManager: QNetworkInformation backend loaded:" << netInfo->backendName();
-
-            auto currentReach = netInfo->reachability();
-            if (currentReach == QNetworkInformation::Reachability::Disconnected ||
-                currentReach == QNetworkInformation::Reachability::Local) {
-                m_isOnline = false;
-                m_statusMessage = QStringLiteral("No internet reachability");
-            }
-
             connect(netInfo, &QNetworkInformation::reachabilityChanged, this, [this](QNetworkInformation::Reachability reach) {
                 if (m_simulateOffline) return;
 
@@ -108,9 +110,8 @@ void NetworkManager::setupNetworkInformation() {
                 }
             });
         }
-    } else {
-        qDebug() << "NetworkManager: QNetworkInformation default backend not available, relying on native probe.";
     }
+#endif
 }
 
 bool NetworkManager::checkSystemAdapterStatus() const {

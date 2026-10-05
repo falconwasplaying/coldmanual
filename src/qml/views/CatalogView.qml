@@ -9,6 +9,21 @@ Item {
 
     signal openDocsetInReader(string docsetId, string docsetName)
 
+    Component.onCompleted: {
+        if (catalogMgr.totalItems === 0 && networkMgr.isOnline) {
+            catalogMgr.refreshCatalog()
+        }
+    }
+
+    Connections {
+        target: networkMgr
+        function onIsOnlineChanged() {
+            if (networkMgr.isOnline && catalogMgr.totalItems === 0) {
+                catalogMgr.refreshCatalog()
+            }
+        }
+    }
+
     ColumnLayout {
         anchors.fill: parent
         anchors.margins: Theme.spacingLg
@@ -175,11 +190,56 @@ Item {
             }
         }
 
+        // Loading State when refreshing with 0 items
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: catalogMgr.totalItems === 0 && catalogMgr.isRefreshing
+
+            ColumnLayout {
+                anchors.centerIn: parent
+                spacing: 16
+
+                LucideIcon {
+                    Layout.alignment: Qt.AlignHCenter
+                    name: "refresh-cw"
+                    size: 32
+                    color: Theme.accent
+                    rotation: 0
+
+                    RotationAnimation on rotation {
+                        running: catalogMgr.isRefreshing
+                        loops: Animation.Infinite
+                        from: 0
+                        to: 360
+                        duration: 800
+                    }
+                }
+
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: "Connecting to ColdManual database feed..."
+                    font.family: Theme.fontSans
+                    font.pixelSize: 15
+                    font.bold: true
+                    color: Theme.textPrimary
+                }
+
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: "Fetching the latest docset catalog directly from coldmanual-db"
+                    font.pixelSize: 12
+                    color: Theme.textMuted
+                }
+            }
+        }
+
         // Catalog Grid
         GridView {
             id: catalogGrid
             Layout.fillWidth: true
             Layout.fillHeight: true
+            visible: catalogMgr.totalItems > 0 || !catalogMgr.isRefreshing
             clip: true
             cellWidth: Math.max(340, (width - 10) / Math.max(1, Math.floor(width / 340)))
             cellHeight: 215

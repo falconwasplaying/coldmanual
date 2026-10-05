@@ -156,6 +156,20 @@ void DocsetDownloader::onDownloadFinished() {
     m_currentReply->deleteLater();
     m_currentReply = nullptr;
 
+    // Detect if downloaded file is a Git LFS pointer text file (e.g. from raw.githubusercontent.com)
+    QFile downloadedFile(archivePath);
+    if (downloadedFile.size() < 1024 && downloadedFile.open(QIODevice::ReadOnly)) {
+        QByteArray preview = downloadedFile.read(256);
+        downloadedFile.close();
+        if (preview.startsWith("version https://git-lfs.github.com/spec/v1")) {
+            qWarning() << "Downloaded file is a Git LFS pointer, switching to media.githubusercontent.com for" << m_currentTask.id;
+            downloadedFile.remove();
+            QString mediaUrl = QString("https://media.githubusercontent.com/media/falconwasplaying/coldmanual-db/main/manuals/%1.tgz").arg(m_currentTask.id);
+            startDownload(m_currentTask.id, m_currentTask.version, m_currentTask.trackLatest, mediaUrl, m_currentTask.destinationDir);
+            return;
+        }
+    }
+
     emit downloadProgress(m_currentTask.id, 0.99, "Extracting...");
 
     // Process archive extraction in background thread
@@ -188,7 +202,7 @@ bool DocsetDownloader::extractArchive(const QString& archivePath, const QString&
     archive_read_support_format_all(a);
 
     struct archive* ext = archive_write_disk_new();
-    archive_write_disk_set_options(ext, ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_ACL | ARCHIVE_EXTRACT_FFLAGS);
+    archive_write_disk_set_options(ext, ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_SECURE_NODOTDOT);
     archive_write_disk_set_standard_lookup(ext);
 
     int r = archive_read_open_filename(a, archivePath.toUtf8().constData(), 10240);
@@ -209,6 +223,11 @@ bool DocsetDownloader::extractArchive(const QString& archivePath, const QString&
         }
 
         QString fullDest = targetDir + "/" + currentPath;
+
+        // Ensure parent directories exist on Windows NTFS
+        QFileInfo fi(fullDest);
+        QDir().mkpath(fi.absolutePath());
+
         archive_entry_set_pathname(entry, fullDest.toUtf8().constData());
 
         r = archive_write_header(ext, entry);

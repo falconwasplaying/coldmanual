@@ -1,6 +1,5 @@
 <RCC>
     <qresource prefix="/">
-        <file>resources/catalog.json</file>
         <file>resources/cmb.svg</file>
         <file>resources/cmw.svg</file>
         <file>resources/cmi.svg</file>

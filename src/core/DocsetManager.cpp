@@ -261,9 +261,14 @@ void DocsetManager::onDownloadCompleted(const QString& id, const QString& versio
     if (QFile::exists(documentsDir + "/index.html")) {
         indexPath = documentsDir + "/index.html";
     } else {
-        QDirIterator htmlIt(documentsDir, QStringList() << "*.html", QDir::Files, QDirIterator::Subdirectories);
-        if (htmlIt.hasNext()) {
-            indexPath = htmlIt.next();
+        QDirIterator idxIt(documentsDir, QStringList() << "index.html", QDir::Files, QDirIterator::Subdirectories);
+        if (idxIt.hasNext()) {
+            indexPath = idxIt.next();
+        } else {
+            QDirIterator htmlIt(documentsDir, QStringList() << "*.html", QDir::Files, QDirIterator::Subdirectories);
+            if (htmlIt.hasNext()) {
+                indexPath = htmlIt.next();
+            }
         }
     }
 
@@ -278,14 +283,7 @@ void DocsetManager::onDownloadCompleted(const QString& id, const QString& versio
 
     InstalledDocset doc;
     doc.id = id;
-    doc.name = m_catalogMgr->getItem(0)["id"] == id ? m_catalogMgr->getItem(0)["name"].toString() : id;
-    // Look up display name from catalog
-    for (int r = 0; r < m_catalogMgr->rowCount(); ++r) {
-        if (m_catalogMgr->data(m_catalogMgr->index(r), DocCatalogManager::IdRole).toString() == id) {
-            doc.name = m_catalogMgr->data(m_catalogMgr->index(r), DocCatalogManager::NameRole).toString();
-            break;
-        }
-    }
+    doc.name = m_catalogMgr ? m_catalogMgr->getItemName(id) : id;
     doc.installedVersion = version;
     doc.trackLatest = trackLatest;
     doc.localPath = extractedDir;
@@ -310,15 +308,11 @@ void DocsetManager::onDownloadCompleted(const QString& id, const QString& versio
     registerWithSearchEngine(doc);
     saveInstalledRegistry();
 
-    // Asynchronously download official SVG logo from coldmanual-db for reader & offline display
+    // Fetch official SVG logo from coldmanual-db directly into installed docset directory
     QString logoDest = doc.logoPath;
     QString localDbLogo = "C:/falcon/Projects/Windows/coldmanual-db/logos/" + id + ".svg";
-    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/logos";
-    QString cachedLogo = cacheDir + "/" + id + ".svg";
 
-    if (QFile::exists(cachedLogo)) {
-        QFile::copy(cachedLogo, logoDest);
-    } else if (QFile::exists(localDbLogo)) {
+    if (QFile::exists(localDbLogo)) {
         QFile::copy(localDbLogo, logoDest);
     } else {
         QUrl logoUrl(QString("https://raw.githubusercontent.com/falconwasplaying/coldmanual-db/main/logos/%1.svg").arg(id));

@@ -140,42 +140,37 @@ void DocCatalogManager::setSelectedCategory(const QString& category) {
     }
 }
 
-void DocCatalogManager::loadDefaultCatalog() {
-    // 0. Prefer local coldmanual-db development repository if available
-    QString localCatalog = "C:/falcon/Projects/Windows/coldmanual-db/catalog.json";
-    QFile file;
-    if (QFile::exists(localCatalog)) {
-        file.setFileName(localCatalog);
-    } else {
-        // 1. Try loading cached catalog from app data
-        QString cachePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/catalog_cache.json";
-        file.setFileName(cachePath);
-        if (!file.exists()) {
-            // Fall back to bundled catalog.json in resources/ or working dir
-            file.setFileName(":/resources/catalog.json");
-            if (!file.exists()) {
-                file.setFileName("resources/catalog.json");
-            }
-        }
-    }
+void DocCatalogManager::cleanLegacyCache() {
+    QString appData = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
+    QFile::remove(appData + "/catalog_cache.json");
+    QDir(appData + "/versions_cache").removeRecursively();
+    QDir(appData + "/logos").removeRecursively();
+}
 
-    if (file.open(QIODevice::ReadOnly)) {
-        QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-        if (doc.isArray()) {
-            beginResetModel();
-            m_allItems.clear();
-            const auto arr = doc.array();
-            for (const auto& val : arr) {
-                m_allItems.append(CatalogItem::fromJson(val.toObject()));
+void DocCatalogManager::loadDefaultCatalog() {
+    // Purge any stale cache from disk so nothing is cached locally
+    cleanLegacyCache();
+
+    // Prefer local coldmanual-db repository if available during development
+    QString localCatalog = "C:/falcon/Projects/Windows/coldmanual-db/catalog.json";
+    if (QFile::exists(localCatalog)) {
+        QFile file(localCatalog);
+        if (file.open(QIODevice::ReadOnly)) {
+            QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
+            if (doc.isArray()) {
+                beginResetModel();
+                m_allItems.clear();
+                const auto arr = doc.array();
+                for (const auto& val : arr) {
+                    m_allItems.append(CatalogItem::fromJson(val.toObject()));
+                }
+                endResetModel();
+                updateCategories();
+                applyFilter();
+                fetchAllDynamicVersions();
             }
-            endResetModel();
-            updateCategories();
-            applyFilter();
-            loadCachedVersions();
-            fetchAllDynamicVersions();
-            cacheLogos();
+            file.close();
         }
-        file.close();
     }
 }
 
@@ -250,19 +245,9 @@ void DocCatalogManager::refreshCatalog() {
                 }
                 endResetModel();
 
-                // Save to app cache
-                QString cachePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/catalog_cache.json";
-                QFile outFile(cachePath);
-                if (outFile.open(QIODevice::WriteOnly)) {
-                    outFile.write(data);
-                    outFile.close();
-                }
-
                 updateCategories();
                 applyFilter();
-                loadCachedVersions();
                 fetchAllDynamicVersions();
-                cacheLogos();
             }
         } else {
             qWarning() << "ColdManual primary catalog fetch failed, trying jsDelivr CDN fallback:" << reply->errorString();
@@ -284,18 +269,9 @@ void DocCatalogManager::refreshCatalog() {
                         }
                         endResetModel();
 
-                        QString cachePath = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/catalog_cache.json";
-                        QFile outFile(cachePath);
-                        if (outFile.open(QIODevice::WriteOnly)) {
-                            outFile.write(cdnData);
-                            outFile.close();
-                        }
-
                         updateCategories();
                         applyFilter();
-                        loadCachedVersions();
                         fetchAllDynamicVersions();
-                        cacheLogos();
                     }
                 } else {
                     qWarning() << "ColdManual CDN catalog fetch also failed:" << cdnReply->errorString();
@@ -305,6 +281,18 @@ void DocCatalogManager::refreshCatalog() {
         }
         reply->deleteLater();
     });
+}
+
+QString DocCatalogManager::getItemName(const QString& id) const {
+    for (const auto& item : m_allItems) {
+        if (item.id == id) {
+            return item.name;
+        }
+    }
+    if (id.isEmpty()) return QString();
+    QString n = id;
+    n[0] = n[0].toUpper();
+    return n;
 }
 
 QVariantMap DocCatalogManager::getItem(int index) const {
@@ -335,32 +323,44 @@ QString DocCatalogManager::getDownloadUrl(const QString& id, const QString& vers
         return "file:///" + localManual;
     }
 
+    // 2. Resolve download URL from catalog or construct direct coldmanual-db Git LFS media endpoint
+    QString targetUrl;
     for (const auto& item : m_allItems) {
         if (item.id == id) {
-            // Check if version is "Latest Release" or "Latest Stable"
             bool isLatestReq = version.startsWith("Latest", Qt::CaseInsensitive);
             if (isLatestReq) {
                 for (const auto& v : item.versions) {
                     if (v.isLatest || v.version == item.latestVersion) {
-                        return v.downloadUrl;
+                        targetUrl = v.downloadUrl;
+                        break;
                     }
                 }
-                if (!item.versions.isEmpty()) {
-                    return item.versions.first().downloadUrl;
+                if (targetUrl.isEmpty() && !item.versions.isEmpty()) {
+                    targetUrl = item.versions.first().downloadUrl;
+                }
+            } else {
+                for (const auto& v : item.versions) {
+                    if (v.version == version || version.contains(v.version) || v.version.contains(version)) {
+                        targetUrl = v.downloadUrl;
+                        break;
+                    }
+                }
+                if (targetUrl.isEmpty() && !item.versions.isEmpty()) {
+                    targetUrl = item.versions.first().downloadUrl;
                 }
             }
-            // Check specific version match or partial match
-            for (const auto& v : item.versions) {
-                if (v.version == version || version.contains(v.version) || v.version.contains(version)) {
-                    return v.downloadUrl;
-                }
-            }
-            if (!item.versions.isEmpty()) {
-                return item.versions.first().downloadUrl;
-            }
+            break;
         }
     }
-    return QString();
+
+    if (targetUrl.isEmpty()) {
+        targetUrl = QString("https://media.githubusercontent.com/media/falconwasplaying/coldmanual-db/main/manuals/%1.tgz").arg(id);
+    } else if (targetUrl.contains("coldmanual-db") && (targetUrl.contains("/raw/") || targetUrl.contains("raw.githubusercontent.com"))) {
+        // Direct media URL bypasses Git LFS pointer text file to fetch full binary archive directly
+        targetUrl = QString("https://media.githubusercontent.com/media/falconwasplaying/coldmanual-db/main/manuals/%1.tgz").arg(id);
+    }
+
+    return targetUrl;
 }
 
 QString DocCatalogManager::getLatestVersion(const QString& id) const {
@@ -401,67 +401,6 @@ void DocCatalogManager::setInstalledStatus(const QString& id, bool installed, co
     }
 }
 
-void DocCatalogManager::loadCachedVersions() {
-    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/versions_cache";
-    for (int i = 0; i < m_allItems.size(); ++i) {
-        if (!m_allItems[i].fetchedVersions.isEmpty()) {
-            continue;
-        }
-        QString filePath = cacheDir + "/" + m_allItems[i].id + ".json";
-        QFile file(filePath);
-        if (file.open(QIODevice::ReadOnly)) {
-            QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-            if (doc.isArray()) {
-                QList<FetchedVersion> fList;
-                for (const auto& val : doc.array()) {
-                    QJsonObject obj = val.toObject();
-                    FetchedVersion fv;
-                    fv.version = obj["version"].toString();
-                    fv.displayName = obj["displayName"].toString();
-                    fv.isLts = obj["isLts"].toBool(false);
-                    fv.isEol = obj["isEol"].toBool(false);
-                    fv.releaseDate = obj["releaseDate"].toString();
-                    fList.append(fv);
-                }
-                if (!fList.isEmpty()) {
-                    m_allItems[i].fetchedVersions = fList;
-                }
-            }
-            file.close();
-        }
-    }
-    for (int i = 0; i < m_filteredItems.size(); ++i) {
-        for (const auto& item : m_allItems) {
-            if (item.id == m_filteredItems[i].id) {
-                m_filteredItems[i].fetchedVersions = item.fetchedVersions;
-                break;
-            }
-        }
-    }
-}
-
-void DocCatalogManager::saveCachedVersions(const QString& docsetId, const QList<FetchedVersion>& versions) {
-    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/versions_cache";
-    QDir().mkpath(cacheDir);
-
-    QJsonArray arr;
-    for (const auto& fv : versions) {
-        QJsonObject obj;
-        obj["version"] = fv.version;
-        obj["displayName"] = fv.displayName;
-        obj["isLts"] = fv.isLts;
-        obj["isEol"] = fv.isEol;
-        obj["releaseDate"] = fv.releaseDate;
-        arr.append(obj);
-    }
-
-    QFile file(cacheDir + "/" + docsetId + ".json");
-    if (file.open(QIODevice::WriteOnly)) {
-        file.write(QJsonDocument(arr).toJson(QJsonDocument::Compact));
-        file.close();
-    }
-}
-
 void DocCatalogManager::fetchAllDynamicVersions() {
     for (const auto& item : m_allItems) {
         if (item.fetchedVersions.isEmpty()) {
@@ -497,7 +436,6 @@ void DocCatalogManager::fetchDynamicVersions(const QString& docsetId) {
                 break;
             }
         }
-        saveCachedVersions(docsetId, fList);
         return;
     }
 
@@ -526,7 +464,6 @@ void DocCatalogManager::fetchDynamicVersions(const QString& docsetId) {
                 break;
             }
         }
-        saveCachedVersions(docsetId, fList);
         return;
     }
 
@@ -639,7 +576,6 @@ void DocCatalogManager::fetchDynamicVersions(const QString& docsetId) {
                             break;
                         }
                     }
-                    saveCachedVersions(docsetId, fList);
                 }
             }
         }
@@ -650,90 +586,13 @@ void DocCatalogManager::fetchDynamicVersions(const QString& docsetId) {
 QString DocCatalogManager::getLogoUrl(const QString& id) const {
     if (id.isEmpty()) return QString();
 
-    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/logos";
-    QString cachedPath = cacheDir + "/" + id + ".svg";
-    if (QFile::exists(cachedPath)) {
-        return "file:///" + cachedPath;
-    }
-
     // Check local coldmanual-db development repository
     QString localDbLogo = "C:/falcon/Projects/Windows/coldmanual-db/logos/" + id + ".svg";
     if (QFile::exists(localDbLogo)) {
-        QDir().mkpath(cacheDir);
-        QFile::copy(localDbLogo, cachedPath);
         return "file:///" + localDbLogo;
     }
 
-    // Trigger asynchronous download into cache if not already caching
-    const_cast<DocCatalogManager*>(this)->downloadLogo(id);
-
-    // Return remote URL as immediate fallback
+    // Return direct remote URL without caching uninstalled assets to disk
     return QString("https://raw.githubusercontent.com/falconwasplaying/coldmanual-db/main/logos/%1.svg").arg(id);
-}
-
-void DocCatalogManager::cacheLogos() {
-    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/logos";
-    QDir().mkpath(cacheDir);
-
-    for (const auto& item : m_allItems) {
-        QString id = item.id;
-        QString cachedPath = cacheDir + "/" + id + ".svg";
-        if (QFile::exists(cachedPath)) continue;
-
-        QString localDbLogo = "C:/falcon/Projects/Windows/coldmanual-db/logos/" + id + ".svg";
-        if (QFile::exists(localDbLogo)) {
-            QFile::copy(localDbLogo, cachedPath);
-            emit logoReady(id, "file:///" + cachedPath);
-            continue;
-        }
-
-        downloadLogo(id);
-    }
-}
-
-void DocCatalogManager::downloadLogo(const QString& id) {
-    if (m_pendingLogoDownloads.contains(id)) return;
-    m_pendingLogoDownloads.insert(id);
-
-    QString cacheDir = QStandardPaths::writableLocation(QStandardPaths::AppDataLocation) + "/logos";
-    QDir().mkpath(cacheDir);
-    QString cachedPath = cacheDir + "/" + id + ".svg";
-
-    QUrl url(QString("https://raw.githubusercontent.com/falconwasplaying/coldmanual-db/main/logos/%1.svg").arg(id));
-    QNetworkRequest req(url);
-    req.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
-    req.setHeader(QNetworkRequest::UserAgentHeader, "ColdManual/1.0");
-
-    auto* reply = m_networkManager.get(req);
-    connect(reply, &QNetworkReply::finished, this, [this, reply, id, cachedPath]() {
-        m_pendingLogoDownloads.remove(id);
-        if (reply->error() == QNetworkReply::NoError) {
-            QFile file(cachedPath);
-            if (file.open(QIODevice::WriteOnly)) {
-                file.write(reply->readAll());
-                file.close();
-                emit logoReady(id, "file:///" + cachedPath);
-            }
-        } else {
-            // Try CDN fallback
-            QUrl cdnUrl(QString("https://cdn.jsdelivr.net/gh/falconwasplaying/coldmanual-db@main/logos/%1.svg").arg(id));
-            QNetworkRequest cdnReq(cdnUrl);
-            cdnReq.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::NoLessSafeRedirectPolicy);
-            cdnReq.setHeader(QNetworkRequest::UserAgentHeader, "ColdManual/1.0");
-            auto* cdnReply = m_networkManager.get(cdnReq);
-            connect(cdnReply, &QNetworkReply::finished, this, [this, cdnReply, id, cachedPath]() {
-                if (cdnReply->error() == QNetworkReply::NoError) {
-                    QFile file(cachedPath);
-                    if (file.open(QIODevice::WriteOnly)) {
-                        file.write(cdnReply->readAll());
-                        file.close();
-                        emit logoReady(id, "file:///" + cachedPath);
-                    }
-                }
-                cdnReply->deleteLater();
-            });
-        }
-        reply->deleteLater();
-    });
 }
 

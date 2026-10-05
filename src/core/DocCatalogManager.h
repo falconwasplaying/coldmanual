@@ -54,15 +54,12 @@ public:
     Q_INVOKABLE void refreshCatalog();
     Q_INVOKABLE void fetchAllDynamicVersions();
     Q_INVOKABLE QVariantMap getItem(int index) const;
+    Q_INVOKABLE QString getItemName(const QString& id) const;
     Q_INVOKABLE QString getDownloadUrl(const QString& id, const QString& version) const;
     Q_INVOKABLE QString getLatestVersion(const QString& id) const;
     Q_INVOKABLE QString getLogoUrl(const QString& id) const;
 
     void fetchDynamicVersions(const QString& docsetId);
-    void loadCachedVersions();
-    void saveCachedVersions(const QString& docsetId, const QList<FetchedVersion>& versions);
-    void cacheLogos();
-    void downloadLogo(const QString& id);
 
     // Called by DocsetManager / Downloader to synchronize live UI state
     void setDownloadProgress(const QString& id, bool isDownloading, qreal progress, const QString& speedStr = "");
@@ -91,7 +88,6 @@ private:
     QList<int> m_filteredIndices; // Indices into m_allItems
     QList<CatalogItem> m_filteredItems;
     QMap<QString, ItemState> m_itemStates; // id -> state
-    QSet<QString> m_pendingLogoDownloads;
     QStringList m_categories;
     QString m_searchQuery;
     QString m_selectedCategory{"All"};
@@ -100,6 +96,7 @@ private:
     QNetworkAccessManager m_networkManager;
 
     void loadDefaultCatalog();
+    void cleanLegacyCache();
     void applyFilter();
     void updateCategories();
 };

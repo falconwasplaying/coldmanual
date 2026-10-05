@@ -34,9 +34,12 @@ Built natively with **C++20** and **Qt 6 (QML / Qt Quick)** for blazing fast sta
 ```
 ColdManual
 ├── CMakeLists.txt              # CMake build definition (C++20, Qt6, LibArchive)
-├── resources.qrc               # Embedded QML views, theme, and catalog
+├── resources.qrc               # Embedded QML views, theme, and brand assets
 ├── resources/
-│   └── catalog.json            # Bundled default catalog manifest
+│   ├── cmb.svg                 # Brand emblem (light mode)
+│   ├── cmw.svg                 # Brand emblem (dark mode)
+│   ├── cmi.svg                 # Windows app icon source
+│   └── app.ico                 # Multi-res Windows executable icon
 ├── src/
 │   ├── main.cpp                # Application entry point & QML context wiring
 │   ├── core/
