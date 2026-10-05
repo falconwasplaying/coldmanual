@@ -292,6 +292,59 @@ QVariantMap DocsetSearchEngine::getResult(int index) const {
     return map;
 }
 
+static void removeBalancedTagBlocks(QString& html, const QString& tagName, const QString& classOrIdPattern) {
+    QString pattern = classOrIdPattern.isEmpty()
+        ? QString("<%1\\b[^>]*>").arg(tagName)
+        : QString("<%1\\b[^>]*%2[^>]*>").arg(tagName, classOrIdPattern);
+    QRegularExpression openTagRe(pattern, QRegularExpression::CaseInsensitiveOption);
+
+    QString openPrefix = "<" + tagName;
+    QString closeTag = "</" + tagName + ">";
+
+    int searchPos = 0;
+    while (searchPos < html.length()) {
+        QRegularExpressionMatch match = openTagRe.match(html, searchPos);
+        if (!match.hasMatch()) break;
+
+        int startPos = match.capturedStart();
+        int curPos = match.capturedEnd();
+        int depth = 1;
+        int len = html.length();
+
+        while (curPos < len && depth > 0) {
+            int nextOpen = html.indexOf(openPrefix, curPos, Qt::CaseInsensitive);
+            int nextClose = html.indexOf(closeTag, curPos, Qt::CaseInsensitive);
+
+            if (nextClose == -1) {
+                // Unterminated tag: cut from startPos to end of string or break
+                curPos = len;
+                depth = 0;
+                break;
+            }
+
+            if (nextOpen != -1 && nextOpen < nextClose) {
+                // Verify nextOpen is an actual tag boundary (e.g. "<div " or "<div>" or "<div\n")
+                int afterTagChar = nextOpen + openPrefix.length();
+                if (afterTagChar < len && (html[afterTagChar].isSpace() || html[afterTagChar] == '>' || html[afterTagChar] == '/')) {
+                    depth++;
+                }
+                curPos = nextOpen + openPrefix.length();
+            } else {
+                depth--;
+                curPos = nextClose + closeTag.length();
+            }
+        }
+
+        if (depth == 0) {
+            html.remove(startPos, curPos - startPos);
+            searchPos = startPos;
+        } else {
+            // Unbalanced tag: skip past matched start tag to prevent infinite loop
+            searchPos = match.capturedEnd();
+        }
+    }
+}
+
 QString DocsetSearchEngine::prepareHtmlForReader(const QString& rawHtml, bool isDark) {
     if (rawHtml.isEmpty()) return QString();
 
@@ -301,64 +354,150 @@ QString DocsetSearchEngine::prepareHtmlForReader(const QString& rawHtml, bool is
     static const QRegularExpression scriptRe("<script\\b[^<]*(?:(?!<\\/script>)<[^<]*)*<\\/script>", QRegularExpression::CaseInsensitiveOption);
     html.remove(scriptRe);
 
-    // 2. Remove web chrome (MediaWiki top bar, search form, tabs, footer)
+    // 2. Remove external stylesheet links so conflicting web styles don't bleed in
+    static const QRegularExpression linkRe("<link\\b[^>]*rel=[\"']?stylesheet[\"']?[^>]*>", QRegularExpression::CaseInsensitiveOption);
+    html.remove(linkRe);
+
+    // 3. Remove existing docset style blocks (e.g. body { background: white !important })
+    static const QRegularExpression styleBlockRe("<style\\b[^>]*>[\\s\\S]*?<\\/style>", QRegularExpression::CaseInsensitiveOption);
+    html.remove(styleBlockRe);
+
+    // 4. Strip MediaWiki web chrome comments
     static const QRegularExpression mwHeadRe("<!--\\s*header\\s*-->[\\s\\S]*?<!--\\s*\\/header\\s*-->", QRegularExpression::CaseInsensitiveOption);
     html.remove(mwHeadRe);
-
-    static const QRegularExpression headBaseRe("<div\\s+id=\"cpp-head-[\\s\\S]*?<div\\s+id=\"cpp-content-base\">", QRegularExpression::CaseInsensitiveOption);
-    html.replace(headBaseRe, "<div id=\"cpp-content-base\">");
 
     static const QRegularExpression mwFooterRe("<!--\\s*footer\\s*-->[\\s\\S]*?<!--\\s*\\/footer\\s*-->", QRegularExpression::CaseInsensitiveOption);
     html.remove(mwFooterRe);
 
-    // 3. Neutralize conflicting hardcoded white background styles in docset HTML
-    static const QRegularExpression bodyBgRe("body\\s*\\{[^}]*background:[^}]*\\}", QRegularExpression::CaseInsensitiveOption);
-    html.remove(bodyBgRe);
+    // 5. Strip MediaWiki and docset sidebars, navbars, and chrome blocks
+    // C++ docsets (cppreference sidebar index table that repeats on every page)
+    removeBalancedTagBlocks(html, "div", "class=[^>]*t-navbar");
+    removeBalancedTagBlocks(html, "div", "class=[^>]*t-navbar-sep");
+    removeBalancedTagBlocks(html, "table", "class=[^>]*t-nv-begin");
 
-    static const QRegularExpression whiteBgRe("background:\\s*white\\s*!important", QRegularExpression::CaseInsensitiveOption);
-    html.remove(whiteBgRe);
+    // MediaWiki headers, search boxes, and tagline cruft
+    removeBalancedTagBlocks(html, "div", "id=[\"']?mw-head");
+    removeBalancedTagBlocks(html, "div", "id=[\"']?cpp-head-");
+    removeBalancedTagBlocks(html, "div", "id=[\"']?siteSub");
+    removeBalancedTagBlocks(html, "div", "id=[\"']?contentSub");
+    removeBalancedTagBlocks(html, "div", "id=[\"']?mw-content-subtitle");
+    removeBalancedTagBlocks(html, "div", "id=[\"']?mw-js-message");
+    removeBalancedTagBlocks(html, "div", "id=[\"']?jump-to-nav");
+    removeBalancedTagBlocks(html, "div", "id=[\"']?catlinks");
+    removeBalancedTagBlocks(html, "div", "id=[\"']?cpp-footer-base");
+    removeBalancedTagBlocks(html, "div", "id=[\"']?footer");
+    removeBalancedTagBlocks(html, "div", "id=[\"']?mw-navigation");
 
-    static const QRegularExpression hexFffRe("background:\\s*#(fff|ffffff)\\b", QRegularExpression::CaseInsensitiveOption);
-    html.remove(hexFffRe);
+    // Generic docset sidebars & navs (Sphinx, ReadTheDocs, Rustdoc)
+    removeBalancedTagBlocks(html, "div", "class=[^>]*sphinxsidebar");
+    removeBalancedTagBlocks(html, "div", "class=[^>]*related");
+    removeBalancedTagBlocks(html, "div", "class=[^>]*wy-nav-side");
+    removeBalancedTagBlocks(html, "nav", "");
+    removeBalancedTagBlocks(html, "aside", "");
 
-    // Neutralize inline background styles on tables or containers like fmbox
-    static const QRegularExpression inlineBgRe("style=\"[^\"]*background:[^\"]*\"", QRegularExpression::CaseInsensitiveOption);
+    // 6. Strip inline wiki clutter and raw interactive controls
+    // [edit] links
+    static const QRegularExpression editSpanRe("<span\\b[^>]*class=[^>]*editsection[^>]*>[\\s\\S]*?<\\/span>", QRegularExpression::CaseInsensitiveOption);
+    html.remove(editSpanRe);
+    static const QRegularExpression editDivRe("<div\\b[^>]*class=[^>]*editsection[^>]*>[\\s\\S]*?<\\/div>", QRegularExpression::CaseInsensitiveOption);
+    html.remove(editDivRe);
+
+    // Raw form controls that QTextDocument cannot hide or style properly
+    static const QRegularExpression inputRe("<input\\b[^>]*>", QRegularExpression::CaseInsensitiveOption);
+    html.remove(inputRe);
+    static const QRegularExpression buttonRe("<button\\b[^>]*>[\\s\\S]*?<\\/button>", QRegularExpression::CaseInsensitiveOption);
+    html.remove(buttonRe);
+    static const QRegularExpression formRe("<form\\b[^>]*>[\\s\\S]*?<\\/form>", QRegularExpression::CaseInsensitiveOption);
+    html.remove(formRe);
+    static const QRegularExpression toctoggleRe("<span\\b[^>]*class=[^>]*toctoggle[^\"]*\"[^>]*>[\\s\\S]*?<\\/span>", QRegularExpression::CaseInsensitiveOption);
+    html.remove(toctoggleRe);
+    static const QRegularExpression labelRe("<label\\b[^>]*for=[\"']?toctogglecheckbox[\"']?[^>]*>[\\s\\S]*?<\\/label>", QRegularExpression::CaseInsensitiveOption);
+    html.remove(labelRe);
+
+    // Empty top anchor markers
+    static const QRegularExpression topAnchorRe("<a\\b[^>]*id=[\"']?top[\"']?[^>]*>\\s*<\\/a>", QRegularExpression::CaseInsensitiveOption);
+    html.remove(topAnchorRe);
+
+    // Remove remaining HTML comments
+    static const QRegularExpression commentRe("<!--[\\s\\S]*?-->");
+    html.remove(commentRe);
+
+    // 7. Style Table of Contents (TOC) as a clean card
+    static const QRegularExpression tocDivRe("<div\\b[^>]*id=[\"']?toc[\"']?[^>]*>", QRegularExpression::CaseInsensitiveOption);
+    QString tocInline = QString("<div style=\"background-color: %1; border: 1px solid %2; border-radius: 8px; padding: 12px 18px; margin: 16px 0 20px 0; display: table;\">")
+        .arg(isDark ? "#18181c" : "#f8fafc", isDark ? "#2e2e33" : "#e2e8f0");
+    html.replace(tocDivRe, tocInline);
+
+    // 8. Neutralize conflicting inline background styles
+    static const QRegularExpression inlineBgRe("style=\"[^\"]*background(-color)?:[^\"]*\"", QRegularExpression::CaseInsensitiveOption);
     html.remove(inlineBgRe);
 
-    // 4. Inject modern high-contrast theme CSS
+    // 9. Inject modern high-contrast theme CSS
     QString bgColor = isDark ? "#141416" : "#ffffff";
     QString textColor = isDark ? "#e4e4e7" : "#18181b";
+    QString headingColor = isDark ? "#ffffff" : "#09090b";
     QString linkColor = isDark ? "#38bdf8" : "#0284c7";
     QString codeBg = isDark ? "#1c1c21" : "#f1f5f9";
+    QString inlineCodeColor = isDark ? "#fb7185" : "#e11d48";
     QString borderColor = isDark ? "#27272a" : "#e2e8f0";
     QString tableHeaderBg = isDark ? "#1f1f23" : "#f8fafc";
     QString trEvenBg = isDark ? "#18181b" : "#fbfcfd";
+    QString tagBg = isDark ? "#27272a" : "#f1f5f9";
+    QString tagText = isDark ? "#a1a1aa" : "#475569";
+    QString tagBorder = isDark ? "#3f3f46" : "#cbd5e1";
+
+    // Syntax highlighting colors
+    QString synKeyword = isDark ? "#818cf8" : "#4338ca";
+    QString synType = isDark ? "#38bdf8" : "#0369a1";
+    QString synFunc = isDark ? "#facc15" : "#b45309";
+    QString synString = isDark ? "#4ade80" : "#15803d";
+    QString synNumber = isDark ? "#fb923c" : "#c2410c";
+    QString synComment = isDark ? "#71717a" : "#64748b";
+    QString synOp = isDark ? "#f43f5e" : "#be123c";
+    QString synPreproc = isDark ? "#e879f9" : "#a21caf";
 
     QString modernStyle = QString(
         "<style type=\"text/css\">\n"
-        "  html, body { background-color: %1 !important; color: %2 !important; font-family: Segoe UI, -apple-system, BlinkMacSystemFont, sans-serif !important; line-height: 1.6 !important; margin: 0 !important; padding: 20px 24px !important; }\n"
-        "  div#content, div#cpp-content-base, div.mw-body, div#bodyContent { background-color: transparent !important; color: inherit !important; width: 100% !important; margin: 0 !important; padding: 0 !important; }\n"
+        "  html, body { background-color: %1 !important; color: %2 !important; font-family: Segoe UI, -apple-system, BlinkMacSystemFont, sans-serif !important; line-height: 1.65 !important; margin: 0 !important; padding: 20px 24px !important; }\n"
+        "  div#content, div#cpp-content-base, div.mw-body, div#bodyContent, div#mw-content-text { background-color: transparent !important; color: inherit !important; width: 100% !important; margin: 0 !important; padding: 0 !important; border: none !important; }\n"
         "  h1, h2, h3, h4, h5, h6, .firstHeading { color: %3 !important; font-weight: 600 !important; border-bottom: 1px solid %4 !important; padding-bottom: 6px !important; margin-top: 24px !important; margin-bottom: 12px !important; }\n"
+        "  .firstHeading { font-size: 1.75em !important; border-bottom: 2px solid %4 !important; margin-top: 0 !important; }\n"
         "  a, a:visited { color: %5 !important; text-decoration: none !important; }\n"
         "  a:hover { text-decoration: underline !important; }\n"
         "  code, tt, kbd, samp { font-family: Cascadia Code, Consolas, Monaco, monospace !important; background-color: %6 !important; color: %7 !important; border-radius: 4px !important; padding: 2px 6px !important; font-size: 0.9em !important; }\n"
-        "  pre, .mw-code, div.mw-geshi { font-family: Cascadia Code, Consolas, Monaco, monospace !important; background-color: %6 !important; color: %2 !important; border: 1px solid %4 !important; border-radius: 6px !important; padding: 14px !important; line-height: 1.45 !important; overflow-x: auto !important; margin: 12px 0 !important; }\n"
-        "  table, .t-dsc-begin, .t-dcl-begin { border-collapse: collapse !important; width: 100% !important; margin: 14px 0 !important; border: 1px solid %4 !important; }\n"
+        "  pre, .mw-code, div.mw-geshi, .mw-highlight { font-family: Cascadia Code, Consolas, Monaco, monospace !important; background-color: %6 !important; color: %2 !important; border: 1px solid %4 !important; border-radius: 6px !important; padding: 14px 16px !important; line-height: 1.5 !important; margin: 14px 0 !important; }\n"
+        "  pre code, .mw-code code, div.mw-geshi code, .mw-highlight code { background-color: transparent !important; padding: 0 !important; border: none !important; color: inherit !important; }\n"
+        "  table, .t-dsc-begin, .t-dcl-begin, .wikitable { border-collapse: collapse !important; width: 100% !important; margin: 16px 0 !important; border: 1px solid %4 !important; }\n"
         "  th { background-color: %8 !important; color: %3 !important; font-weight: 600 !important; border: 1px solid %4 !important; padding: 8px 12px !important; text-align: left !important; }\n"
         "  td, .t-dsc, .t-dcl { border: 1px solid %4 !important; padding: 8px 12px !important; color: %2 !important; }\n"
         "  tr:nth-child(even) { background-color: %9 !important; }\n"
+        "  tr.t-dsc-header td { background-color: %8 !important; font-weight: 600 !important; color: %3 !important; border-bottom: 2px solid %4 !important; }\n"
         "  .t-lines { background: transparent !important; }\n"
-        "  p, ul, ol, li, dt, dd { color: %2 !important; line-height: 1.6 !important; }\n"
-        "  .t-mark-rev { border-radius: 3px !important; padding: 1px 4px !important; font-size: 0.85em !important; opacity: 0.85 !important; }\n"
+        "  p, ul, ol, li, dt, dd { color: %2 !important; line-height: 1.65 !important; margin-top: 6px !important; margin-bottom: 10px !important; }\n"
+        "  ul, ol { padding-left: 24px !important; }\n"
+        "  li { margin-bottom: 4px !important; }\n"
+        "  .t-mark-rev, .t-mark { font-size: 0.8em !important; padding: 1px 6px !important; border-radius: 4px !important; background-color: %10 !important; color: %11 !important; border: 1px solid %12 !important; display: inline-block !important; margin-left: 4px !important; }\n"
+        "  #toc ul, .toc ul { list-style-type: none !important; padding-left: 12px !important; margin: 4px 0 !important; }\n"
+        "  #toc li, .toc li { margin: 4px 0 !important; }\n"
+        "  #toc h2, .toc h2 { color: %3 !important; font-size: 1.05em !important; font-weight: 600 !important; border-bottom: none !important; margin: 0 0 8px 0 !important; padding: 0 !important; }\n"
+        "  .mw-highlight .k, .mw-highlight .kd, .mw-highlight .kr { color: %13 !important; font-weight: bold !important; }\n"
+        "  .mw-highlight .kt, .mw-highlight .nc { color: %14 !important; font-weight: bold !important; }\n"
+        "  .mw-highlight .nf, .mw-highlight .fm { color: %15 !important; }\n"
+        "  .mw-highlight .s, .mw-highlight .s1, .mw-highlight .s2 { color: %16 !important; }\n"
+        "  .mw-highlight .m, .mw-highlight .mi, .mw-highlight .mf { color: %17 !important; }\n"
+        "  .mw-highlight .c, .mw-highlight .c1, .mw-highlight .cm { color: %18 !important; font-style: italic !important; }\n"
+        "  .mw-highlight .o { color: %19 !important; }\n"
+        "  .mw-highlight .cp, .mw-highlight .cpf { color: %20 !important; }\n"
         "</style>\n"
-    ).arg(bgColor, textColor, (isDark ? "#ffffff" : "#09090b"), borderColor, linkColor, codeBg, (isDark ? "#fb7185" : "#e11d48"), tableHeaderBg, trEvenBg);
+    ).arg(bgColor, textColor, headingColor, borderColor, linkColor, codeBg, inlineCodeColor, tableHeaderBg, trEvenBg, tagBg, tagText, tagBorder)
+     .arg(synKeyword, synType, synFunc, synString, synNumber, synComment, synOp, synPreproc);
 
-    // Insert modern styling right after <head> or at top
-    int headPos = html.indexOf("<head>", 0, Qt::CaseInsensitive);
-    if (headPos >= 0) {
-        html.insert(headPos + 6, "\n" + modernStyle);
+    // Insert modern styling right before </head> or at top
+    int headClosePos = html.indexOf("</head>", 0, Qt::CaseInsensitive);
+    if (headClosePos >= 0) {
+        html.insert(headClosePos, "\n" + modernStyle + "\n");
     } else {
-        html.prepend(modernStyle);
+        html.prepend(modernStyle + "\n");
     }
 
     return html;

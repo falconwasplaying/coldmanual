@@ -185,13 +185,50 @@ void testSearchEngineWithCoreData() {
     assert(filtered[0].toMap()["name"].toString() == "std::vector::push_back");
 
     // Test HTML preprocessing
-    QString rawHtml = "<html><head><style>body{background:white !important}</style></head>"
+    QString rawHtml = "<html><head><link rel=\"stylesheet\" href=\"style.css\"><style>body{background:white !important}</style></head>"
                       "<body><!-- header --><div id=\"mw-head\">Login</div><!-- /header -->"
-                      "<div id=\"cpp-content-base\"><h1>Vector</h1></div></body></html>";
+                      "<div id=\"siteSub\">From cppreference.com</div>"
+                      "<div id=\"contentSub\"><span class=\"subpages\">&lt; cpp</span></div>"
+                      "<div id=\"cpp-content-base\">"
+                      "<div class=\"t-navbar\"><div class=\"t-navbar-head\">Sidebar Index</div></div>"
+                      "<div class=\"t-navbar-sep\">&nbsp;</div>"
+                      "<h1>Vector <span class=\"editsection\"><a href=\"#\">[edit]</a></span></h1>"
+                      "<div id=\"toc\"><input type=\"checkbox\" id=\"toctogglecheckbox\"><div class=\"toctitle\"><h2>Contents</h2></div></div>"
+                      "<p>std::vector is a sequence container.</p>"
+                      "<div id=\"catlinks\">Categories: C++</div>"
+                      "<div id=\"cpp-footer-base\">Footer tools</div>"
+                      "</div></body></html>";
     QString cleanedHtml = searchEngine.prepareHtmlForReader(rawHtml, true);
     assert(!cleanedHtml.contains("mw-head"));
     assert(!cleanedHtml.contains("background:white !important"));
+    assert(!cleanedHtml.contains("style.css"));
+    assert(!cleanedHtml.contains("siteSub"));
+    assert(!cleanedHtml.contains("From cppreference.com"));
+    assert(!cleanedHtml.contains("contentSub"));
+    assert(!cleanedHtml.contains("t-navbar"));
+    assert(!cleanedHtml.contains("Sidebar Index"));
+    assert(!cleanedHtml.contains("editsection"));
+    assert(!cleanedHtml.contains("[edit]"));
+    assert(!cleanedHtml.contains("toctogglecheckbox"));
+    assert(!cleanedHtml.contains("catlinks"));
+    assert(!cleanedHtml.contains("cpp-footer-base"));
+    assert(cleanedHtml.contains("std::vector is a sequence container."));
     assert(cleanedHtml.contains("#141416")); // dark theme injected
+
+    // If Allocator.html exists on disk, test real-world docset HTML sanitization
+    QString realAllocatorPath = "C:/Users/falcon/AppData/Roaming/ColdManual/ColdManual/docsets/cpp/C++.docset/Contents/Resources/Documents/en.cppreference.com/cpp/named_req/Allocator.html";
+    if (QFile::exists(realAllocatorPath)) {
+        QString realHtml = searchEngine.readFileContent(realAllocatorPath);
+        QString cleanedReal = searchEngine.prepareHtmlForReader(realHtml, true);
+        assert(!cleanedReal.contains("t-navbar"));
+        assert(!cleanedReal.contains("From cppreference.com"));
+        assert(!cleanedReal.contains("toctogglecheckbox"));
+        assert(!cleanedReal.contains("editsection"));
+        assert(!cleanedReal.contains("catlinks"));
+        assert(!cleanedReal.contains("cpp-footer-base"));
+        assert(cleanedReal.contains("Encapsulates strategies for access/addressing"));
+        std::cout << "  Real Allocator.html successfully sanitized and verified." << std::endl;
+    }
 
     searchEngine.unregisterDocset("cpp");
     QDir(testDir).removeRecursively();

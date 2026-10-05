@@ -47,6 +47,15 @@ Item {
         }
     }
 
+    Connections {
+        target: Theme
+        function onIsDarkChanged() {
+            if (root.currentFilePath) {
+                root.loadPage(root.currentFilePath)
+            }
+        }
+    }
+
     function goBack() {
         if (historyIndex > 0) {
             historyIndex--
@@ -520,6 +529,9 @@ Item {
                         onLinkActivated: function(link) {
                             if (link.startsWith("http://") || link.startsWith("https://")) {
                                 Qt.openUrlExternally(link)
+                            } else if (link.startsWith("#")) {
+                                // In-page anchor fragment (e.g. #Requirements)
+                                // Do not treat as relative file path
                             } else {
                                 // Relative anchor or file link
                                 var dir = currentFilePath.substring(0, currentFilePath.lastIndexOf('/'))
