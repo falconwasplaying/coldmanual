@@ -43,6 +43,16 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: docsetMgr
+        function onDocsetInstalled(id, name) {
+            showToast("Installation Complete", name + " documentation is ready for offline reading.", "check-circle", 5000)
+        }
+        function onDocsetInstallationFailed(id, errorMessage) {
+            showToast("Installation Failed", errorMessage, "alert-circle", 6000)
+        }
+    }
+
     Component.onCompleted: {
         if (docsetMgr.installedCount > 0) {
             currentTab = 0

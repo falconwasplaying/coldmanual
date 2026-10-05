@@ -63,6 +63,7 @@ signals:
     void storageUsageChanged();
     void isCheckingUpdatesChanged();
     void docsetInstalled(const QString& id, const QString& name);
+    void docsetInstallationFailed(const QString& id, const QString& errorMessage);
     void docsetRemoved(const QString& id);
     void updateFound(const QString& id, const QString& newVersion);
 

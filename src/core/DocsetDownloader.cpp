@@ -3,6 +3,8 @@
 #include <QFileInfo>
 #include <QtConcurrent>
 #include <QDebug>
+#include <QProcess>
+#include <QStandardPaths>
 #include <archive.h>
 #include <archive_entry.h>
 
@@ -43,14 +45,21 @@ void DocsetDownloader::startDownload(const QString& id, const QString& version, 
     }
 
     if (!localFilePath.isEmpty() && QFile::exists(localFilePath)) {
-        emit downloadProgress(id, 0.5, "Extracting local manual...");
+        emit downloadProgress(id, 0.5, "Extracting manual...");
         auto task = m_currentTask;
         QThreadPool::globalInstance()->start([this, localFilePath, task]() {
             QString targetDir = task.destinationDir + "/" + task.id;
             QDir().mkpath(targetDir);
 
             QString errorStr;
-            bool ok = extractArchive(localFilePath, targetDir, &errorStr);
+            auto progressCb = [this, task](int count) {
+                QMetaObject::invokeMethod(this, [this, task, count]() {
+                    qreal p = 0.5 + std::min(0.48, count / 20000.0);
+                    emit downloadProgress(task.id, p, QString("Extracting (%1 files)...").arg(count));
+                });
+            };
+
+            bool ok = extractArchive(localFilePath, targetDir, &errorStr, progressCb);
 
             QMetaObject::invokeMethod(this, [this, ok, task, targetDir, errorStr]() {
                 m_isBusy = false;
@@ -130,6 +139,10 @@ void DocsetDownloader::onDownloadFinished() {
     if (!m_currentReply) return;
 
     if (m_tempFile) {
+        QByteArray remaining = m_currentReply->readAll();
+        if (!remaining.isEmpty()) {
+            m_tempFile->write(remaining);
+        }
         m_tempFile->flush();
         m_tempFile->close();
     }
@@ -164,13 +177,15 @@ void DocsetDownloader::onDownloadFinished() {
         if (preview.startsWith("version https://git-lfs.github.com/spec/v1")) {
             qWarning() << "Downloaded file is a Git LFS pointer, switching to media.githubusercontent.com for" << m_currentTask.id;
             downloadedFile.remove();
+            m_isBusy = false;
+            emit isBusyChanged(false);
             QString mediaUrl = QString("https://media.githubusercontent.com/media/falconwasplaying/coldmanual-db/main/manuals/%1.tgz").arg(m_currentTask.id);
             startDownload(m_currentTask.id, m_currentTask.version, m_currentTask.trackLatest, mediaUrl, m_currentTask.destinationDir);
             return;
         }
     }
 
-    emit downloadProgress(m_currentTask.id, 0.99, "Extracting...");
+    emit downloadProgress(m_currentTask.id, 0.90, "Extracting...");
 
     // Process archive extraction in background thread
     auto task = m_currentTask;
@@ -179,7 +194,14 @@ void DocsetDownloader::onDownloadFinished() {
         QDir().mkpath(targetDir);
 
         QString errorStr;
-        bool ok = extractArchive(archivePath, targetDir, &errorStr);
+        auto progressCb = [this, task](int count) {
+            QMetaObject::invokeMethod(this, [this, task, count]() {
+                qreal p = 0.90 + std::min(0.09, count / 20000.0);
+                emit downloadProgress(task.id, p, QString("Extracting (%1 files)...").arg(count));
+            });
+        };
+
+        bool ok = extractArchive(archivePath, targetDir, &errorStr, progressCb);
 
         // Clean up temp archive
         QFile::remove(archivePath);
@@ -196,60 +218,108 @@ void DocsetDownloader::onDownloadFinished() {
     });
 }
 
-bool DocsetDownloader::extractArchive(const QString& archivePath, const QString& targetDir, QString* errorOut) {
+bool DocsetDownloader::extractArchiveWithNativeTar(const QString& archivePath, const QString& targetDir, QString* errorOut) {
+    QString tarExe = QStandardPaths::findExecutable("tar");
+    if (tarExe.isEmpty() && QFile::exists("C:/Windows/System32/tar.exe")) {
+        tarExe = "C:/Windows/System32/tar.exe";
+    }
+    if (tarExe.isEmpty()) {
+        if (errorOut) *errorOut = "Extraction utility (tar) not available on this system.";
+        return false;
+    }
+
+    QDir().mkpath(targetDir);
+
+    QProcess process;
+    process.setProgram(tarExe);
+    process.setArguments(QStringList() << "-xzf" << QDir::toNativeSeparators(archivePath) << "-C" << QDir::toNativeSeparators(targetDir));
+    process.start();
+    if (!process.waitForFinished(180000)) {
+        process.kill();
+        if (errorOut) *errorOut = "Extraction timed out after 3 minutes.";
+        return false;
+    }
+
+    if (process.exitStatus() == QProcess::NormalExit && process.exitCode() == 0) {
+        return true;
+    }
+
+    QString stderrOutput = QString::fromUtf8(process.readAllStandardError()).trimmed();
+    if (errorOut) {
+        *errorOut = stderrOutput.isEmpty() ? QString("tar exited with code %1").arg(process.exitCode()) : stderrOutput;
+    }
+    return false;
+}
+
+bool DocsetDownloader::extractArchive(const QString& archivePath, const QString& targetDir, QString* errorOut, std::function<void(int count)> progressCb) {
     struct archive* a = archive_read_new();
     archive_read_support_filter_all(a);
     archive_read_support_format_all(a);
 
     struct archive* ext = archive_write_disk_new();
-    archive_write_disk_set_options(ext, ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_PERM | ARCHIVE_EXTRACT_SECURE_NODOTDOT);
-    archive_write_disk_set_standard_lookup(ext);
+    // Do NOT use ARCHIVE_EXTRACT_PERM on Windows NTFS as POSIX permission translation marks dirs/files read-only
+    archive_write_disk_set_options(ext, ARCHIVE_EXTRACT_TIME | ARCHIVE_EXTRACT_SECURE_NODOTDOT | ARCHIVE_EXTRACT_UNLINK);
 
-    int r = archive_read_open_filename(a, archivePath.toUtf8().constData(), 10240);
+    // 256 KB buffer for high-speed streaming
+    int r = archive_read_open_filename(a, archivePath.toUtf8().constData(), 262144);
     if (r != ARCHIVE_OK) {
         if (errorOut) *errorOut = QString::fromUtf8(archive_error_string(a));
         archive_read_free(a);
         archive_write_free(ext);
-        return false;
+        return extractArchiveWithNativeTar(archivePath, targetDir, errorOut);
     }
 
     struct archive_entry* entry;
-    while ((r = archive_read_next_header(a, &entry)) == ARCHIVE_OK) {
-        QString currentPath = QString::fromUtf8(archive_entry_pathname(entry));
-        // Normalize and avoid directory traversal
-        if (currentPath.startsWith("/") || currentPath.contains("../")) {
-            currentPath.replace("../", "");
-            while (currentPath.startsWith("/")) currentPath.remove(0, 1);
+    QString lastParentDir;
+    int fileCount = 0;
+    bool hadFatalError = false;
+
+    while (true) {
+        r = archive_read_next_header(a, &entry);
+        if (r == ARCHIVE_EOF) break;
+        if (r < ARCHIVE_WARN) { // Error or Fatal
+            if (errorOut) *errorOut = QString::fromUtf8(archive_error_string(a));
+            hadFatalError = true;
+            break;
         }
 
-        QString fullDest = targetDir + "/" + currentPath;
+        QString currentPath = QString::fromUtf8(archive_entry_pathname(entry));
+        currentPath.replace('\\', '/');
+        while (currentPath.startsWith("./")) currentPath.remove(0, 2);
+        while (currentPath.startsWith("/")) currentPath.remove(0, 1);
+        if (currentPath.contains("../")) {
+            currentPath.replace("../", "");
+        }
+        if (currentPath.isEmpty()) continue;
 
-        // Ensure parent directories exist on Windows NTFS
+        QString fullDest = targetDir + "/" + currentPath;
         QFileInfo fi(fullDest);
-        QDir().mkpath(fi.absolutePath());
+        QString parentDir = fi.absolutePath();
+
+        // Cached directory creation avoids thousands of redundant Win32 directory checks
+        if (parentDir != lastParentDir) {
+            QDir().mkpath(parentDir);
+            lastParentDir = parentDir;
+        }
 
         archive_entry_set_pathname(entry, fullDest.toUtf8().constData());
 
-        r = archive_write_header(ext, entry);
-        if (r < ARCHIVE_OK) {
-            qWarning() << "archive_write_header:" << archive_error_string(ext);
-        } else if (archive_entry_size(entry) > 0) {
+        int writeHeaderRes = archive_write_header(ext, entry);
+        if (writeHeaderRes >= ARCHIVE_WARN && archive_entry_size(entry) > 0) {
             const void* buff;
             size_t size;
             la_int64_t offset;
             while ((r = archive_read_data_block(a, &buff, &size, &offset)) == ARCHIVE_OK) {
                 if (archive_write_data_block(ext, buff, size, offset) != ARCHIVE_OK) {
-                    qWarning() << "archive_write_data_block:" << archive_error_string(ext);
                     break;
                 }
             }
-            if (r != ARCHIVE_EOF && r != ARCHIVE_OK) {
-                qWarning() << "archive_read_data_block error:" << archive_error_string(a);
-            }
         }
-        r = archive_write_finish_entry(ext);
-        if (r < ARCHIVE_OK) {
-            qWarning() << "archive_write_finish_entry:" << archive_error_string(ext);
+        archive_write_finish_entry(ext);
+
+        fileCount++;
+        if (progressCb && (fileCount % 200 == 0)) {
+            progressCb(fileCount);
         }
     }
 
@@ -257,6 +327,11 @@ bool DocsetDownloader::extractArchive(const QString& archivePath, const QString&
     archive_read_free(a);
     archive_write_close(ext);
     archive_write_free(ext);
+
+    if (hadFatalError || fileCount == 0) {
+        qWarning() << "libarchive extraction incomplete or failed (files:" << fileCount << "), attempting native tar fallback for" << archivePath;
+        return extractArchiveWithNativeTar(archivePath, targetDir, errorOut);
+    }
 
     return true;
 }

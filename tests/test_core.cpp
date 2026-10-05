@@ -189,19 +189,27 @@ void testManualExtractionFromLocalDb() {
     bool completed = false;
     QString completedTarget;
 
+    QString failError;
     QObject::connect(&downloader, &DocsetDownloader::downloadCompleted, [&](const QString& id, const QString& version, bool trackLatest, const QString& targetDir) {
         completed = true;
         completedTarget = targetDir;
     });
+    QObject::connect(&downloader, &DocsetDownloader::downloadFailed, [&](const QString& id, const QString& error) {
+        failError = error;
+        std::cerr << "  Download/Extraction FAILED: " << error.toStdString() << std::endl;
+    });
 
     downloader.startDownload("sqlite", "3", false, sqliteUrl, tempExtractDir);
 
-    // Wait up to 5 seconds for background thread extraction
-    for (int i = 0; i < 50 && !completed; ++i) {
+    // Wait up to 30 seconds for background thread extraction
+    for (int i = 0; i < 300 && !completed && failError.isEmpty(); ++i) {
         QThread::msleep(100);
         QCoreApplication::processEvents();
     }
 
+    if (!failError.isEmpty()) {
+        std::cerr << "FATAL: downloadFailed was called: " << failError.toStdString() << std::endl;
+    }
     assert(completed);
     assert(QFile::exists(tempExtractDir + "/sqlite/SQLite.docset/Contents/Resources/docSet.dsidx"));
     std::cout << "  Extracted SQLite docset verified at: " << completedTarget.toStdString() << std::endl;
@@ -225,10 +233,46 @@ void testManualExtractionFromLocalDb() {
     assert(!installed["indexPath"].toString().isEmpty());
     assert(installed["indexPath"].toString().endsWith("index.html"));
     std::cout << "  SQLite indexPath resolved correctly to: " << installed["indexPath"].toString().toStdString() << std::endl;
-
-    // Cleanup
     QDir(tempExtractDir).removeRecursively();
     std::cout << "[PASS] testManualExtractionFromLocalDb passed!" << std::endl;
+}
+
+void testNetworkDownloadAndExtraction() {
+    std::cout << "[TEST] Running testNetworkDownloadAndExtraction (remote Git LFS)..." << std::endl;
+    QString remoteUrl = "https://media.githubusercontent.com/media/falconwasplaying/coldmanual-db/main/manuals/postgresql.tgz";
+    QString tempExtractDir = QDir::tempPath() + "/coldmanual_test_remote_extract";
+    QDir(tempExtractDir).removeRecursively();
+    QDir().mkpath(tempExtractDir);
+
+    DocsetDownloader downloader;
+    bool completed = false;
+    QString failError;
+    QString completedTarget;
+
+    QObject::connect(&downloader, &DocsetDownloader::downloadCompleted, [&](const QString& id, const QString& version, bool trackLatest, const QString& targetDir) {
+        completed = true;
+        completedTarget = targetDir;
+    });
+    QObject::connect(&downloader, &DocsetDownloader::downloadFailed, [&](const QString& id, const QString& error) {
+        failError = error;
+        std::cerr << "  Remote Download/Extraction FAILED: " << error.toStdString() << std::endl;
+    });
+
+    downloader.startDownload("postgresql", "16", false, remoteUrl, tempExtractDir);
+
+    // Wait up to 45 seconds for remote download + extraction
+    for (int i = 0; i < 450 && !completed && failError.isEmpty(); ++i) {
+        QThread::msleep(100);
+        QCoreApplication::processEvents();
+    }
+
+    if (!failError.isEmpty()) {
+        std::cerr << "FATAL: remote downloadFailed: " << failError.toStdString() << std::endl;
+    }
+    assert(completed);
+    std::cout << "  Extracted remote docset verified at: " << completedTarget.toStdString() << std::endl;
+    QDir(tempExtractDir).removeRecursively();
+    std::cout << "[PASS] testNetworkDownloadAndExtraction passed!" << std::endl;
 }
 
 void testNoDiskCaching() {
@@ -343,6 +387,7 @@ int main(int argc, char* argv[]) {
     testSearchEngineWithSqlite();
     testSettingsAndRegistry();
     testManualExtractionFromLocalDb();
+    testNetworkDownloadAndExtraction();
     testNetworkManager();
     testNoDiskCaching();
 

@@ -8,6 +8,8 @@
 #include <QElapsedTimer>
 #include <QThread>
 
+#include <functional>
+
 class DocsetDownloader : public QObject {
     Q_OBJECT
     Q_PROPERTY(bool isBusy READ isBusy NOTIFY isBusyChanged)
@@ -48,6 +50,6 @@ private:
     QElapsedTimer m_speedTimer;
     qint64 m_lastBytesReceived{0};
 
-    void processExtraction(const QString& archivePath, const QString& targetDir);
-    static bool extractArchive(const QString& archivePath, const QString& targetDir, QString* errorOut);
+    static bool extractArchive(const QString& archivePath, const QString& targetDir, QString* errorOut, std::function<void(int count)> progressCb = nullptr);
+    static bool extractArchiveWithNativeTar(const QString& archivePath, const QString& targetDir, QString* errorOut);
 };

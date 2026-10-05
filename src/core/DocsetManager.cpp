@@ -352,6 +352,7 @@ void DocsetManager::onDownloadCompleted(const QString& id, const QString& versio
 void DocsetManager::onDownloadFailed(const QString& id, const QString& errorMessage) {
     m_catalogMgr->setDownloadProgress(id, false, 0.0, "");
     qWarning() << "Download failed for" << id << ":" << errorMessage;
+    emit docsetInstallationFailed(id, errorMessage);
 }
 
 void DocsetManager::loadInstalledRegistry() {
