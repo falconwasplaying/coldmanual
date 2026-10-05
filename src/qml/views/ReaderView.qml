@@ -203,45 +203,134 @@ Item {
                     }
                 }
 
-                // Symbol Categories (Horizontal Scroll or Pills)
-                ScrollView {
+                // Symbol Categories (Horizontal Scrollable Filter Bar)
+                RowLayout {
                     Layout.fillWidth: true
-                    Layout.preferredHeight: 32
-                    ScrollBar.horizontal.policy: ScrollBar.AlwaysOff
-                    ScrollBar.vertical.policy: ScrollBar.AlwaysOff
+                    Layout.preferredHeight: 30
+                    spacing: 2
 
-                    Row {
-                        spacing: 6
-                        Repeater {
-                            model: symbolTypesModel
-                            Rectangle {
-                                height: 26
-                                width: typeLabel.implicitWidth + 16
-                                radius: 13
-                                color: (selectedSymbolType === model.type) ? Theme.accent : Theme.surface
-                                border.color: Theme.border
-                                border.width: 1
-                                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                    // Scroll Left Chevron
+                    Rectangle {
+                        width: 18
+                        height: 24
+                        radius: Theme.radiusSm
+                        color: leftPillScrollArea.containsMouse ? Theme.surfaceHover : "transparent"
+                        visible: categoryFlickable.contentWidth > categoryFlickable.width && categoryFlickable.contentX > 2
+                        opacity: visible ? 1.0 : 0.0
+                        Behavior on opacity { NumberAnimation { duration: 120 } }
 
-                                Text {
-                                    id: typeLabel
-                                    anchors.centerIn: parent
-                                    text: model.type + (model.count > 0 ? (" (" + model.count + ")") : "")
-                                    font.pixelSize: 10
-                                    font.bold: selectedSymbolType === model.type
-                                    color: (selectedSymbolType === model.type) ? Theme.textOnAccent : Theme.textSecondary
+                        LucideIcon {
+                            anchors.centerIn: parent
+                            name: "chevron-left"
+                            size: 12
+                            color: leftPillScrollArea.containsMouse ? Theme.accent : Theme.textMuted
+                        }
+
+                        MouseArea {
+                            id: leftPillScrollArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                categoryScrollAnim.stop()
+                                categoryScrollAnim.to = Math.max(0, categoryFlickable.contentX - 100)
+                                categoryScrollAnim.start()
+                            }
+                        }
+                    }
+
+                    // Flickable Categories Scroller
+                    Flickable {
+                        id: categoryFlickable
+                        Layout.fillWidth: true
+                        Layout.preferredHeight: 30
+                        contentWidth: categoriesRow.implicitWidth
+                        contentHeight: 30
+                        clip: true
+                        boundsBehavior: Flickable.StopAtBounds
+                        flickableDirection: Flickable.HorizontalFlick
+
+                        NumberAnimation {
+                            id: categoryScrollAnim
+                            target: categoryFlickable
+                            property: "contentX"
+                            duration: 180
+                            easing.type: Easing.OutCubic
+                        }
+
+                        WheelHandler {
+                            acceptedDevices: PointerDevice.Mouse | PointerDevice.TouchPad
+                            onWheel: function(event) {
+                                var delta = (event.angleDelta.y !== 0) ? event.angleDelta.y : event.angleDelta.x
+                                categoryFlickable.contentX = Math.max(0, Math.min(categoryFlickable.contentWidth - categoryFlickable.width, categoryFlickable.contentX - delta))
+                            }
+                        }
+
+                        Row {
+                            id: categoriesRow
+                            spacing: 6
+                            Repeater {
+                                model: symbolTypesModel
+                                Rectangle {
+                                    height: 26
+                                    width: typeLabel.implicitWidth + 16
+                                    radius: 13
+                                    color: (selectedSymbolType === model.type) ? Theme.accent : (pillArea.containsMouse ? Theme.surfaceHover : Theme.surface)
+                                    border.color: (selectedSymbolType === model.type) ? Theme.accent : Theme.border
+                                    border.width: 1
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-                                }
 
-                                MouseArea {
-                                    anchors.fill: parent
-                                    hoverEnabled: true
-                                    cursorShape: Qt.PointingHandCursor
-                                    onClicked: {
-                                        selectedSymbolType = model.type
-                                        loadSymbols()
+                                    Text {
+                                        id: typeLabel
+                                        anchors.centerIn: parent
+                                        text: model.type + (model.count > 0 ? (" (" + model.count + ")") : "")
+                                        font.pixelSize: 10
+                                        font.bold: selectedSymbolType === model.type
+                                        color: (selectedSymbolType === model.type) ? Theme.textOnAccent : Theme.textSecondary
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                                    }
+
+                                    MouseArea {
+                                        id: pillArea
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: {
+                                            selectedSymbolType = model.type
+                                            root.loadSymbols()
+                                        }
                                     }
                                 }
+                            }
+                        }
+                    }
+
+                    // Scroll Right Chevron
+                    Rectangle {
+                        width: 18
+                        height: 24
+                        radius: Theme.radiusSm
+                        color: rightPillScrollArea.containsMouse ? Theme.surfaceHover : "transparent"
+                        visible: categoryFlickable.contentWidth > categoryFlickable.width && categoryFlickable.contentX < (categoryFlickable.contentWidth - categoryFlickable.width - 2)
+                        opacity: visible ? 1.0 : 0.0
+                        Behavior on opacity { NumberAnimation { duration: 120 } }
+
+                        LucideIcon {
+                            anchors.centerIn: parent
+                            name: "chevron-right"
+                            size: 12
+                            color: rightPillScrollArea.containsMouse ? Theme.accent : Theme.textMuted
+                        }
+
+                        MouseArea {
+                            id: rightPillScrollArea
+                            anchors.fill: parent
+                            hoverEnabled: true
+                            cursorShape: Qt.PointingHandCursor
+                            onClicked: {
+                                categoryScrollAnim.stop()
+                                categoryScrollAnim.to = Math.min(categoryFlickable.contentWidth - categoryFlickable.width, categoryFlickable.contentX + 100)
+                                categoryScrollAnim.start()
                             }
                         }
                     }

@@ -21,6 +21,7 @@ ApplicationWindow {
     }
 
     property int currentTab: 1 // Default to Browse Catalog on first run if no docs, or Reader
+    property bool sidebarMinimized: false
 
     function showToast(title, message, iconName, duration) {
         toastNotification.show(title, message, iconName || "wifi-off", duration || 4000)
@@ -98,6 +99,10 @@ ApplicationWindow {
     Shortcut {
         sequence: "Ctrl+,"
         onActivated: currentTab = 3
+    }
+    Shortcut {
+        sequence: "Ctrl+B"
+        onActivated: sidebarMinimized = !sidebarMinimized
     }
     Shortcut {
         sequence: "F11"
@@ -229,20 +234,35 @@ ApplicationWindow {
 
         // Sidebar Navigation
         Rectangle {
-            Layout.preferredWidth: 230
+            id: sidebarRect
+            Layout.preferredWidth: window.sidebarMinimized ? 64 : 230
             Layout.fillHeight: true
             color: Theme.sidebarBg
             border.color: Theme.border
             border.width: 1
+            clip: true
+
+            Behavior on Layout.preferredWidth {
+                NumberAnimation {
+                    duration: 220
+                    easing.type: Easing.OutCubic
+                }
+            }
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 14
+                anchors.leftMargin: window.sidebarMinimized ? 12 : 14
+                anchors.rightMargin: window.sidebarMinimized ? 12 : 14
+                anchors.topMargin: 14
+                anchors.bottomMargin: 14
                 spacing: 12
 
                 // Logo
                 RowLayout {
+                    Layout.fillWidth: true
+                    Layout.alignment: window.sidebarMinimized ? Qt.AlignHCenter : Qt.AlignLeft
                     spacing: 10
+
                     Image {
                         width: 32
                         height: 32
@@ -252,10 +272,16 @@ ApplicationWindow {
                         fillMode: Image.PreserveAspectFit
                         smooth: true
                         mipmap: true
+                        Layout.alignment: window.sidebarMinimized ? Qt.AlignHCenter : Qt.AlignVCenter
                     }
 
                     ColumnLayout {
+                        visible: !window.sidebarMinimized
+                        opacity: window.sidebarMinimized ? 0.0 : 1.0
+                        Behavior on opacity { NumberAnimation { duration: 150 } }
                         spacing: 0
+                        Layout.fillWidth: true
+
                         Text {
                             text: "ColdManual"
                             font.family: Theme.fontSans
@@ -277,33 +303,56 @@ ApplicationWindow {
                     height: 36
                     radius: Theme.radiusMd
                     color: omniArea.containsMouse ? Theme.surfaceHover : Theme.surface
-                    border.color: Theme.border
+                    border.color: omniArea.containsMouse ? Theme.accent : Theme.border
                     border.width: 1
+                    Behavior on border.color { ColorAnimation { duration: Theme.animDurationFast } }
+                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
-                    RowLayout {
+                    ToolTip.text: "Search symbols (Ctrl+K)"
+                    ToolTip.visible: omniArea.containsMouse && window.sidebarMinimized
+                    ToolTip.delay: 400
+
+                    Item {
                         anchors.fill: parent
-                        anchors.leftMargin: 10
-                        anchors.rightMargin: 10
-                        spacing: 8
 
                         LucideIcon {
+                            id: searchIcon
+                            anchors.verticalCenter: parent.verticalCenter
+                            x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 10
+                            Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                             name: "search"
                             size: 13
-                            color: Theme.textMuted
+                            color: omniArea.containsMouse ? Theme.accent : Theme.textMuted
                         }
 
                         Text {
-                            Layout.fillWidth: true
+                            anchors.left: searchIcon.right
+                            anchors.leftMargin: 8
+                            anchors.right: ctrlKBadge.left
+                            anchors.rightMargin: 6
+                            anchors.verticalCenter: parent.verticalCenter
                             text: "Search symbols..."
                             font.pixelSize: 12
                             color: Theme.textMuted
+                            visible: opacity > 0.01
+                            opacity: window.sidebarMinimized ? 0.0 : 1.0
+                            Behavior on opacity { NumberAnimation { duration: 150 } }
+                            elide: Text.ElideRight
                         }
 
                         Rectangle {
+                            id: ctrlKBadge
+                            anchors.right: parent.right
+                            anchors.rightMargin: 8
+                            anchors.verticalCenter: parent.verticalCenter
                             width: 48
                             height: 20
                             radius: Theme.radiusSm
                             color: Theme.surfaceElevated
+                            visible: opacity > 0.01
+                            opacity: window.sidebarMinimized ? 0.0 : 1.0
+                            Behavior on opacity { NumberAnimation { duration: 150 } }
+
                             Text {
                                 anchors.centerIn: parent
                                 text: "Ctrl+K"
@@ -318,6 +367,7 @@ ApplicationWindow {
                         id: omniArea
                         anchors.fill: parent
                         hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
                         onClicked: omniSearch.open()
                     }
                 }
@@ -341,6 +391,10 @@ ApplicationWindow {
                         color: (currentTab === 0) ? Theme.accentDim : (navReaderArea.containsMouse ? Theme.surfaceHover : "transparent")
                         Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
+                        ToolTip.text: "Reader (Ctrl+1)"
+                        ToolTip.visible: navReaderArea.containsMouse && window.sidebarMinimized
+                        ToolTip.delay: 400
+
                         // Active Indicator Pill
                         Rectangle {
                             anchors.left: parent.left
@@ -354,13 +408,14 @@ ApplicationWindow {
                             Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
                         }
 
-                        RowLayout {
+                        Item {
                             anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
-                            spacing: 10
 
                             LucideIcon {
+                                id: tab0Icon
+                                anchors.verticalCenter: parent.verticalCenter
+                                x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 12
+                                Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                                 name: "book-open"
                                 size: 15
                                 color: (currentTab === 0) ? Theme.accent : Theme.textSecondary
@@ -368,11 +423,18 @@ ApplicationWindow {
                             }
 
                             Text {
-                                Layout.fillWidth: true
+                                anchors.left: tab0Icon.right
+                                anchors.leftMargin: 10
+                                anchors.right: parent.right
+                                anchors.rightMargin: 12
+                                anchors.verticalCenter: parent.verticalCenter
                                 text: "Reader"
                                 font.pixelSize: 13
                                 font.bold: currentTab === 0
                                 color: (currentTab === 0) ? Theme.accent : Theme.textPrimary
+                                visible: opacity > 0.01
+                                opacity: window.sidebarMinimized ? 0.0 : 1.0
+                                Behavior on opacity { NumberAnimation { duration: 150 } }
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             }
                         }
@@ -394,6 +456,10 @@ ApplicationWindow {
                         color: (currentTab === 1) ? Theme.accentDim : (navCatalogArea.containsMouse ? Theme.surfaceHover : "transparent")
                         Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
+                        ToolTip.text: networkMgr.isOnline ? "Browse Catalog (Ctrl+2)" : "Browse Catalog (Offline)"
+                        ToolTip.visible: navCatalogArea.containsMouse && window.sidebarMinimized
+                        ToolTip.delay: 400
+
                         // Active Indicator Pill
                         Rectangle {
                             anchors.left: parent.left
@@ -407,32 +473,57 @@ ApplicationWindow {
                             Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
                         }
 
-                        RowLayout {
+                        Item {
                             anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
-                            spacing: 10
                             opacity: networkMgr.isOnline ? 1.0 : 0.5
                             Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
 
                             LucideIcon {
+                                id: tab1Icon
+                                anchors.verticalCenter: parent.verticalCenter
+                                x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 12
+                                Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                                 name: "compass"
                                 size: 15
                                 color: (currentTab === 1) ? Theme.accent : Theme.textSecondary
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             }
 
+                            Rectangle {
+                                visible: !networkMgr.isOnline && window.sidebarMinimized
+                                width: 6
+                                height: 6
+                                radius: 3
+                                color: Theme.warning
+                                anchors.top: tab1Icon.top
+                                anchors.right: tab1Icon.right
+                                anchors.topMargin: -2
+                                anchors.rightMargin: -2
+                            }
+
                             Text {
-                                Layout.fillWidth: true
+                                anchors.left: tab1Icon.right
+                                anchors.leftMargin: 10
+                                anchors.right: offlineBadge.left
+                                anchors.rightMargin: 4
+                                anchors.verticalCenter: parent.verticalCenter
                                 text: "Browse Catalog"
                                 font.pixelSize: 13
                                 font.bold: currentTab === 1
                                 color: (currentTab === 1) ? Theme.accent : Theme.textPrimary
+                                visible: opacity > 0.01
+                                opacity: window.sidebarMinimized ? 0.0 : 1.0
+                                Behavior on opacity { NumberAnimation { duration: 150 } }
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                                elide: Text.ElideRight
                             }
 
                             Rectangle {
-                                visible: !networkMgr.isOnline
+                                id: offlineBadge
+                                visible: !networkMgr.isOnline && !window.sidebarMinimized
+                                anchors.right: parent.right
+                                anchors.rightMargin: 10
+                                anchors.verticalCenter: parent.verticalCenter
                                 height: 18
                                 radius: 9
                                 width: offlineBadgeRow.implicitWidth + 10
@@ -482,6 +573,10 @@ ApplicationWindow {
                         color: (currentTab === 2) ? Theme.accentDim : (navInstArea.containsMouse ? Theme.surfaceHover : "transparent")
                         Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
+                        ToolTip.text: "Installed Docs (" + docsetMgr.installedCount + ") (Ctrl+3)"
+                        ToolTip.visible: navInstArea.containsMouse && window.sidebarMinimized
+                        ToolTip.delay: 400
+
                         // Active Indicator Pill
                         Rectangle {
                             anchors.left: parent.left
@@ -495,30 +590,56 @@ ApplicationWindow {
                             Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
                         }
 
-                        RowLayout {
+                        Item {
                             anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
-                            spacing: 10
 
                             LucideIcon {
+                                id: tab2Icon
+                                anchors.verticalCenter: parent.verticalCenter
+                                x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 12
+                                Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                                 name: "download"
                                 size: 15
                                 color: (currentTab === 2) ? Theme.accent : Theme.textSecondary
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             }
 
+                            Rectangle {
+                                visible: window.sidebarMinimized && docsetMgr.installedCount > 0
+                                width: 6
+                                height: 6
+                                radius: 3
+                                color: Theme.accent
+                                anchors.top: tab2Icon.top
+                                anchors.right: tab2Icon.right
+                                anchors.topMargin: -2
+                                anchors.rightMargin: -2
+                            }
+
                             Text {
-                                Layout.fillWidth: true
+                                anchors.left: tab2Icon.right
+                                anchors.leftMargin: 10
+                                anchors.right: instBadge.left
+                                anchors.rightMargin: 4
+                                anchors.verticalCenter: parent.verticalCenter
                                 text: "Installed"
                                 font.pixelSize: 13
                                 font.bold: currentTab === 2
                                 color: (currentTab === 2) ? Theme.accent : Theme.textPrimary
+                                visible: opacity > 0.01
+                                opacity: window.sidebarMinimized ? 0.0 : 1.0
+                                Behavior on opacity { NumberAnimation { duration: 150 } }
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                                elide: Text.ElideRight
                             }
 
-                            // Count badge
+                            // Count badge (expanded)
                             Rectangle {
+                                id: instBadge
+                                visible: !window.sidebarMinimized
+                                anchors.right: parent.right
+                                anchors.rightMargin: 10
+                                anchors.verticalCenter: parent.verticalCenter
                                 width: Math.max(20, instBadgeText.implicitWidth + 8)
                                 height: 18
                                 radius: 9
@@ -552,6 +673,10 @@ ApplicationWindow {
                         color: (currentTab === 3) ? Theme.accentDim : (navSettingsArea.containsMouse ? Theme.surfaceHover : "transparent")
                         Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
+                        ToolTip.text: "Settings (Ctrl+,)"
+                        ToolTip.visible: navSettingsArea.containsMouse && window.sidebarMinimized
+                        ToolTip.delay: 400
+
                         // Active Indicator Pill
                         Rectangle {
                             anchors.left: parent.left
@@ -565,13 +690,14 @@ ApplicationWindow {
                             Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
                         }
 
-                        RowLayout {
+                        Item {
                             anchors.fill: parent
-                            anchors.leftMargin: 12
-                            anchors.rightMargin: 12
-                            spacing: 10
 
                             LucideIcon {
+                                id: tab3Icon
+                                anchors.verticalCenter: parent.verticalCenter
+                                x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 12
+                                Behavior on x { NumberAnimation { duration: 180; easing.type: Easing.OutCubic } }
                                 name: "settings"
                                 size: 15
                                 color: (currentTab === 3) ? Theme.accent : Theme.textSecondary
@@ -579,11 +705,18 @@ ApplicationWindow {
                             }
 
                             Text {
-                                Layout.fillWidth: true
+                                anchors.left: tab3Icon.right
+                                anchors.leftMargin: 10
+                                anchors.right: parent.right
+                                anchors.rightMargin: 12
+                                anchors.verticalCenter: parent.verticalCenter
                                 text: "Settings"
                                 font.pixelSize: 13
                                 font.bold: currentTab === 3
                                 color: (currentTab === 3) ? Theme.accent : Theme.textPrimary
+                                visible: opacity > 0.01
+                                opacity: window.sidebarMinimized ? 0.0 : 1.0
+                                Behavior on opacity { NumberAnimation { duration: 150 } }
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                             }
                         }
@@ -600,25 +733,76 @@ ApplicationWindow {
 
                 Item { Layout.fillHeight: true }
 
-                // Sidebar Footer info
-                Rectangle {
+                // Arrow pointing right with a long tail (toggles minimized / expanded view)
+                Item {
+                    id: collapseArrowItem
                     Layout.fillWidth: true
-                    height: 1
-                    color: Theme.border
+                    Layout.preferredHeight: 24
+
+                    // Long Tail of the arrow (horizontal line across the width)
+                    Rectangle {
+                        id: arrowTail
+                        anchors.left: parent.left
+                        anchors.right: arrowHead.left
+                        anchors.rightMargin: -5
+                        anchors.verticalCenter: parent.verticalCenter
+                        height: arrowMouseArea.containsMouse ? 2 : 1
+                        color: arrowMouseArea.containsMouse ? Theme.accent : Theme.border
+                        visible: !window.sidebarMinimized
+                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                        Behavior on height { NumberAnimation { duration: 100 } }
+                    }
+
+                    // Arrow Tip (pointing right)
+                    LucideIcon {
+                        id: arrowHead
+                        name: "chevron-right"
+                        size: 14
+                        color: arrowMouseArea.containsMouse ? Theme.accent : (window.sidebarMinimized ? Theme.textSecondary : Theme.border)
+                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.right: window.sidebarMinimized ? undefined : parent.right
+                        anchors.horizontalCenter: window.sidebarMinimized ? parent.horizontalCenter : undefined
+                    }
+
+                    MouseArea {
+                        id: arrowMouseArea
+                        anchors.fill: parent
+                        hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
+                        onClicked: {
+                            window.sidebarMinimized = !window.sidebarMinimized
+                        }
+                    }
+
+                    ToolTip.text: window.sidebarMinimized ? "Expand sidebar (Ctrl+B)" : "Collapse sidebar (Ctrl+B)"
+                    ToolTip.visible: arrowMouseArea.containsMouse
+                    ToolTip.delay: 400
                 }
 
+                // Sidebar Footer info (storage & version)
                 RowLayout {
                     Layout.fillWidth: true
+                    Layout.alignment: window.sidebarMinimized ? Qt.AlignHCenter : Qt.AlignLeft
+
                     Text {
+                        visible: !window.sidebarMinimized
                         text: "Storage: " + docsetMgr.totalStorageUsage
                         font.pixelSize: 11
                         color: Theme.textMuted
                     }
-                    Item { Layout.fillWidth: true }
+
+                    Item {
+                        visible: !window.sidebarMinimized
+                        Layout.fillWidth: true
+                    }
+
                     Text {
                         text: "v1.0"
                         font.pixelSize: 11
                         color: Theme.textMuted
+                        Layout.alignment: window.sidebarMinimized ? Qt.AlignHCenter : Qt.AlignRight
                     }
                 }
             }
