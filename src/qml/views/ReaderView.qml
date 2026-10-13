@@ -15,9 +15,51 @@ Item {
     property int historyIndex: -1
     property real zoomFactor: 1.0
 
+    // Autoscroll / Scroll Lock state
+    property bool autoScrollActive: false
+    property real autoScrollOriginX: 0
+    property real autoScrollOriginY: 0
+    property real autoScrollCurrentX: 0
+    property real autoScrollCurrentY: 0
+    property real autoScrollPressTime: 0
+    property bool autoScrollWasDragged: false
+
+    function startAutoScroll(originX, originY) {
+        if (!currentFilePath) return
+        if (docScroll.contentHeight <= docScroll.height && docScroll.contentWidth <= docScroll.width) {
+            return
+        }
+        autoScrollOriginX = originX
+        autoScrollOriginY = originY
+        autoScrollCurrentX = originX
+        autoScrollCurrentY = originY
+        autoScrollPressTime = Date.now()
+        autoScrollWasDragged = false
+        autoScrollActive = true
+    }
+
+    function stopAutoScroll() {
+        autoScrollActive = false
+    }
+
+    function toggleAutoScroll(originX, originY) {
+        if (autoScrollActive) {
+            stopAutoScroll()
+        } else {
+            startAutoScroll(originX, originY)
+        }
+    }
+
+    onVisibleChanged: {
+        if (!visible) {
+            stopAutoScroll()
+        }
+    }
+
     signal navigateToCatalog()
 
     function openDocument(docsetId, docsetName, fullFilePath, title) {
+        stopAutoScroll()
         currentDocsetId = docsetId
         currentDocsetName = docsetName
         currentTitle = title ? title : "Documentation"
@@ -34,6 +76,7 @@ Item {
     }
 
     function loadPage(path) {
+        stopAutoScroll()
         currentFilePath = path
         var rawHtml = searchEngine.readFileContent(path)
         if (rawHtml.length > 0) {
@@ -585,9 +628,11 @@ Item {
 
             // Reader Document Surface
             Rectangle {
+                id: readerSurface
                 Layout.fillWidth: true
                 Layout.fillHeight: true
                 color: Theme.readerBg
+                clip: true
 
                 Flickable {
                     id: docScroll
@@ -616,6 +661,7 @@ Item {
                         font.pixelSize: Math.round(settingsMgr.readerFontSize * root.zoomFactor)
 
                         onLinkActivated: function(link) {
+                            root.stopAutoScroll()
                             if (link.startsWith("http://") || link.startsWith("https://")) {
                                 Qt.openUrlExternally(link)
                             } else if (link.startsWith("#")) {
@@ -629,6 +675,169 @@ Item {
                             }
                         }
                     }
+                }
+
+                // Middle Click Detector to activate Scroll Lock
+                MouseArea {
+                    id: middleClickDetector
+                    anchors.fill: parent
+                    z: 50
+                    acceptedButtons: Qt.MiddleButton
+                    cursorShape: root.autoScrollActive ? Qt.SizeAllCursor : Qt.ArrowCursor
+                    onPressed: function(mouse) {
+                        if (mouse.button === Qt.MiddleButton) {
+                            root.toggleAutoScroll(mouse.x, mouse.y)
+                        }
+                    }
+                }
+
+                TapHandler {
+                    target: readerSurface
+                    acceptedButtons: Qt.MiddleButton
+                    onTapped: function(eventPoint) {
+                        root.toggleAutoScroll(eventPoint.position.x, eventPoint.position.y)
+                    }
+                }
+
+                // Autoscroll Full Viewport Overlay (handles mouse movement & click-to-exit)
+                MouseArea {
+                    id: autoScrollOverlay
+                    anchors.fill: parent
+                    z: 998
+                    visible: root.autoScrollActive
+                    hoverEnabled: true
+                    acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+                    cursorShape: {
+                        var dy = root.autoScrollCurrentY - root.autoScrollOriginY
+                        return (Math.abs(dy) > 12) ? Qt.SizeVerCursor : Qt.SizeAllCursor
+                    }
+
+                    onPositionChanged: function(mouse) {
+                        root.autoScrollCurrentX = mouse.x
+                        root.autoScrollCurrentY = mouse.y
+                        if (Math.abs(mouse.y - root.autoScrollOriginY) > 8 || Math.abs(mouse.x - root.autoScrollOriginX) > 8) {
+                            root.autoScrollWasDragged = true
+                        }
+                    }
+
+                    onPressed: function(mouse) {
+                        if (Date.now() - root.autoScrollPressTime > 120) {
+                            root.stopAutoScroll()
+                        }
+                    }
+
+                    onReleased: function(mouse) {
+                        if (mouse.button === Qt.MiddleButton && root.autoScrollWasDragged && (Date.now() - root.autoScrollPressTime > 200)) {
+                            root.stopAutoScroll()
+                        }
+                    }
+
+                    onWheel: function(wheel) {
+                        root.stopAutoScroll()
+                    }
+                }
+
+                // Scroll Lock HUD Indicator (anchor circle at middle click position)
+                Item {
+                    id: autoScrollIndicator
+                    visible: root.autoScrollActive
+                    z: 999
+                    x: Math.round(root.autoScrollOriginX - width / 2)
+                    y: Math.round(root.autoScrollOriginY - height / 2)
+                    width: 38
+                    height: 38
+
+                    // Outer soft glow
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: width / 2
+                        color: Theme.accent
+                        opacity: 0.18
+                        scale: 1.15
+                    }
+
+                    // Main circular badge
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: width / 2
+                        color: Theme.isDark ? "#18181b" : "#ffffff"
+                        border.color: (Math.abs(root.autoScrollCurrentY - root.autoScrollOriginY) > 12) ? Theme.accent : Theme.border
+                        border.width: 1.5
+                        Behavior on border.color { ColorAnimation { duration: 120 } }
+
+                        // Up chevron
+                        LucideIcon {
+                            name: "chevron-up"
+                            size: 13
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.top: parent.top
+                            anchors.topMargin: 2
+                            color: (root.autoScrollCurrentY - root.autoScrollOriginY < -12) ? Theme.accent : Theme.textMuted
+                            scale: (root.autoScrollCurrentY - root.autoScrollOriginY < -12) ? 1.2 : 1.0
+                            Behavior on color { ColorAnimation { duration: 100 } }
+                            Behavior on scale { NumberAnimation { duration: 100 } }
+                        }
+
+                        // Center deadzone dot
+                        Rectangle {
+                            anchors.centerIn: parent
+                            width: 6
+                            height: 6
+                            radius: 3
+                            color: (Math.abs(root.autoScrollCurrentY - root.autoScrollOriginY) <= 12) ? Theme.accent : Theme.textSecondary
+                            Behavior on color { ColorAnimation { duration: 100 } }
+                        }
+
+                        // Down chevron
+                        LucideIcon {
+                            name: "chevron-down"
+                            size: 13
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            anchors.bottom: parent.bottom
+                            anchors.bottomMargin: 2
+                            color: (root.autoScrollCurrentY - root.autoScrollOriginY > 12) ? Theme.accent : Theme.textMuted
+                            scale: (root.autoScrollCurrentY - root.autoScrollOriginY > 12) ? 1.2 : 1.0
+                            Behavior on color { ColorAnimation { duration: 100 } }
+                            Behavior on scale { NumberAnimation { duration: 100 } }
+                        }
+                    }
+                }
+
+                // Autoscroll Loop Timer (~60 FPS)
+                Timer {
+                    id: autoScrollTimer
+                    interval: 16
+                    repeat: true
+                    running: root.autoScrollActive
+                    onTriggered: {
+                        if (!root.autoScrollActive) return
+
+                        var dy = root.autoScrollCurrentY - root.autoScrollOriginY
+                        var dx = root.autoScrollCurrentX - root.autoScrollOriginX
+                        var deadzone = 12
+
+                        // Vertical scrolling
+                        if (Math.abs(dy) > deadzone) {
+                            var distY = Math.abs(dy) - deadzone
+                            var speedY = Math.sign(dy) * Math.min(50, Math.pow(distY / 10, 1.35) * 1.5)
+                            var maxContentY = Math.max(0, docScroll.contentHeight - docScroll.height)
+                            docScroll.contentY = Math.max(0, Math.min(maxContentY, docScroll.contentY + speedY))
+                        }
+
+                        // Horizontal scrolling (if document has horizontal overflow)
+                        if (docScroll.contentWidth > docScroll.width && Math.abs(dx) > deadzone) {
+                            var distX = Math.abs(dx) - deadzone
+                            var speedX = Math.sign(dx) * Math.min(40, Math.pow(distX / 10, 1.35) * 1.5)
+                            var maxContentX = Math.max(0, docScroll.contentWidth - docScroll.width)
+                            docScroll.contentX = Math.max(0, Math.min(maxContentX, docScroll.contentX + speedX))
+                        }
+                    }
+                }
+
+                Shortcut {
+                    sequence: "Esc"
+                    enabled: root.autoScrollActive
+                    onActivated: root.stopAutoScroll()
                 }
 
                 // Placeholder when no doc is loaded
