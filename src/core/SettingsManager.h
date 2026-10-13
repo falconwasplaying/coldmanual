@@ -22,6 +22,7 @@ class SettingsManager : public QObject {
 
 public:
     explicit SettingsManager(QObject* parent = nullptr);
+    ~SettingsManager() override;
 
     QString storagePath() const;
     void setStoragePath(const QString& path);
@@ -48,6 +49,7 @@ public:
     QString windowState() const;
 
     Q_INVOKABLE void saveWindowGeometry(int x, int y, int width, int height, const QString& state);
+    Q_INVOKABLE void sync();
     Q_INVOKABLE void resetToDefaults();
 
 signals:

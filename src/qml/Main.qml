@@ -131,6 +131,7 @@ ApplicationWindow {
                 stateStr = "fullscreen"
             }
             settingsMgr.saveWindowGeometry(window.x, window.y, window.width, window.height, stateStr)
+            settingsMgr.sync()
         }
     }
 

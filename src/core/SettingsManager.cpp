@@ -24,6 +24,10 @@ SettingsManager::SettingsManager(QObject* parent)
     ensureStoragePathExists();
 }
 
+SettingsManager::~SettingsManager() {
+    m_settings.sync();
+}
+
 void SettingsManager::ensureStoragePathExists() {
     QDir dir(m_storagePath);
     if (!dir.exists()) {
@@ -144,6 +148,9 @@ void SettingsManager::saveWindowGeometry(int x, int y, int width, int height, co
     m_settings.setValue("window/width", m_windowWidth);
     m_settings.setValue("window/height", m_windowHeight);
     m_settings.setValue("window/state", m_windowState);
+}
+
+void SettingsManager::sync() {
     m_settings.sync();
 }
 

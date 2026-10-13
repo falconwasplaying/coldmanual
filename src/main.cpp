@@ -230,21 +230,32 @@ int main(int argc, char* argv[]) {
 #endif
         };
 
-        // Track window movements & state transitions continuously (only in windowed mode)
-        auto updateNormalGeometry = [window, &settingsMgr]() {
+        // Debounce window geometry persistence to prevent flooding registry/disk I/O during drag
+        auto* geomSaveTimer = new QTimer(window);
+        geomSaveTimer->setSingleShot(true);
+        geomSaveTimer->setInterval(500);
+
+        QObject::connect(geomSaveTimer, &QTimer::timeout, window, [window, &settingsMgr]() {
             if (settingsMgr.windowDisplayMode() == "windowed" &&
                 window->visibility() == QWindow::Windowed &&
                 window->windowState() == Qt::WindowNoState) {
                 settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "normal");
             }
+        });
+
+        auto queueGeometrySave = [geomSaveTimer, &settingsMgr]() {
+            if (settingsMgr.windowDisplayMode() == "windowed") {
+                geomSaveTimer->start();
+            }
         };
 
-        QObject::connect(window, &QWindow::xChanged, window, updateNormalGeometry);
-        QObject::connect(window, &QWindow::yChanged, window, updateNormalGeometry);
-        QObject::connect(window, &QWindow::widthChanged, window, updateNormalGeometry);
-        QObject::connect(window, &QWindow::heightChanged, window, updateNormalGeometry);
+        QObject::connect(window, &QWindow::xChanged, window, queueGeometrySave);
+        QObject::connect(window, &QWindow::yChanged, window, queueGeometrySave);
+        QObject::connect(window, &QWindow::widthChanged, window, queueGeometrySave);
+        QObject::connect(window, &QWindow::heightChanged, window, queueGeometrySave);
 
-        QObject::connect(window, &QWindow::windowStateChanged, window, [window, &settingsMgr](Qt::WindowState state) {
+        QObject::connect(window, &QWindow::windowStateChanged, window, [window, &settingsMgr, geomSaveTimer](Qt::WindowState state) {
+            geomSaveTimer->stop();
             if (settingsMgr.windowDisplayMode() == "windowed") {
                 if (state == Qt::WindowMaximized) {
                     settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "maximized");
@@ -257,7 +268,8 @@ int main(int argc, char* argv[]) {
         });
 
         // Save state on window close
-        QObject::connect(window, &QQuickWindow::closing, window, [window, &settingsMgr](QQuickCloseEvent*) {
+        QObject::connect(window, &QQuickWindow::closing, window, [window, &settingsMgr, geomSaveTimer](QQuickCloseEvent*) {
+            geomSaveTimer->stop();
             if (settingsMgr.windowDisplayMode() == "windowed") {
                 QString stateStr = "normal";
                 if (window->visibility() == QWindow::Maximized || window->windowState() == Qt::WindowMaximized) {
@@ -267,6 +279,7 @@ int main(int argc, char* argv[]) {
                 }
                 settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), stateStr);
             }
+            settingsMgr.sync();
         });
 
 #ifdef Q_OS_WIN
