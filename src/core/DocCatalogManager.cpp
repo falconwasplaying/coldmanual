@@ -147,6 +147,21 @@ void DocCatalogManager::cleanLegacyCache() {
     QDir(appData + "/logos").removeRecursively();
 }
 
+bool DocCatalogManager::loadCatalogFromJson(const QByteArray& jsonData) {
+    QJsonDocument doc = QJsonDocument::fromJson(jsonData);
+    if (!doc.isArray()) return false;
+    beginResetModel();
+    m_allItems.clear();
+    const auto arr = doc.array();
+    for (const auto& val : arr) {
+        m_allItems.append(CatalogItem::fromJson(val.toObject()));
+    }
+    endResetModel();
+    updateCategories();
+    applyFilter();
+    return true;
+}
+
 void DocCatalogManager::loadDefaultCatalog() {
     // Purge any stale cache from disk so nothing is cached locally
     cleanLegacyCache();
@@ -156,17 +171,7 @@ void DocCatalogManager::loadDefaultCatalog() {
     if (QFile::exists(localCatalog)) {
         QFile file(localCatalog);
         if (file.open(QIODevice::ReadOnly)) {
-            QJsonDocument doc = QJsonDocument::fromJson(file.readAll());
-            if (doc.isArray()) {
-                beginResetModel();
-                m_allItems.clear();
-                const auto arr = doc.array();
-                for (const auto& val : arr) {
-                    m_allItems.append(CatalogItem::fromJson(val.toObject()));
-                }
-                endResetModel();
-                updateCategories();
-                applyFilter();
+            if (loadCatalogFromJson(file.readAll())) {
                 fetchAllDynamicVersions();
             }
             file.close();
@@ -235,18 +240,7 @@ void DocCatalogManager::refreshCatalog() {
         emit isRefreshingChanged();
 
         if (reply->error() == QNetworkReply::NoError) {
-            QByteArray data = reply->readAll();
-            QJsonDocument doc = QJsonDocument::fromJson(data);
-            if (doc.isArray()) {
-                beginResetModel();
-                m_allItems.clear();
-                for (const auto& val : doc.array()) {
-                    m_allItems.append(CatalogItem::fromJson(val.toObject()));
-                }
-                endResetModel();
-
-                updateCategories();
-                applyFilter();
+            if (loadCatalogFromJson(reply->readAll())) {
                 fetchAllDynamicVersions();
             }
         } else {
@@ -259,18 +253,7 @@ void DocCatalogManager::refreshCatalog() {
             auto* cdnReply = m_networkManager.get(cdnReq);
             connect(cdnReply, &QNetworkReply::finished, this, [this, cdnReply]() {
                 if (cdnReply->error() == QNetworkReply::NoError) {
-                    QByteArray cdnData = cdnReply->readAll();
-                    QJsonDocument cdnDoc = QJsonDocument::fromJson(cdnData);
-                    if (cdnDoc.isArray()) {
-                        beginResetModel();
-                        m_allItems.clear();
-                        for (const auto& val : cdnDoc.array()) {
-                            m_allItems.append(CatalogItem::fromJson(val.toObject()));
-                        }
-                        endResetModel();
-
-                        updateCategories();
-                        applyFilter();
+                    if (loadCatalogFromJson(cdnReply->readAll())) {
                         fetchAllDynamicVersions();
                     }
                 } else {

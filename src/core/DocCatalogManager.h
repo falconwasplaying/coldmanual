@@ -58,6 +58,7 @@ public:
     Q_INVOKABLE QString getDownloadUrl(const QString& id, const QString& version) const;
     Q_INVOKABLE QString getLatestVersion(const QString& id) const;
     Q_INVOKABLE QString getLogoUrl(const QString& id) const;
+    bool loadCatalogFromJson(const QByteArray& jsonData);
 
     void fetchDynamicVersions(const QString& docsetId);
 

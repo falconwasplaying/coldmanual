@@ -234,12 +234,46 @@ Item {
             }
         }
 
+        // Empty State when 0 items in catalog and not refreshing
+        Item {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            visible: catalogGrid.count === 0 && !catalogMgr.isRefreshing
+
+            ColumnLayout {
+                anchors.centerIn: parent
+                spacing: 12
+
+                LucideIcon {
+                    Layout.alignment: Qt.AlignHCenter
+                    name: "book-open"
+                    size: 48
+                    color: Theme.textMuted
+                }
+
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: searchInput.text.length > 0 ? "No documentation matches found" : "No documentation available"
+                    font.pixelSize: 16
+                    font.bold: true
+                    color: Theme.textPrimary
+                }
+
+                Text {
+                    Layout.alignment: Qt.AlignHCenter
+                    text: searchInput.text.length > 0 ? "Try adjusting your search or category filter." : "The documentation catalog is currently empty."
+                    font.pixelSize: 13
+                    color: Theme.textMuted
+                }
+            }
+        }
+
         // Catalog Grid
         GridView {
             id: catalogGrid
             Layout.fillWidth: true
             Layout.fillHeight: true
-            visible: catalogMgr.totalItems > 0 || !catalogMgr.isRefreshing
+            visible: catalogGrid.count > 0
             clip: true
             cellWidth: Math.max(340, (width - 10) / Math.max(1, Math.floor(width / 340)))
             cellHeight: 215
