@@ -29,6 +29,12 @@
 #ifndef DWMWA_USE_IMMERSIVE_DARK_MODE_OLD
 #define DWMWA_USE_IMMERSIVE_DARK_MODE_OLD 19
 #endif
+#ifndef DWMWA_CAPTION_COLOR
+#define DWMWA_CAPTION_COLOR 35
+#endif
+#ifndef DWMWA_TEXT_COLOR
+#define DWMWA_TEXT_COLOR 36
+#endif
 #endif
 
 #include "core/SettingsManager.h"
@@ -41,6 +47,7 @@
 int main(int argc, char* argv[]) {
     QGuiApplication::setOrganizationName("ColdManual");
     QGuiApplication::setApplicationName("ColdManual");
+    QGuiApplication::setApplicationDisplayName("ColdManual");
     QGuiApplication::setApplicationVersion("1.0.0");
 
     QQuickStyle::setStyle("Basic");
@@ -165,7 +172,48 @@ int main(int argc, char* argv[]) {
         // Apply normal geometry
         window->setGeometry(winX, winY, winW, winH);
 
-        auto applyDisplayMode = [window, &settingsMgr, isDark, initialBgColor](const QString& mode) {
+        auto updateWindowTheme = [window, &settingsMgr]() {
+            const bool dark = (settingsMgr.themeMode() != "light");
+            const QColor bgColor = dark ? QColor("#121214") : QColor("#f8fafc");
+            window->setColor(bgColor);
+
+            QPalette pal;
+            pal.setColor(QPalette::Window, bgColor);
+            pal.setColor(QPalette::WindowText, dark ? QColor("#f4f4f5") : QColor("#0f172a"));
+            pal.setColor(QPalette::Base, bgColor);
+            pal.setColor(QPalette::AlternateBase, dark ? QColor("#18181b") : QColor("#f1f5f9"));
+            pal.setColor(QPalette::Text, dark ? QColor("#f4f4f5") : QColor("#0f172a"));
+            pal.setColor(QPalette::Button, dark ? QColor("#202024") : QColor("#ffffff"));
+            pal.setColor(QPalette::ButtonText, dark ? QColor("#f4f4f5") : QColor("#0f172a"));
+            pal.setColor(QPalette::Highlight, dark ? QColor("#38bdf8") : QColor("#0284c7"));
+            pal.setColor(QPalette::HighlightedText, Qt::white);
+            QGuiApplication::setPalette(pal);
+
+#ifdef Q_OS_WIN
+            HWND hwnd = reinterpret_cast<HWND>(window->winId());
+            if (hwnd) {
+                // 1. Windows 10 & 11 immersive dark/light mode for title bar and caption buttons
+                BOOL darkMode = dark ? TRUE : FALSE;
+                DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
+                DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, &darkMode, sizeof(darkMode));
+
+                // 2. Windows 11 exact caption and text color match
+                COLORREF captionColor = dark ? RGB(18, 18, 20) : RGB(248, 250, 252);
+                COLORREF textColor = dark ? RGB(244, 244, 245) : RGB(15, 23, 42);
+                DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR, &captionColor, sizeof(captionColor));
+                DwmSetWindowAttribute(hwnd, DWMWA_TEXT_COLOR, &textColor, sizeof(textColor));
+
+                // 3. Update Win32 window background brush
+                HBRUSH winBrush = CreateSolidBrush(RGB(bgColor.red(), bgColor.green(), bgColor.blue()));
+                SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, reinterpret_cast<LONG_PTR>(winBrush));
+
+                // 4. Force DWM to redraw the window frame immediately with the new theme color
+                SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+            }
+#endif
+        };
+
+        auto applyDisplayMode = [window, &settingsMgr, updateWindowTheme](const QString& mode) {
             if (mode == "fullscreen") {
                 window->setFlags(Qt::Window);
                 window->showFullScreen();
@@ -216,18 +264,7 @@ int main(int argc, char* argv[]) {
 #endif
             }
 
-#ifdef Q_OS_WIN
-            HWND hwnd = reinterpret_cast<HWND>(window->winId());
-            if (hwnd) {
-                HBRUSH winBrush = CreateSolidBrush(RGB(initialBgColor.red(), initialBgColor.green(), initialBgColor.blue()));
-                SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, reinterpret_cast<LONG_PTR>(winBrush));
-                if (isDark) {
-                    BOOL darkMode = TRUE;
-                    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
-                    DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, &darkMode, sizeof(darkMode));
-                }
-            }
-#endif
+            updateWindowTheme();
         };
 
         // Debounce window geometry persistence to prevent flooding registry/disk I/O during drag
@@ -288,19 +325,16 @@ int main(int argc, char* argv[]) {
             // 1. Cloak the window from DWM desktop composition before showing so Windows never composites unrendered white frames
             BOOL cloak = TRUE;
             DwmSetWindowAttribute(hwnd, DWMWA_CLOAK, &cloak, sizeof(cloak));
-
-            // 2. Assign dark background brush to Win32 window class
-            HBRUSH winBrush = CreateSolidBrush(RGB(initialBgColor.red(), initialBgColor.green(), initialBgColor.blue()));
-            SetClassLongPtr(hwnd, GCLP_HBRBACKGROUND, reinterpret_cast<LONG_PTR>(winBrush));
-
-            // 3. Enable Windows 10/11 Immersive Dark Mode for native title bar
-            if (isDark) {
-                BOOL darkMode = TRUE;
-                DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode)); // Windows 10 build 18985+ and Windows 11
-                DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, &darkMode, sizeof(darkMode)); // Older Windows 10 builds
-            }
         }
 #endif
+
+        // Apply initial theme to window and native title bar
+        updateWindowTheme();
+
+        // Dynamic Theme changes at runtime (matches title bar to white/dark mode immediately)
+        QObject::connect(&settingsMgr, &SettingsManager::themeModeChanged, window, [updateWindowTheme](const QString&) {
+            updateWindowTheme();
+        });
 
         // Dynamic Display Mode changes at runtime
         QObject::connect(&settingsMgr, &SettingsManager::windowDisplayModeChanged, window, [applyDisplayMode](const QString& mode) {
@@ -320,6 +354,7 @@ int main(int argc, char* argv[]) {
             } else {
                 window->showNormal();
             }
+            updateWindowTheme();
         }
 
 #ifdef Q_OS_WIN

@@ -11,7 +11,7 @@ ApplicationWindow {
     height: 800
     minimumWidth: 960
     minimumHeight: 640
-    title: "ColdManual — Fast Offline Documentation Browser"
+    title: ""
     color: Theme.background
 
     onVisibleChanged: {
