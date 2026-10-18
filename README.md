@@ -37,6 +37,9 @@ cmake --build build --target test_core
 
 ---
 
+> [!CAUTION] THIS APP IS CURRENTLY UNDER WORK AND IS NOT IN A USABLE STATE
+
+
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
