@@ -267,7 +267,7 @@ ApplicationWindow {
                     anchors.right: parent.right
                     spacing: 12
 
-                    // 1. Logo & App Title
+                    // 1. Logo & App Title (Anchored icon, smooth text reveal)
                     Item {
                         width: parent.width
                         height: 36
@@ -282,17 +282,18 @@ ApplicationWindow {
                             fillMode: Image.PreserveAspectFit
                             smooth: true
                             mipmap: true
+                            anchors.left: parent.left
+                            anchors.leftMargin: 21
                             anchors.verticalCenter: parent.verticalCenter
-                            x: window.sidebarMinimized ? Math.round((parent.width - width) / 2) : 16
-                            Behavior on x { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                         }
 
                         Column {
-                            visible: !window.sidebarMinimized
                             anchors.left: logoImg.right
-                            anchors.leftMargin: 12
+                            anchors.leftMargin: 14
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 1
+                            opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 120) / 70))
+                            visible: opacity > 0
 
                             Text {
                                 text: "ColdManual"
@@ -310,36 +311,36 @@ ApplicationWindow {
                         }
                     }
 
-                    // 2. Material 3 Search Bar
+                    // 2. Material 3 Search Bar (Anchored icon, right-expanding container)
                     Rectangle {
                         id: omniBtn
-                        width: window.sidebarMinimized ? 52 : (parent.width - 24)
-                        height: window.sidebarMinimized ? 36 : 42
+                        anchors.left: parent.left
+                        anchors.leftMargin: 12
+                        anchors.right: parent.right
+                        anchors.rightMargin: 12
+                        height: 40
                         radius: Theme.shapeFull
+                        clip: true
                         color: omniArea.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
                         border.color: omniArea.containsMouse ? Theme.outline : Theme.surfaceContainerHigh
                         border.width: 1
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        Behavior on width { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
-                        Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                         Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                         Behavior on border.color { ColorAnimation { duration: Theme.animDurationFast } }
 
                         LucideIcon {
                             id: searchIcon
                             name: "search"
-                            size: 15
+                            size: 16
                             color: omniArea.containsMouse ? Theme.primary : Theme.onSurfaceVariant
+                            anchors.left: parent.left
+                            anchors.leftMargin: 16
                             anchors.verticalCenter: parent.verticalCenter
-                            x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 12
-                            Behavior on x { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                         }
 
                         Text {
-                            visible: !window.sidebarMinimized
                             anchors.left: searchIcon.right
-                            anchors.leftMargin: 10
+                            anchors.leftMargin: 12
                             anchors.right: ctrlKBadge.left
                             anchors.rightMargin: 8
                             anchors.verticalCenter: parent.verticalCenter
@@ -348,11 +349,12 @@ ApplicationWindow {
                             font.pixelSize: 13
                             color: Theme.onSurfaceVariant
                             elide: Text.ElideRight
+                            opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 120) / 70))
+                            visible: opacity > 0
                         }
 
                         Rectangle {
                             id: ctrlKBadge
-                            visible: !window.sidebarMinimized
                             anchors.right: parent.right
                             anchors.rightMargin: 10
                             anchors.verticalCenter: parent.verticalCenter
@@ -360,6 +362,8 @@ ApplicationWindow {
                             height: 20
                             radius: Theme.shapeSmall
                             color: Theme.surfaceContainerHighest
+                            opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 160) / 50))
+                            visible: opacity > 0
 
                             Text {
                                 anchors.centerIn: parent
@@ -380,13 +384,14 @@ ApplicationWindow {
                         }
                     }
 
-                    // Tonal Divider
+                    // Tonal Divider (Expanding from left margin to right margin)
                     Rectangle {
-                        width: window.sidebarMinimized ? 44 : (parent.width - 24)
+                        anchors.left: parent.left
+                        anchors.leftMargin: 12
+                        anchors.right: parent.right
+                        anchors.rightMargin: 12
                         height: 1
                         color: Theme.outlineVariant
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        Behavior on width { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                     }
 
                     // Nav Items (Material 3 Navigation Drawer & Rail)
@@ -397,36 +402,37 @@ ApplicationWindow {
                         // Tab 0: Reader
                         Item {
                             width: parent.width
-                            height: window.sidebarMinimized ? 48 : 46
+                            height: 44
 
                             Rectangle {
                                 id: tab0Pill
-                                width: window.sidebarMinimized ? 56 : (parent.width - 24)
-                                height: window.sidebarMinimized ? 32 : 44
+                                anchors.left: parent.left
+                                anchors.leftMargin: 12
+                                anchors.right: parent.right
+                                anchors.rightMargin: 12
+                                anchors.verticalCenter: parent.verticalCenter
+                                height: 40
                                 radius: Theme.shapeFull
-                                anchors.centerIn: parent
+                                clip: true
                                 color: (currentTab === 0) ? Theme.secondaryContainer :
                                        (navReaderArea.containsMouse ? Theme.surfaceContainerHighest : Theme.sidebarBg)
 
-                                Behavior on width { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
-                                Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                                 LucideIcon {
                                     id: tab0Icon
                                     name: "book-open"
-                                    size: 17
+                                    size: 18
                                     color: (currentTab === 0) ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 15
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 14
-                                    Behavior on x { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
 
                                 Text {
-                                    visible: !window.sidebarMinimized
                                     anchors.left: tab0Icon.right
-                                    anchors.leftMargin: 12
+                                    anchors.leftMargin: 14
                                     anchors.right: parent.right
                                     anchors.rightMargin: 12
                                     anchors.verticalCenter: parent.verticalCenter
@@ -436,6 +442,8 @@ ApplicationWindow {
                                     font.bold: currentTab === 0
                                     color: (currentTab === 0) ? Theme.onSecondaryContainer : Theme.onSurface
                                     elide: Text.ElideRight
+                                    opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 100) / 70))
+                                    visible: opacity > 0
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
                             }
@@ -452,37 +460,39 @@ ApplicationWindow {
                         // Tab 1: Browse Catalog
                         Item {
                             width: parent.width
-                            height: window.sidebarMinimized ? 48 : 46
+                            height: 44
                             opacity: networkMgr.isOnline ? 1.0 : 0.5
                             Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
 
                             Rectangle {
                                 id: tab1Pill
-                                width: window.sidebarMinimized ? 56 : (parent.width - 24)
-                                height: window.sidebarMinimized ? 32 : 44
+                                anchors.left: parent.left
+                                anchors.leftMargin: 12
+                                anchors.right: parent.right
+                                anchors.rightMargin: 12
+                                anchors.verticalCenter: parent.verticalCenter
+                                height: 40
                                 radius: Theme.shapeFull
-                                anchors.centerIn: parent
+                                clip: true
                                 color: (currentTab === 1) ? Theme.secondaryContainer :
                                        (navCatalogArea.containsMouse ? Theme.surfaceContainerHighest : Theme.sidebarBg)
 
-                                Behavior on width { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
-                                Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                                 LucideIcon {
                                     id: tab1Icon
                                     name: "compass"
-                                    size: 17
+                                    size: 18
                                     color: (currentTab === 1) ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 15
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 14
-                                    Behavior on x { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
 
-                                // Minimized offline dot
+                                // Minimized offline dot (anchored directly to icon)
                                 Rectangle {
-                                    visible: window.sidebarMinimized && !networkMgr.isOnline
+                                    visible: !networkMgr.isOnline && sidebarRect.width < 130
                                     width: 7
                                     height: 7
                                     radius: 3.5
@@ -494,9 +504,8 @@ ApplicationWindow {
                                 }
 
                                 Text {
-                                    visible: !window.sidebarMinimized
                                     anchors.left: tab1Icon.right
-                                    anchors.leftMargin: 12
+                                    anchors.leftMargin: 14
                                     anchors.right: offlineBadge.left
                                     anchors.rightMargin: 6
                                     anchors.verticalCenter: parent.verticalCenter
@@ -506,12 +515,13 @@ ApplicationWindow {
                                     font.bold: currentTab === 1
                                     color: (currentTab === 1) ? Theme.onSecondaryContainer : Theme.onSurface
                                     elide: Text.ElideRight
+                                    opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 100) / 70))
+                                    visible: opacity > 0
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
 
                                 Rectangle {
                                     id: offlineBadge
-                                    visible: !networkMgr.isOnline && !window.sidebarMinimized
                                     anchors.right: parent.right
                                     anchors.rightMargin: 10
                                     anchors.verticalCenter: parent.verticalCenter
@@ -519,6 +529,8 @@ ApplicationWindow {
                                     radius: Theme.shapeFull
                                     width: offlineBadgeRow.implicitWidth + 12
                                     color: Theme.surfaceContainerHighest
+                                    opacity: !networkMgr.isOnline ? Math.max(0.0, Math.min(1.0, (sidebarRect.width - 160) / 60)) : 0.0
+                                    visible: opacity > 0
 
                                     RowLayout {
                                         id: offlineBadgeRow
@@ -558,35 +570,37 @@ ApplicationWindow {
                         // Tab 2: Installed & Updates
                         Item {
                             width: parent.width
-                            height: window.sidebarMinimized ? 48 : 46
+                            height: 44
 
                             Rectangle {
                                 id: tab2Pill
-                                width: window.sidebarMinimized ? 56 : (parent.width - 24)
-                                height: window.sidebarMinimized ? 32 : 44
+                                anchors.left: parent.left
+                                anchors.leftMargin: 12
+                                anchors.right: parent.right
+                                anchors.rightMargin: 12
+                                anchors.verticalCenter: parent.verticalCenter
+                                height: 40
                                 radius: Theme.shapeFull
-                                anchors.centerIn: parent
+                                clip: true
                                 color: (currentTab === 2) ? Theme.secondaryContainer :
                                        (navInstArea.containsMouse ? Theme.surfaceContainerHighest : Theme.sidebarBg)
 
-                                Behavior on width { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
-                                Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                                 LucideIcon {
                                     id: tab2Icon
                                     name: "download"
-                                    size: 17
+                                    size: 18
                                     color: (currentTab === 2) ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 15
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 14
-                                    Behavior on x { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
 
                                 // Minimized installed badge dot
                                 Rectangle {
-                                    visible: window.sidebarMinimized && docsetMgr.installedCount > 0
+                                    visible: docsetMgr.installedCount > 0 && sidebarRect.width < 130
                                     width: 7
                                     height: 7
                                     radius: 3.5
@@ -598,9 +612,8 @@ ApplicationWindow {
                                 }
 
                                 Text {
-                                    visible: !window.sidebarMinimized
                                     anchors.left: tab2Icon.right
-                                    anchors.leftMargin: 12
+                                    anchors.leftMargin: 14
                                     anchors.right: instBadge.left
                                     anchors.rightMargin: 6
                                     anchors.verticalCenter: parent.verticalCenter
@@ -610,13 +623,14 @@ ApplicationWindow {
                                     font.bold: currentTab === 2
                                     color: (currentTab === 2) ? Theme.onSecondaryContainer : Theme.onSurface
                                     elide: Text.ElideRight
+                                    opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 100) / 70))
+                                    visible: opacity > 0
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
 
                                 // Count badge (expanded)
                                 Rectangle {
                                     id: instBadge
-                                    visible: !window.sidebarMinimized
                                     anchors.right: parent.right
                                     anchors.rightMargin: 10
                                     anchors.verticalCenter: parent.verticalCenter
@@ -624,6 +638,8 @@ ApplicationWindow {
                                     height: 20
                                     radius: Theme.shapeFull
                                     color: (currentTab === 2) ? Theme.primary : Theme.surfaceContainerHighest
+                                    opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 160) / 60))
+                                    visible: opacity > 0
 
                                     Text {
                                         id: instBadgeText
@@ -649,36 +665,37 @@ ApplicationWindow {
                         // Tab 3: Settings
                         Item {
                             width: parent.width
-                            height: window.sidebarMinimized ? 48 : 46
+                            height: 44
 
                             Rectangle {
                                 id: tab3Pill
-                                width: window.sidebarMinimized ? 56 : (parent.width - 24)
-                                height: window.sidebarMinimized ? 32 : 44
+                                anchors.left: parent.left
+                                anchors.leftMargin: 12
+                                anchors.right: parent.right
+                                anchors.rightMargin: 12
+                                anchors.verticalCenter: parent.verticalCenter
+                                height: 40
                                 radius: Theme.shapeFull
-                                anchors.centerIn: parent
+                                clip: true
                                 color: (currentTab === 3) ? Theme.secondaryContainer :
                                        (navSettingsArea.containsMouse ? Theme.surfaceContainerHighest : Theme.sidebarBg)
 
-                                Behavior on width { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
-                                Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                                 LucideIcon {
                                     id: tab3Icon
                                     name: "settings"
-                                    size: 17
+                                    size: 18
                                     color: (currentTab === 3) ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 15
                                     anchors.verticalCenter: parent.verticalCenter
-                                    x: window.sidebarMinimized ? Math.round((parent.width - size) / 2) : 14
-                                    Behavior on x { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
 
                                 Text {
-                                    visible: !window.sidebarMinimized
                                     anchors.left: tab3Icon.right
-                                    anchors.leftMargin: 12
+                                    anchors.leftMargin: 14
                                     anchors.right: parent.right
                                     anchors.rightMargin: 12
                                     anchors.verticalCenter: parent.verticalCenter
@@ -688,6 +705,8 @@ ApplicationWindow {
                                     font.bold: currentTab === 3
                                     color: (currentTab === 3) ? Theme.onSecondaryContainer : Theme.onSurface
                                     elide: Text.ElideRight
+                                    opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 100) / 70))
+                                    visible: opacity > 0
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
                             }
@@ -721,7 +740,8 @@ ApplicationWindow {
                         Image {
                             id: arrowSvgImg
                             anchors.fill: parent
-                            visible: !window.sidebarMinimized
+                            visible: opacity > 0
+                            opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 110) / 40))
                             smooth: true
                             mipmap: true
                             source: {
@@ -746,10 +766,11 @@ ApplicationWindow {
                         // Arrow Tip in minimized rail (centered Lucide chevron)
                         Image {
                             id: minArrowSvgImg
-                            visible: window.sidebarMinimized
                             anchors.centerIn: parent
                             width: 24
                             height: 24
+                            visible: opacity > 0
+                            opacity: Math.max(0.0, Math.min(1.0, (120 - sidebarRect.width) / 40))
                             smooth: true
                             mipmap: true
                             source: {
@@ -778,7 +799,6 @@ ApplicationWindow {
                         height: 16
 
                         Text {
-                            visible: !window.sidebarMinimized
                             anchors.left: parent.left
                             anchors.leftMargin: 16
                             anchors.verticalCenter: parent.verticalCenter
@@ -786,6 +806,8 @@ ApplicationWindow {
                             font.family: Theme.fontSans
                             font.pixelSize: 11
                             color: Theme.onSurfaceVariant
+                            opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 140) / 50))
+                            visible: opacity > 0
                         }
 
                         Text {
@@ -794,14 +816,14 @@ ApplicationWindow {
                             font.pixelSize: 11
                             color: Theme.onSurfaceVariant
                             anchors.verticalCenter: parent.verticalCenter
-                            anchors.right: window.sidebarMinimized ? undefined : parent.right
-                            anchors.rightMargin: window.sidebarMinimized ? 0 : 16
-                            anchors.horizontalCenter: window.sidebarMinimized ? parent.horizontalCenter : undefined
+                            anchors.right: parent.right
+                            anchors.rightMargin: sidebarRect.width < 120 ? Math.round((sidebarRect.width - implicitWidth) / 2) : 16
                         }
                     }
                 }
             }
         }
+
 
         // Main Content Views with Smooth Crossfade & Micro-Slide
         Item {
