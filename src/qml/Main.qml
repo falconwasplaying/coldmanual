@@ -404,333 +404,411 @@ ApplicationWindow {
                         color: Theme.outlineVariant
                     }
 
-                    // Nav Items (Material 3 Navigation Drawer & Rail)
-                    Column {
+                    // Nav Items (Material 3 Navigation Drawer & Rail with Sliding Active Selection)
+                    Item {
+                        id: navItemsContainer
                         width: parent.width
-                        spacing: 4
+                        height: navItemsCol.implicitHeight
 
-                        // Tab 0: Reader
-                        Item {
-                            width: parent.width
-                            height: 44
+                        // Single Material 3 Sliding Active Selection Indicator
+                        Rectangle {
+                            id: activeIndicatorPill
+                            anchors.left: parent.left
+                            anchors.leftMargin: 12
+                            anchors.right: parent.right
+                            anchors.rightMargin: 12
+                            height: 40
+                            radius: Theme.shapeFull
+                            color: Theme.secondaryContainer
+                            z: 0
 
-                            Rectangle {
-                                id: tab0Pill
-                                anchors.left: parent.left
-                                anchors.leftMargin: 12
-                                anchors.right: parent.right
-                                anchors.rightMargin: 12
-                                anchors.verticalCenter: parent.verticalCenter
-                                height: 40
-                                radius: Theme.shapeFull
-                                clip: true
-                                color: (currentTab === 0) ? Theme.secondaryContainer :
-                                       (navReaderArea.containsMouse ? Theme.surfaceContainerHighest : Theme.sidebarBg)
+                            property bool animationsReady: false
+                            Component.onCompleted: animationsReady = true
 
-                                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-
-                                LucideIcon {
-                                    id: tab0Icon
-                                    name: "book-open"
-                                    size: 18
-                                    color: (currentTab === 0) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 15
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-                                }
-
-                                Text {
-                                    anchors.left: tab0Icon.right
-                                    anchors.leftMargin: 14
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: 12
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: "Reader"
-                                    font.family: Theme.fontSans
-                                    font.pixelSize: 13
-                                    font.bold: currentTab === 0
-                                    color: (currentTab === 0) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
-                                    elide: Text.ElideRight
-                                    transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
-                                    opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
-                                    visible: opacity > 0
-                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-                                }
+                            y: {
+                                if (currentTab === 0) return tab0Item.y + (tab0Item.height - height) / 2
+                                if (currentTab === 1) return tab1Item.y + (tab1Item.height - height) / 2
+                                if (currentTab === 2) return tab2Item.y + (tab2Item.height - height) / 2
+                                if (currentTab === 3) return tab3Item.y + (tab3Item.height - height) / 2
+                                return tab0Item.y + (tab0Item.height - height) / 2
                             }
 
-                            MouseArea {
-                                id: navReaderArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: currentTab = 0
+                            Behavior on y {
+                                enabled: activeIndicatorPill.animationsReady
+                                NumberAnimation {
+                                    duration: Theme.animDurationNormal
+                                    easing.type: Easing.OutCubic
+                                }
                             }
                         }
 
-                        // Tab 1: Browse Catalog
-                        Item {
+                        Column {
+                            id: navItemsCol
                             width: parent.width
-                            height: 44
-                            opacity: networkMgr.isOnline ? 1.0 : 0.5
-                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                            spacing: 4
+                            z: 1
 
-                            Rectangle {
-                                id: tab1Pill
-                                anchors.left: parent.left
-                                anchors.leftMargin: 12
-                                anchors.right: parent.right
-                                anchors.rightMargin: 12
-                                anchors.verticalCenter: parent.verticalCenter
-                                height: 40
-                                radius: Theme.shapeFull
-                                clip: true
-                                color: (currentTab === 1) ? Theme.secondaryContainer :
-                                       (navCatalogArea.containsMouse ? Theme.surfaceContainerHighest : Theme.sidebarBg)
+                            // Tab 0: Reader
+                            Item {
+                                id: tab0Item
+                                width: parent.width
+                                height: 44
 
-                                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-
-                                LucideIcon {
-                                    id: tab1Icon
-                                    name: "compass"
-                                    size: 18
-                                    color: (currentTab === 1) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
+                                Rectangle {
+                                    id: tab0HoverPill
                                     anchors.left: parent.left
-                                    anchors.leftMargin: 15
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-                                }
-
-                                // Minimized offline dot
-                                Rectangle {
-                                    visible: !networkMgr.isOnline && sidebarRect.expandProgress < 0.3
-                                    width: 7
-                                    height: 7
-                                    radius: 3.5
-                                    color: Theme.warning
-                                    anchors.top: tab1Icon.top
-                                    anchors.right: tab1Icon.right
-                                    anchors.topMargin: -3
-                                    anchors.rightMargin: -3
-                                }
-
-                                Text {
-                                    anchors.left: tab1Icon.right
-                                    anchors.leftMargin: 14
-                                    anchors.right: (!networkMgr.isOnline && offlineBadge.visible) ? offlineBadge.left : parent.right
-                                    anchors.rightMargin: (!networkMgr.isOnline && offlineBadge.visible) ? 6 : 12
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: "Browse Catalog"
-                                    font.family: Theme.fontSans
-                                    font.pixelSize: 13
-                                    font.bold: currentTab === 1
-                                    color: (currentTab === 1) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
-                                    elide: Text.ElideRight
-                                    transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
-                                    opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
-                                    visible: opacity > 0
-                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-                                }
-
-                                Rectangle {
-                                    id: offlineBadge
+                                    anchors.leftMargin: 12
                                     anchors.right: parent.right
-                                    anchors.rightMargin: 10
+                                    anchors.rightMargin: 12
                                     anchors.verticalCenter: parent.verticalCenter
-                                    height: 20
+                                    height: 40
                                     radius: Theme.shapeFull
-                                    width: (!networkMgr.isOnline && opacity > 0) ? (offlineBadgeRow.implicitWidth + 12) : 0
                                     color: Theme.surfaceContainerHighest
-                                    opacity: !networkMgr.isOnline ? Math.max(0.0, Math.min(1.0, (sidebarRect.expandProgress - 0.3) * 1.43)) : 0.0
-                                    visible: !networkMgr.isOnline && opacity > 0
+                                    opacity: (currentTab !== 0 && navReaderArea.containsMouse) ? 1.0 : 0.0
+                                    Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                                }
 
-                                    RowLayout {
-                                        id: offlineBadgeRow
-                                        anchors.centerIn: parent
-                                        spacing: 4
-                                        LucideIcon {
-                                            name: "wifi-off"
-                                            size: 10
-                                            color: Theme.textOnSurfaceVariant
+                                Item {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 12
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 12
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    height: 40
+                                    clip: true
+
+                                    LucideIcon {
+                                        id: tab0Icon
+                                        name: "book-open"
+                                        size: 18
+                                        color: (currentTab === 0) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 15
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationNormal } }
+                                    }
+
+                                    Text {
+                                        anchors.left: tab0Icon.right
+                                        anchors.leftMargin: 14
+                                        anchors.right: parent.right
+                                        anchors.rightMargin: 12
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "Reader"
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 13
+                                        font.bold: currentTab === 0
+                                        color: (currentTab === 0) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
+                                        elide: Text.ElideRight
+                                        transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
+                                        opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
+                                        visible: opacity > 0
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationNormal } }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: navReaderArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: currentTab = 0
+                                }
+                            }
+
+                            // Tab 1: Browse Catalog
+                            Item {
+                                id: tab1Item
+                                width: parent.width
+                                height: 44
+                                opacity: networkMgr.isOnline ? 1.0 : 0.5
+                                Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+
+                                Rectangle {
+                                    id: tab1HoverPill
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 12
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 12
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    height: 40
+                                    radius: Theme.shapeFull
+                                    color: Theme.surfaceContainerHighest
+                                    opacity: (currentTab !== 1 && navCatalogArea.containsMouse) ? 1.0 : 0.0
+                                    Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                                }
+
+                                Item {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 12
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 12
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    height: 40
+                                    clip: true
+
+                                    LucideIcon {
+                                        id: tab1Icon
+                                        name: "compass"
+                                        size: 18
+                                        color: (currentTab === 1) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 15
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationNormal } }
+                                    }
+
+                                    // Minimized offline dot
+                                    Rectangle {
+                                        visible: !networkMgr.isOnline && sidebarRect.expandProgress < 0.3
+                                        width: 7
+                                        height: 7
+                                        radius: 3.5
+                                        color: Theme.warning
+                                        anchors.top: tab1Icon.top
+                                        anchors.right: tab1Icon.right
+                                        anchors.topMargin: -3
+                                        anchors.rightMargin: -3
+                                    }
+
+                                    Text {
+                                        anchors.left: tab1Icon.right
+                                        anchors.leftMargin: 14
+                                        anchors.right: (!networkMgr.isOnline && offlineBadge.visible) ? offlineBadge.left : parent.right
+                                        anchors.rightMargin: (!networkMgr.isOnline && offlineBadge.visible) ? 6 : 12
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "Browse Catalog"
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 13
+                                        font.bold: currentTab === 1
+                                        color: (currentTab === 1) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
+                                        elide: Text.ElideRight
+                                        transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
+                                        opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
+                                        visible: opacity > 0
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationNormal } }
+                                    }
+
+                                    Rectangle {
+                                        id: offlineBadge
+                                        anchors.right: parent.right
+                                        anchors.rightMargin: 10
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        height: 20
+                                        radius: Theme.shapeFull
+                                        width: (!networkMgr.isOnline && opacity > 0) ? (offlineBadgeRow.implicitWidth + 12) : 0
+                                        color: Theme.surfaceContainerHighest
+                                        opacity: !networkMgr.isOnline ? Math.max(0.0, Math.min(1.0, (sidebarRect.expandProgress - 0.3) * 1.43)) : 0.0
+                                        visible: !networkMgr.isOnline && opacity > 0
+
+                                        RowLayout {
+                                            id: offlineBadgeRow
+                                            anchors.centerIn: parent
+                                            spacing: 4
+                                            LucideIcon {
+                                                name: "wifi-off"
+                                                size: 10
+                                                color: Theme.textOnSurfaceVariant
+                                            }
+                                            Text {
+                                                text: "Offline"
+                                                font.family: Theme.fontSans
+                                                font.pixelSize: 10
+                                                font.bold: true
+                                                color: Theme.textOnSurfaceVariant
+                                            }
                                         }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: navCatalogArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: networkMgr.isOnline ? Qt.PointingHandCursor : Qt.ForbiddenCursor
+                                    onClicked: {
+                                        if (!networkMgr.isOnline) {
+                                            showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
+                                            return
+                                        }
+                                        currentTab = 1
+                                    }
+                                }
+                            }
+
+                            // Tab 2: Installed & Updates
+                            Item {
+                                id: tab2Item
+                                width: parent.width
+                                height: 44
+
+                                Rectangle {
+                                    id: tab2HoverPill
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 12
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 12
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    height: 40
+                                    radius: Theme.shapeFull
+                                    color: Theme.surfaceContainerHighest
+                                    opacity: (currentTab !== 2 && navInstArea.containsMouse) ? 1.0 : 0.0
+                                    Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                                }
+
+                                Item {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 12
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 12
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    height: 40
+                                    clip: true
+
+                                    LucideIcon {
+                                        id: tab2Icon
+                                        name: "download"
+                                        size: 18
+                                        color: (currentTab === 2) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 15
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationNormal } }
+                                    }
+
+                                    // Minimized installed badge dot
+                                    Rectangle {
+                                        visible: docsetMgr.installedCount > 0 && sidebarRect.expandProgress < 0.3
+                                        width: 7
+                                        height: 7
+                                        radius: 3.5
+                                        color: Theme.primary
+                                        anchors.top: tab2Icon.top
+                                        anchors.right: tab2Icon.right
+                                        anchors.topMargin: -3
+                                        anchors.rightMargin: -3
+                                    }
+
+                                    Text {
+                                        anchors.left: tab2Icon.right
+                                        anchors.leftMargin: 14
+                                        anchors.right: instBadge.left
+                                        anchors.rightMargin: 6
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "Installed"
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 13
+                                        font.bold: currentTab === 2
+                                        color: (currentTab === 2) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
+                                        elide: Text.ElideRight
+                                        transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
+                                        opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
+                                        visible: opacity > 0
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationNormal } }
+                                    }
+
+                                    // Count badge (expanded)
+                                    Rectangle {
+                                        id: instBadge
+                                        anchors.right: parent.right
+                                        anchors.rightMargin: 10
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        width: Math.max(22, instBadgeText.implicitWidth + 10)
+                                        height: 20
+                                        radius: Theme.shapeFull
+                                        color: (currentTab === 2) ? Qt.rgba(1, 1, 1, 0.2) : Theme.surfaceContainerHighest
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationNormal } }
+                                        opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.expandProgress - 0.3) * 1.43))
+                                        visible: opacity > 0
+
                                         Text {
-                                            text: "Offline"
+                                            id: instBadgeText
+                                            anchors.centerIn: parent
+                                            text: docsetMgr.installedCount
                                             font.family: Theme.fontSans
                                             font.pixelSize: 10
                                             font.bold: true
-                                            color: Theme.textOnSurfaceVariant
+                                            color: (currentTab === 2) ? "#ffffff" : Theme.textOnSurfaceVariant
+                                            Behavior on color { ColorAnimation { duration: Theme.animDurationNormal } }
                                         }
                                     }
                                 }
-                            }
 
-                            MouseArea {
-                                id: navCatalogArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: networkMgr.isOnline ? Qt.PointingHandCursor : Qt.ForbiddenCursor
-                                onClicked: {
-                                    if (!networkMgr.isOnline) {
-                                        showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
-                                        return
-                                    }
-                                    currentTab = 1
+                                MouseArea {
+                                    id: navInstArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: currentTab = 2
                                 }
                             }
-                        }
 
-                        // Tab 2: Installed & Updates
-                        Item {
-                            width: parent.width
-                            height: 44
+                            // Tab 3: Settings
+                            Item {
+                                id: tab3Item
+                                width: parent.width
+                                height: 44
 
-                            Rectangle {
-                                id: tab2Pill
-                                anchors.left: parent.left
-                                anchors.leftMargin: 12
-                                anchors.right: parent.right
-                                anchors.rightMargin: 12
-                                anchors.verticalCenter: parent.verticalCenter
-                                height: 40
-                                radius: Theme.shapeFull
-                                clip: true
-                                color: (currentTab === 2) ? Theme.secondaryContainer :
-                                       (navInstArea.containsMouse ? Theme.surfaceContainerHighest : Theme.sidebarBg)
-
-                                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-
-                                LucideIcon {
-                                    id: tab2Icon
-                                    name: "download"
-                                    size: 18
-                                    color: (currentTab === 2) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
-                                    anchors.left: parent.left
-                                    anchors.leftMargin: 15
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-                                }
-
-                                // Minimized installed badge dot
                                 Rectangle {
-                                    visible: docsetMgr.installedCount > 0 && sidebarRect.expandProgress < 0.3
-                                    width: 7
-                                    height: 7
-                                    radius: 3.5
-                                    color: Theme.primary
-                                    anchors.top: tab2Icon.top
-                                    anchors.right: tab2Icon.right
-                                    anchors.topMargin: -3
-                                    anchors.rightMargin: -3
-                                }
-
-                                Text {
-                                    anchors.left: tab2Icon.right
-                                    anchors.leftMargin: 14
-                                    anchors.right: instBadge.left
-                                    anchors.rightMargin: 6
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    text: "Installed"
-                                    font.family: Theme.fontSans
-                                    font.pixelSize: 13
-                                    font.bold: currentTab === 2
-                                    color: (currentTab === 2) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
-                                    elide: Text.ElideRight
-                                    transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
-                                    opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
-                                    visible: opacity > 0
-                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-                                }
-
-                                // Count badge (expanded)
-                                Rectangle {
-                                    id: instBadge
-                                    anchors.right: parent.right
-                                    anchors.rightMargin: 10
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    width: Math.max(22, instBadgeText.implicitWidth + 10)
-                                    height: 20
-                                    radius: Theme.shapeFull
-                                    color: (currentTab === 2) ? Qt.rgba(1, 1, 1, 0.2) : Theme.surfaceContainerHighest
-                                    opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.expandProgress - 0.3) * 1.43))
-                                    visible: opacity > 0
-
-                                    Text {
-                                        id: instBadgeText
-                                        anchors.centerIn: parent
-                                        text: docsetMgr.installedCount
-                                        font.family: Theme.fontSans
-                                        font.pixelSize: 10
-                                        font.bold: true
-                                        color: (currentTab === 2) ? "#ffffff" : Theme.textOnSurfaceVariant
-                                    }
-                                }
-                            }
-
-                            MouseArea {
-                                id: navInstArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: currentTab = 2
-                            }
-                        }
-
-                        // Tab 3: Settings
-                        Item {
-                            width: parent.width
-                            height: 44
-
-                            Rectangle {
-                                id: tab3Pill
-                                anchors.left: parent.left
-                                anchors.leftMargin: 12
-                                anchors.right: parent.right
-                                anchors.rightMargin: 12
-                                anchors.verticalCenter: parent.verticalCenter
-                                height: 40
-                                radius: Theme.shapeFull
-                                clip: true
-                                color: (currentTab === 3) ? Theme.secondaryContainer :
-                                       (navSettingsArea.containsMouse ? Theme.surfaceContainerHighest : Theme.sidebarBg)
-
-                                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-
-                                LucideIcon {
-                                    id: tab3Icon
-                                    name: "settings"
-                                    size: 18
-                                    color: (currentTab === 3) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
+                                    id: tab3HoverPill
                                     anchors.left: parent.left
-                                    anchors.leftMargin: 15
-                                    anchors.verticalCenter: parent.verticalCenter
-                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-                                }
-
-                                Text {
-                                    anchors.left: tab3Icon.right
-                                    anchors.leftMargin: 14
+                                    anchors.leftMargin: 12
                                     anchors.right: parent.right
                                     anchors.rightMargin: 12
                                     anchors.verticalCenter: parent.verticalCenter
-                                    text: "Settings"
-                                    font.family: Theme.fontSans
-                                    font.pixelSize: 13
-                                    font.bold: currentTab === 3
-                                    color: (currentTab === 3) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
-                                    elide: Text.ElideRight
-                                    transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
-                                    opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
-                                    visible: opacity > 0
-                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                                    height: 40
+                                    radius: Theme.shapeFull
+                                    color: Theme.surfaceContainerHighest
+                                    opacity: (currentTab !== 3 && navSettingsArea.containsMouse) ? 1.0 : 0.0
+                                    Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
                                 }
-                            }
 
-                            MouseArea {
-                                id: navSettingsArea
-                                anchors.fill: parent
-                                hoverEnabled: true
-                                cursorShape: Qt.PointingHandCursor
-                                onClicked: currentTab = 3
+                                Item {
+                                    anchors.left: parent.left
+                                    anchors.leftMargin: 12
+                                    anchors.right: parent.right
+                                    anchors.rightMargin: 12
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    height: 40
+                                    clip: true
+
+                                    LucideIcon {
+                                        id: tab3Icon
+                                        name: "settings"
+                                        size: 18
+                                        color: (currentTab === 3) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
+                                        anchors.left: parent.left
+                                        anchors.leftMargin: 15
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationNormal } }
+                                    }
+
+                                    Text {
+                                        anchors.left: tab3Icon.right
+                                        anchors.leftMargin: 14
+                                        anchors.right: parent.right
+                                        anchors.rightMargin: 12
+                                        anchors.verticalCenter: parent.verticalCenter
+                                        text: "Settings"
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 13
+                                        font.bold: currentTab === 3
+                                        color: (currentTab === 3) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
+                                        elide: Text.ElideRight
+                                        transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
+                                        opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
+                                        visible: opacity > 0
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationNormal } }
+                                    }
+                                }
+
+                                MouseArea {
+                                    id: navSettingsArea
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: currentTab = 3
+                                }
                             }
                         }
                     }
