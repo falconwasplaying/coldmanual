@@ -402,7 +402,7 @@ Item {
                         width: symbolsList.width
                         height: 32
                         radius: Theme.shapeSmall
-                        color: symMouseArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent"
+                        color: Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, symMouseArea.containsMouse ? 0.08 : 0.0)
                         Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                         RowLayout {
@@ -472,7 +472,7 @@ Item {
                             width: 32
                             height: 32
                             radius: Theme.shapeFull
-                            color: backArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent"
+                            color: Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, backArea.containsMouse ? 0.08 : 0.0)
                             opacity: historyIndex > 0 ? 1.0 : 0.4
                             scale: backArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
@@ -499,7 +499,7 @@ Item {
                             width: 32
                             height: 32
                             radius: Theme.shapeFull
-                            color: fwdArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent"
+                            color: Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, fwdArea.containsMouse ? 0.08 : 0.0)
                             opacity: historyIndex < history.length - 1 ? 1.0 : 0.4
                             scale: fwdArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
@@ -526,7 +526,7 @@ Item {
                             width: 32
                             height: 32
                             radius: Theme.shapeFull
-                            color: reloadArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent"
+                            color: Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, reloadArea.containsMouse ? 0.08 : 0.0)
                             scale: reloadArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -575,7 +575,7 @@ Item {
                             width: 30
                             height: 30
                             radius: Theme.shapeFull
-                            color: zoomOutArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent"
+                            color: Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, zoomOutArea.containsMouse ? 0.08 : 0.0)
                             scale: zoomOutArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -609,7 +609,7 @@ Item {
                             width: 30
                             height: 30
                             radius: Theme.shapeFull
-                            color: zoomInArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent"
+                            color: Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, zoomInArea.containsMouse ? 0.08 : 0.0)
                             scale: zoomInArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }

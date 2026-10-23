@@ -317,7 +317,7 @@ ApplicationWindow {
                         height: window.sidebarMinimized ? 36 : 42
                         radius: Theme.shapeFull
                         color: omniArea.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
-                        border.color: omniArea.containsMouse ? Theme.outline : "transparent"
+                        border.color: omniArea.containsMouse ? Theme.outline : Theme.surfaceContainerHigh
                         border.width: 1
                         anchors.horizontalCenter: parent.horizontalCenter
                         Behavior on width { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
@@ -406,7 +406,7 @@ ApplicationWindow {
                                 radius: Theme.shapeFull
                                 anchors.centerIn: parent
                                 color: (currentTab === 0) ? Theme.secondaryContainer :
-                                       (navReaderArea.containsMouse ? Theme.surfaceContainerHighest : "transparent")
+                                       (navReaderArea.containsMouse ? Theme.surfaceContainerHighest : Theme.sidebarBg)
 
                                 Behavior on width { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                                 Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
@@ -463,7 +463,7 @@ ApplicationWindow {
                                 radius: Theme.shapeFull
                                 anchors.centerIn: parent
                                 color: (currentTab === 1) ? Theme.secondaryContainer :
-                                       (navCatalogArea.containsMouse ? Theme.surfaceContainerHighest : "transparent")
+                                       (navCatalogArea.containsMouse ? Theme.surfaceContainerHighest : Theme.sidebarBg)
 
                                 Behavior on width { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                                 Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
@@ -567,7 +567,7 @@ ApplicationWindow {
                                 radius: Theme.shapeFull
                                 anchors.centerIn: parent
                                 color: (currentTab === 2) ? Theme.secondaryContainer :
-                                       (navInstArea.containsMouse ? Theme.surfaceContainerHighest : "transparent")
+                                       (navInstArea.containsMouse ? Theme.surfaceContainerHighest : Theme.sidebarBg)
 
                                 Behavior on width { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                                 Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
@@ -658,7 +658,7 @@ ApplicationWindow {
                                 radius: Theme.shapeFull
                                 anchors.centerIn: parent
                                 color: (currentTab === 3) ? Theme.secondaryContainer :
-                                       (navSettingsArea.containsMouse ? Theme.surfaceContainerHighest : "transparent")
+                                       (navSettingsArea.containsMouse ? Theme.surfaceContainerHighest : Theme.sidebarBg)
 
                                 Behavior on width { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }
                                 Behavior on height { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic } }

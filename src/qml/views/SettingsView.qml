@@ -385,7 +385,7 @@ Item {
                                         width: (parent.width - 2) / 2
                                         height: parent.height
                                         radius: Theme.shapeFull
-                                        color: settingsMgr.themeMode === "dark" ? Theme.secondaryContainer : "transparent"
+                                        color: settingsMgr.themeMode === "dark" ? Theme.secondaryContainer : Theme.surfaceContainerHigh
                                         Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                                         RowLayout {
@@ -417,7 +417,7 @@ Item {
                                         width: (parent.width - 2) / 2
                                         height: parent.height
                                         radius: Theme.shapeFull
-                                        color: settingsMgr.themeMode === "light" ? Theme.secondaryContainer : "transparent"
+                                        color: settingsMgr.themeMode === "light" ? Theme.secondaryContainer : Theme.surfaceContainerHigh
                                         Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                                         RowLayout {
