@@ -78,7 +78,7 @@ Rectangle {
                 anchors.centerIn: parent
                 name: root.iconName
                 size: 16
-                color: Theme.onPrimaryContainer
+                color: Theme.textOnPrimaryContainer
             }
         }
 
@@ -91,7 +91,7 @@ Rectangle {
                 font.family: Theme.fontSans
                 font.pixelSize: 13
                 font.bold: true
-                color: Theme.inverseOnSurface
+                color: Theme.textInverseOnSurface
                 visible: root.title.length > 0
             }
 
@@ -99,7 +99,7 @@ Rectangle {
                 text: root.message
                 font.family: Theme.fontSans
                 font.pixelSize: 12
-                color: Theme.inverseOnSurface
+                color: Theme.textInverseOnSurface
                 opacity: 0.85
                 elide: Text.ElideRight
                 Layout.fillWidth: true
@@ -116,7 +116,7 @@ Rectangle {
                 anchors.centerIn: parent
                 name: "x"
                 size: 14
-                color: Theme.inverseOnSurface
+                color: Theme.textInverseOnSurface
             }
             MouseArea {
                 id: closeMouse

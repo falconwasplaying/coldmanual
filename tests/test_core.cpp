@@ -11,6 +11,9 @@
 #include <QPainter>
 #include <QImage>
 #include <QBuffer>
+#include <QQmlApplicationEngine>
+#include <QQmlContext>
+#include <QQmlComponent>
 
 #include "core/SettingsManager.h"
 #include "core/CatalogItem.h"
@@ -492,6 +495,70 @@ void testNetworkManager() {
 #include <objbase.h>
 #endif
 
+void testThemeColors() {
+    std::cout << "[TEST] Running testThemeColors..." << std::endl;
+    SettingsManager settingsMgr;
+    settingsMgr.setThemeMode("light");
+    QQmlApplicationEngine engine;
+    engine.rootContext()->setContextProperty("settingsMgr", &settingsMgr);
+    engine.addImportPath("qrc:/");
+
+    QQmlComponent comp(&engine);
+    comp.setData(R"(
+        import QtQuick
+        Item {
+            property bool isDark: Theme.isDark
+            property color primary: Theme.primary
+            property color textOnPrimary: Theme.textOnPrimary
+            property color secondaryContainer: Theme.secondaryContainer
+            property color textOnSecondaryContainer: Theme.textOnSecondaryContainer
+            property color textOnSurface: Theme.textOnSurface
+            property color textOnSurfaceVariant: Theme.textOnSurfaceVariant
+            property color textPrimary: Theme.textPrimary
+            property color textSecondary: Theme.textSecondary
+            property color textOnAccent: Theme.textOnAccent
+        }
+    )", QUrl("qrc:/dummy.qml"));
+    auto* obj = comp.create();
+    if (!obj) {
+        std::cerr << "QML Component Errors: " << comp.errorString().toStdString() << std::endl;
+    }
+    assert(obj);
+    assert(!obj->property("isDark").toBool());
+    assert(obj->property("textOnPrimary").value<QColor>() == QColor("#ffffff"));
+    assert(obj->property("textOnSecondaryContainer").value<QColor>() == QColor("#ffffff"));
+    assert(obj->property("textOnAccent").value<QColor>() == QColor("#ffffff"));
+    assert(obj->property("textOnSurface").value<QColor>() == QColor("#191c20"));
+    assert(obj->property("textOnSurfaceVariant").value<QColor>() == QColor("#42474e"));
+
+    std::cout << "  isDark: false" << std::endl;
+    std::cout << "  primary: " << obj->property("primary").value<QColor>().name().toStdString() << std::endl;
+    std::cout << "  textOnPrimary: " << obj->property("textOnPrimary").value<QColor>().name().toStdString() << " (verified white)" << std::endl;
+    std::cout << "  textOnSecondaryContainer: " << obj->property("textOnSecondaryContainer").value<QColor>().name().toStdString() << " (verified white)" << std::endl;
+    std::cout << "  textOnSurface: " << obj->property("textOnSurface").value<QColor>().name().toStdString() << std::endl;
+    std::cout << "  textOnSurfaceVariant: " << obj->property("textOnSurfaceVariant").value<QColor>().name().toStdString() << std::endl;
+
+    // Test Dark mode
+    settingsMgr.setThemeMode("dark");
+    ThemeColorSync:
+    QQmlComponent compDark(&engine);
+    compDark.setData(R"(
+        import QtQuick
+        Item {
+            Component.onCompleted: Theme.isDark = true
+            property color textOnPrimary: Theme.textOnPrimary
+            property color textOnSecondaryContainer: Theme.textOnSecondaryContainer
+        }
+    )", QUrl("qrc:/dummyDark.qml"));
+    auto* objDark = compDark.create();
+    assert(objDark);
+    assert(objDark->property("textOnPrimary").value<QColor>() == QColor("#ffffff"));
+    assert(objDark->property("textOnSecondaryContainer").value<QColor>() == QColor("#ffffff"));
+    std::cout << "  Dark mode textOnPrimary: " << objDark->property("textOnPrimary").value<QColor>().name().toStdString() << " (verified white)" << std::endl;
+    std::cout << "  Dark mode textOnSecondaryContainer: " << objDark->property("textOnSecondaryContainer").value<QColor>().name().toStdString() << " (verified white)" << std::endl;
+    std::cout << "[PASS] testThemeColors passed (white text on blue boxes verified in light & dark modes)!" << std::endl;
+}
+
 int main(int argc, char* argv[]) {
 #ifdef Q_OS_WIN
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
@@ -509,6 +576,7 @@ int main(int argc, char* argv[]) {
     testNetworkDownloadAndExtraction();
     testNetworkManager();
     testNoDiskCaching();
+    testThemeColors();
 
     std::cout << "\nALL TESTS PASSED SUCCESSFULLY! (ColdManual Engine Verified)" << std::endl;
     return 0;

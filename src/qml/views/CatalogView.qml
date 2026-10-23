@@ -71,7 +71,7 @@ Item {
                     LucideIcon {
                         name: "search"
                         size: 15
-                        color: searchInput.activeFocus ? Theme.primary : Theme.onSurfaceVariant
+                        color: searchInput.activeFocus ? Theme.primary : Theme.textOnSurfaceVariant
                     }
 
                     TextInput {
@@ -79,7 +79,7 @@ Item {
                         Layout.fillWidth: true
                         font.family: Theme.fontSans
                         font.pixelSize: 13
-                        color: Theme.onSurface
+                        color: Theme.textOnSurface
                         clip: true
                         onTextChanged: catalogMgr.searchQuery = text
 
@@ -88,7 +88,7 @@ Item {
                             text: "Filter languages..."
                             font.family: Theme.fontSans
                             font.pixelSize: 13
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                             visible: !searchInput.text && !searchInput.activeFocus
                         }
                     }
@@ -96,7 +96,7 @@ Item {
                     LucideIcon {
                         name: "x"
                         size: 14
-                        color: Theme.onSurfaceVariant
+                        color: Theme.textOnSurfaceVariant
                         visible: searchInput.text.length > 0
                         MouseArea {
                             anchors.fill: parent
@@ -158,7 +158,7 @@ Item {
                     radius: Theme.shapeSmall
                     width: catRow.implicitWidth + 24
                     color: isSelected ? Theme.secondaryContainer :
-                           (catArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : Theme.surfaceContainerLow)
+                           (catArea.containsMouse ? Qt.rgba(Theme.textOnSurface.r, Theme.textOnSurface.g, Theme.textOnSurface.b, 0.08) : Theme.surfaceContainerLow)
                     border.color: isSelected ? "transparent" : Theme.outlineVariant
                     border.width: 1
 
@@ -174,7 +174,7 @@ Item {
                             visible: parent.parent.isSelected
                             name: "check"
                             size: 13
-                            color: Theme.onSecondaryContainer
+                            color: Theme.textOnSecondaryContainer
                         }
 
                         Text {
@@ -182,7 +182,7 @@ Item {
                             font.family: Theme.fontSans
                             font.pixelSize: 12
                             font.bold: parent.parent.isSelected
-                            color: parent.parent.isSelected ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                            color: parent.parent.isSelected ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                         }
                     }
@@ -203,7 +203,7 @@ Item {
                 text: catalogMgr.totalItems + " available"
                 font.family: Theme.fontSans
                 font.pixelSize: 12
-                color: Theme.onSurfaceVariant
+                color: Theme.textOnSurfaceVariant
             }
         }
 
@@ -352,7 +352,7 @@ Item {
                                     font.family: Theme.fontSans
                                     font.pixelSize: 15
                                     font.bold: true
-                                    color: Theme.onSurface
+                                    color: Theme.textOnSurface
                                     elide: Text.ElideRight
                                     Layout.fillWidth: true
                                 }
@@ -361,7 +361,7 @@ Item {
                                     text: model.category
                                     font.family: Theme.fontSans
                                     font.pixelSize: 11
-                                    color: Theme.onSurfaceVariant
+                                    color: Theme.textOnSurfaceVariant
                                 }
                             }
 
@@ -400,7 +400,7 @@ Item {
                             text: model.description
                             font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                             wrapMode: Text.WordWrap
                             maximumLineCount: 2
                             elide: Text.ElideRight
@@ -417,7 +417,7 @@ Item {
                                 text: "Version:"
                                 font.family: Theme.fontSans
                                 font.pixelSize: 12
-                                color: Theme.onSurfaceVariant
+                                color: Theme.textOnSurfaceVariant
                             }
 
                             VersionSelector {
@@ -479,7 +479,7 @@ Item {
                                             text: model.downloadSpeed
                                             font.family: Theme.fontSans
                                             font.pixelSize: 10
-                                            color: Theme.onSurfaceVariant
+                                            color: Theme.textOnSurfaceVariant
                                         }
                                     }
                                 }
@@ -579,14 +579,14 @@ Item {
                                         LucideIcon {
                                             name: model.isInstalled ? "refresh-cw" : "download"
                                             size: 13
-                                            color: model.isInstalled ? Theme.onSurface : Theme.onPrimary
+                                            color: model.isInstalled ? Theme.textOnSurface : Theme.textOnPrimary
                                         }
                                         Text {
                                             text: model.isInstalled ? "Reinstall" : "Download & Install"
                                             font.family: Theme.fontSans
                                             font.pixelSize: 12
                                             font.bold: !model.isInstalled
-                                            color: model.isInstalled ? Theme.onSurface : Theme.onPrimary
+                                            color: model.isInstalled ? Theme.textOnSurface : Theme.textOnPrimary
                                         }
                                     }
 
@@ -618,7 +618,7 @@ Item {
                                         anchors.centerIn: parent
                                         name: "book-open"
                                         size: 14
-                                        color: Theme.onSecondaryContainer
+                                        color: Theme.textOnSecondaryContainer
                                     }
 
                                     MouseArea {

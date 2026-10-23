@@ -22,13 +22,13 @@ Item {
                 font.family: Theme.fontSans
                 font.pixelSize: 22
                 font.bold: true
-                color: Theme.onSurface
+                color: Theme.textOnSurface
             }
             Text {
                 text: "Configure storage location, update preferences, and appearance"
                 font.family: Theme.fontSans
                 font.pixelSize: 13
-                color: Theme.onSurfaceVariant
+                color: Theme.textOnSurfaceVariant
             }
         }
 
@@ -74,7 +74,7 @@ Item {
                                 font.family: Theme.fontSans
                                 font.pixelSize: 15
                                 font.bold: true
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
                         }
 
@@ -82,7 +82,7 @@ Item {
                             text: "Directory where downloaded documentation sets and SQLite indexes are stored."
                             font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                         }
 
                         RowLayout {
@@ -105,7 +105,7 @@ Item {
                                     text: settingsMgr.storagePath
                                     font.family: Theme.fontMono
                                     font.pixelSize: 11
-                                    color: Theme.onSurface
+                                    color: Theme.textOnSurface
                                     elide: Text.ElideMiddle
                                 }
                             }
@@ -126,14 +126,14 @@ Item {
                                     LucideIcon {
                                         name: "external-link"
                                         size: 13
-                                        color: Theme.onSurface
+                                        color: Theme.textOnSurface
                                     }
                                     Text {
                                         text: "Open Folder"
                                         font.family: Theme.fontSans
                                         font.pixelSize: 12
                                         font.bold: true
-                                        color: Theme.onSurface
+                                        color: Theme.textOnSurface
                                     }
                                 }
 
@@ -186,7 +186,7 @@ Item {
                                 font.family: Theme.fontSans
                                 font.pixelSize: 15
                                 font.bold: true
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
                         }
 
@@ -194,7 +194,7 @@ Item {
                             text: "ColdManual checks for new releases of libraries you have set to 'Latest Stable'."
                             font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                         }
 
                         RowLayout {
@@ -209,13 +209,13 @@ Item {
                                     font.family: Theme.fontSans
                                     font.pixelSize: 13
                                     font.bold: true
-                                    color: Theme.onSurface
+                                    color: Theme.textOnSurface
                                 }
                                 Text {
                                     text: "Periodically check remote manifests and notify when updates exist"
                                     font.family: Theme.fontSans
                                     font.pixelSize: 11
-                                    color: Theme.onSurfaceVariant
+                                    color: Theme.textOnSurfaceVariant
                                 }
                             }
 
@@ -234,7 +234,7 @@ Item {
                                 text: "Check Frequency:"
                                 font.family: Theme.fontSans
                                 font.pixelSize: 13
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
 
                             ComboBox {
@@ -285,7 +285,7 @@ Item {
                                 font.family: Theme.fontSans
                                 font.pixelSize: 15
                                 font.bold: true
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
                         }
 
@@ -293,7 +293,7 @@ Item {
                             text: "Select your preferred window presentation. You can also toggle fullscreen at any time using F11."
                             font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                         }
 
                         RowLayout {
@@ -318,7 +318,7 @@ Item {
                                 }
                                 font.family: Theme.fontSans
                                 font.pixelSize: 12
-                                color: Theme.onSurfaceVariant
+                                color: Theme.textOnSurfaceVariant
                             }
                         }
                     }
@@ -351,7 +351,7 @@ Item {
                                 font.family: Theme.fontSans
                                 font.pixelSize: 15
                                 font.bold: true
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
                         }
 
@@ -363,7 +363,7 @@ Item {
                                 text: "Theme:"
                                 font.family: Theme.fontSans
                                 font.pixelSize: 13
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
 
                             // Material 3 Segmented Theme Selector
@@ -394,14 +394,14 @@ Item {
                                             LucideIcon {
                                                 name: "moon"
                                                 size: 13
-                                                color: settingsMgr.themeMode === "dark" ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                                color: settingsMgr.themeMode === "dark" ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
                                             }
                                             Text {
                                                 text: "Dark"
                                                 font.family: Theme.fontSans
                                                 font.pixelSize: 12
                                                 font.bold: settingsMgr.themeMode === "dark"
-                                                color: settingsMgr.themeMode === "dark" ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                                color: settingsMgr.themeMode === "dark" ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
                                             }
                                         }
 
@@ -426,14 +426,14 @@ Item {
                                             LucideIcon {
                                                 name: "sun"
                                                 size: 13
-                                                color: settingsMgr.themeMode === "light" ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                                color: settingsMgr.themeMode === "light" ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
                                             }
                                             Text {
                                                 text: "Light"
                                                 font.family: Theme.fontSans
                                                 font.pixelSize: 12
                                                 font.bold: settingsMgr.themeMode === "light"
-                                                color: settingsMgr.themeMode === "light" ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                                color: settingsMgr.themeMode === "light" ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
                                             }
                                         }
 
@@ -458,7 +458,7 @@ Item {
                                     text: "Reader Base Font Size:"
                                     font.family: Theme.fontSans
                                     font.pixelSize: 13
-                                    color: Theme.onSurface
+                                    color: Theme.textOnSurface
                                 }
                                 Item { Layout.fillWidth: true }
                                 Text {

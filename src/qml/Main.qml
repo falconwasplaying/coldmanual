@@ -18,7 +18,7 @@ ApplicationWindow {
     Material.accent: Theme.primary
     Material.primary: Theme.primary
     Material.background: Theme.surface
-    Material.foreground: Theme.onSurface
+    Material.foreground: Theme.textOnSurface
 
     onVisibleChanged: {
         if (visible) {
@@ -60,7 +60,15 @@ ApplicationWindow {
         }
     }
 
+    Connections {
+        target: settingsMgr
+        function onThemeModeChanged(mode) {
+            Theme.isDark = (mode !== "light")
+        }
+    }
+
     Component.onCompleted: {
+        Theme.isDark = (settingsMgr.themeMode !== "light")
         if (docsetMgr.installedCount > 0) {
             currentTab = 0
             var firstDoc = docsetMgr.getInstalledDocset(docsetMgr.data(docsetMgr.index(0), 1).toString())
@@ -218,7 +226,7 @@ ApplicationWindow {
                     anchors.centerIn: parent
                     name: "x"
                     size: 11
-                    color: closeArea.containsMouse ? Theme.onError : Theme.textPrimary
+                    color: closeArea.containsMouse ? Theme.textOnError : Theme.textPrimary
                 }
                 MouseArea {
                     id: closeArea
@@ -301,13 +309,13 @@ ApplicationWindow {
                                 font.family: Theme.fontSans
                                 font.pixelSize: 16
                                 font.bold: true
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
                             Text {
                                 text: "Offline Documentation"
                                 font.family: Theme.fontSans
                                 font.pixelSize: 11
-                                color: Theme.onSurfaceVariant
+                                color: Theme.textOnSurfaceVariant
                             }
                         }
                     }
@@ -332,7 +340,7 @@ ApplicationWindow {
                             id: searchIcon
                             name: "search"
                             size: 16
-                            color: omniArea.containsMouse ? Theme.primary : Theme.onSurfaceVariant
+                            color: omniArea.containsMouse ? Theme.primary : Theme.textOnSurfaceVariant
                             anchors.left: parent.left
                             anchors.leftMargin: 16
                             anchors.verticalCenter: parent.verticalCenter
@@ -348,7 +356,7 @@ ApplicationWindow {
                             text: "Search symbols..."
                             font.family: Theme.fontSans
                             font.pixelSize: 13
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                             elide: Text.ElideRight
                             transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
                             opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
@@ -373,7 +381,7 @@ ApplicationWindow {
                                 font.family: Theme.fontSans
                                 font.pixelSize: 9
                                 font.bold: true
-                                color: Theme.onSurfaceVariant
+                                color: Theme.textOnSurfaceVariant
                             }
                         }
 
@@ -425,7 +433,7 @@ ApplicationWindow {
                                     id: tab0Icon
                                     name: "book-open"
                                     size: 18
-                                    color: (currentTab === 0) ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                    color: (currentTab === 0) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
                                     anchors.left: parent.left
                                     anchors.leftMargin: 15
                                     anchors.verticalCenter: parent.verticalCenter
@@ -442,7 +450,7 @@ ApplicationWindow {
                                     font.family: Theme.fontSans
                                     font.pixelSize: 13
                                     font.bold: currentTab === 0
-                                    color: (currentTab === 0) ? Theme.onSecondaryContainer : Theme.onSurface
+                                    color: (currentTab === 0) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
                                     elide: Text.ElideRight
                                     transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
                                     opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
@@ -486,7 +494,7 @@ ApplicationWindow {
                                     id: tab1Icon
                                     name: "compass"
                                     size: 18
-                                    color: (currentTab === 1) ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                    color: (currentTab === 1) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
                                     anchors.left: parent.left
                                     anchors.leftMargin: 15
                                     anchors.verticalCenter: parent.verticalCenter
@@ -516,7 +524,7 @@ ApplicationWindow {
                                     font.family: Theme.fontSans
                                     font.pixelSize: 13
                                     font.bold: currentTab === 1
-                                    color: (currentTab === 1) ? Theme.onSecondaryContainer : Theme.onSurface
+                                    color: (currentTab === 1) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
                                     elide: Text.ElideRight
                                     transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
                                     opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
@@ -543,14 +551,14 @@ ApplicationWindow {
                                         LucideIcon {
                                             name: "wifi-off"
                                             size: 10
-                                            color: Theme.onSurfaceVariant
+                                            color: Theme.textOnSurfaceVariant
                                         }
                                         Text {
                                             text: "Offline"
                                             font.family: Theme.fontSans
                                             font.pixelSize: 10
                                             font.bold: true
-                                            color: Theme.onSurfaceVariant
+                                            color: Theme.textOnSurfaceVariant
                                         }
                                     }
                                 }
@@ -595,7 +603,7 @@ ApplicationWindow {
                                     id: tab2Icon
                                     name: "download"
                                     size: 18
-                                    color: (currentTab === 2) ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                    color: (currentTab === 2) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
                                     anchors.left: parent.left
                                     anchors.leftMargin: 15
                                     anchors.verticalCenter: parent.verticalCenter
@@ -625,7 +633,7 @@ ApplicationWindow {
                                     font.family: Theme.fontSans
                                     font.pixelSize: 13
                                     font.bold: currentTab === 2
-                                    color: (currentTab === 2) ? Theme.onSecondaryContainer : Theme.onSurface
+                                    color: (currentTab === 2) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
                                     elide: Text.ElideRight
                                     transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
                                     opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
@@ -642,7 +650,7 @@ ApplicationWindow {
                                     width: Math.max(22, instBadgeText.implicitWidth + 10)
                                     height: 20
                                     radius: Theme.shapeFull
-                                    color: (currentTab === 2) ? Theme.primary : Theme.surfaceContainerHighest
+                                    color: (currentTab === 2) ? Qt.rgba(1, 1, 1, 0.2) : Theme.surfaceContainerHighest
                                     opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.expandProgress - 0.3) * 1.43))
                                     visible: opacity > 0
 
@@ -653,7 +661,7 @@ ApplicationWindow {
                                         font.family: Theme.fontSans
                                         font.pixelSize: 10
                                         font.bold: true
-                                        color: (currentTab === 2) ? Theme.onPrimary : Theme.onSurfaceVariant
+                                        color: (currentTab === 2) ? "#ffffff" : Theme.textOnSurfaceVariant
                                     }
                                 }
                             }
@@ -691,7 +699,7 @@ ApplicationWindow {
                                     id: tab3Icon
                                     name: "settings"
                                     size: 18
-                                    color: (currentTab === 3) ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                    color: (currentTab === 3) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
                                     anchors.left: parent.left
                                     anchors.leftMargin: 15
                                     anchors.verticalCenter: parent.verticalCenter
@@ -708,7 +716,7 @@ ApplicationWindow {
                                     font.family: Theme.fontSans
                                     font.pixelSize: 13
                                     font.bold: currentTab === 3
-                                    color: (currentTab === 3) ? Theme.onSecondaryContainer : Theme.onSurface
+                                    color: (currentTab === 3) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
                                     elide: Text.ElideRight
                                     transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
                                     opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
@@ -753,7 +761,7 @@ ApplicationWindow {
                             source: {
                                 var w = Math.max(40, collapseArrowItem.width)
                                 var h = collapseArrowItem.height
-                                var colorHex = arrowMouseArea.containsMouse ? Theme.primary : Theme.onSurfaceVariant
+                                var colorHex = arrowMouseArea.containsMouse ? Theme.primary : Theme.textOnSurfaceVariant
                                 var lineStart = 16
                                 var arrowTipX = w - 16
                                 var wingX = arrowTipX - 6
@@ -780,7 +788,7 @@ ApplicationWindow {
                             smooth: true
                             mipmap: true
                             source: {
-                                var colorHex = arrowMouseArea.containsMouse ? Theme.primary : Theme.onSurfaceVariant
+                                var colorHex = arrowMouseArea.containsMouse ? Theme.primary : Theme.textOnSurfaceVariant
                                 var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='" + colorHex + "' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'>" +
                                           "<path d='M9 18 L15 12 L9 6'/>" +
                                           "</svg>"
@@ -811,7 +819,7 @@ ApplicationWindow {
                             text: "Storage: " + docsetMgr.totalStorageUsage
                             font.family: Theme.fontSans
                             font.pixelSize: 11
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                             transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
                             opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
                             visible: opacity > 0
@@ -821,7 +829,7 @@ ApplicationWindow {
                             text: "v1.0"
                             font.family: Theme.fontSans
                             font.pixelSize: 11
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.right: parent.right
                             anchors.rightMargin: sidebarRect.expandProgress < 0.5 ? Math.round((sidebarRect.width - implicitWidth) / 2) : 16
@@ -983,7 +991,7 @@ ApplicationWindow {
                     font.family: Theme.fontSans
                     font.pixelSize: 18
                     font.bold: true
-                    color: Theme.onSurface
+                    color: Theme.textOnSurface
                 }
 
                 Text {
@@ -991,7 +999,7 @@ ApplicationWindow {
                     text: "Offline Documentation Browser"
                     font.family: Theme.fontSans
                     font.pixelSize: 11
-                    color: Theme.onSurfaceVariant
+                    color: Theme.textOnSurfaceVariant
                 }
             }
 

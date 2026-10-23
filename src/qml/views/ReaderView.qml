@@ -197,7 +197,7 @@ Item {
                         font.family: Theme.fontSans
                         font.pixelSize: 13
                         font.bold: true
-                        color: Theme.onSurface
+                        color: Theme.textOnSurface
                         elide: Text.ElideRight
                     }
                 }
@@ -226,7 +226,7 @@ Item {
                         LucideIcon {
                             name: "search"
                             size: 13
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                         }
 
                         TextInput {
@@ -234,7 +234,7 @@ Item {
                             Layout.fillWidth: true
                             font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.onSurface
+                            color: Theme.textOnSurface
                             clip: true
                             onTextChanged: root.loadSymbols()
 
@@ -243,7 +243,7 @@ Item {
                                 text: "Filter symbols..."
                                 font.family: Theme.fontSans
                                 font.pixelSize: 12
-                                color: Theme.onSurfaceVariant
+                                color: Theme.textOnSurfaceVariant
                                 visible: !symbolSearchInput.text
                             }
                         }
@@ -323,7 +323,7 @@ Item {
                                     height: 28
                                     width: typeLabel.implicitWidth + 16
                                     radius: Theme.shapeSmall
-                                    color: isSelected ? Theme.secondaryContainer : (pillArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : Theme.surfaceContainerLow)
+                                    color: isSelected ? Theme.secondaryContainer : (pillArea.containsMouse ? Qt.rgba(Theme.textOnSurface.r, Theme.textOnSurface.g, Theme.textOnSurface.b, 0.08) : Theme.surfaceContainerLow)
                                     border.color: isSelected ? "transparent" : Theme.outlineVariant
                                     border.width: 1
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -335,7 +335,7 @@ Item {
                                         font.family: Theme.fontSans
                                         font.pixelSize: 11
                                         font.bold: parent.isSelected
-                                        color: parent.isSelected ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                        color: parent.isSelected ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
                                         Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                     }
 
@@ -368,7 +368,7 @@ Item {
                             anchors.centerIn: parent
                             name: "chevron-right"
                             size: 13
-                            color: rightPillScrollArea.containsMouse ? Theme.primary : Theme.onSurfaceVariant
+                            color: rightPillScrollArea.containsMouse ? Theme.primary : Theme.textOnSurfaceVariant
                         }
 
                         MouseArea {
@@ -402,7 +402,7 @@ Item {
                         width: symbolsList.width
                         height: 32
                         radius: Theme.shapeSmall
-                        color: Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, symMouseArea.containsMouse ? 0.08 : 0.0)
+                        color: Qt.rgba(Theme.textOnSurface.r, Theme.textOnSurface.g, Theme.textOnSurface.b, symMouseArea.containsMouse ? 0.08 : 0.0)
                         Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                         RowLayout {
@@ -415,7 +415,7 @@ Item {
                                 text: model.name
                                 font.family: Theme.fontMono
                                 font.pixelSize: 11
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }
@@ -437,7 +437,7 @@ Item {
                         text: "No symbols available"
                         font.family: Theme.fontSans
                         font.pixelSize: 12
-                        color: Theme.onSurfaceVariant
+                        color: Theme.textOnSurfaceVariant
                         visible: symbolsList.count === 0
                     }
                 }
@@ -472,7 +472,7 @@ Item {
                             width: 32
                             height: 32
                             radius: Theme.shapeFull
-                            color: Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, backArea.containsMouse ? 0.08 : 0.0)
+                            color: Qt.rgba(Theme.textOnSurface.r, Theme.textOnSurface.g, Theme.textOnSurface.b, backArea.containsMouse ? 0.08 : 0.0)
                             opacity: historyIndex > 0 ? 1.0 : 0.4
                             scale: backArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
@@ -482,7 +482,7 @@ Item {
                                 anchors.centerIn: parent
                                 name: "chevron-left"
                                 size: 16
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
 
                             MouseArea {
@@ -499,7 +499,7 @@ Item {
                             width: 32
                             height: 32
                             radius: Theme.shapeFull
-                            color: Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, fwdArea.containsMouse ? 0.08 : 0.0)
+                            color: Qt.rgba(Theme.textOnSurface.r, Theme.textOnSurface.g, Theme.textOnSurface.b, fwdArea.containsMouse ? 0.08 : 0.0)
                             opacity: historyIndex < history.length - 1 ? 1.0 : 0.4
                             scale: fwdArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
@@ -509,7 +509,7 @@ Item {
                                 anchors.centerIn: parent
                                 name: "chevron-right"
                                 size: 16
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
 
                             MouseArea {
@@ -526,7 +526,7 @@ Item {
                             width: 32
                             height: 32
                             radius: Theme.shapeFull
-                            color: Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, reloadArea.containsMouse ? 0.08 : 0.0)
+                            color: Qt.rgba(Theme.textOnSurface.r, Theme.textOnSurface.g, Theme.textOnSurface.b, reloadArea.containsMouse ? 0.08 : 0.0)
                             scale: reloadArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -535,7 +535,7 @@ Item {
                                 anchors.centerIn: parent
                                 name: "refresh-cw"
                                 size: 14
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
 
                             MouseArea {
@@ -562,7 +562,7 @@ Item {
                         font.family: Theme.fontSans
                         font.pixelSize: 13
                         font.bold: true
-                        color: Theme.onSurface
+                        color: Theme.textOnSurface
                         elide: Text.ElideRight
                         Layout.fillWidth: true
                     }
@@ -575,7 +575,7 @@ Item {
                             width: 30
                             height: 30
                             radius: Theme.shapeFull
-                            color: Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, zoomOutArea.containsMouse ? 0.08 : 0.0)
+                            color: Qt.rgba(Theme.textOnSurface.r, Theme.textOnSurface.g, Theme.textOnSurface.b, zoomOutArea.containsMouse ? 0.08 : 0.0)
                             scale: zoomOutArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -584,7 +584,7 @@ Item {
                                 anchors.centerIn: parent
                                 name: "zoom-out"
                                 size: 14
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
 
                             MouseArea {
@@ -602,14 +602,14 @@ Item {
                             text: Math.round(zoomFactor * 100) + "%"
                             font.family: Theme.fontSans
                             font.pixelSize: 11
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                         }
 
                         Rectangle {
                             width: 30
                             height: 30
                             radius: Theme.shapeFull
-                            color: Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, zoomInArea.containsMouse ? 0.08 : 0.0)
+                            color: Qt.rgba(Theme.textOnSurface.r, Theme.textOnSurface.g, Theme.textOnSurface.b, zoomInArea.containsMouse ? 0.08 : 0.0)
                             scale: zoomInArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -618,7 +618,7 @@ Item {
                                 anchors.centerIn: parent
                                 name: "zoom-in"
                                 size: 14
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
 
                             MouseArea {
@@ -871,7 +871,7 @@ Item {
                             font.family: Theme.fontSans
                             font.pixelSize: 18
                             font.bold: true
-                            color: Theme.onSurface
+                            color: Theme.textOnSurface
                         }
 
                         Text {
@@ -879,7 +879,7 @@ Item {
                             text: "Select a symbol from the left sidebar, press Ctrl+K to search, or browse libraries."
                             font.family: Theme.fontSans
                             font.pixelSize: 13
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                         }
 
                         Rectangle {
@@ -898,14 +898,14 @@ Item {
                                     visible: !networkMgr.isOnline
                                     name: "wifi-off"
                                     size: 14
-                                    color: Theme.onSurfaceVariant
+                                    color: Theme.textOnSurfaceVariant
                                 }
                                 Text {
                                     text: networkMgr.isOnline ? "Browse Libraries" : "Browse (Offline)"
                                     font.family: Theme.fontSans
                                     font.pixelSize: 13
                                     font.bold: true
-                                    color: networkMgr.isOnline ? Theme.onPrimary : Theme.onSurfaceVariant
+                                    color: networkMgr.isOnline ? Theme.textOnPrimary : Theme.textOnSurfaceVariant
                                 }
                             }
 

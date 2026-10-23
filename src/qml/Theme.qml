@@ -4,8 +4,8 @@ import QtQuick
 QtObject {
     id: theme
 
-    // Active Theme State
-    readonly property bool isDark: (typeof settingsMgr !== "undefined") ? (settingsMgr.themeMode !== "light") : true
+    // Active Theme State (dynamic & reactive)
+    property bool isDark: (typeof settingsMgr !== "undefined") ? (settingsMgr.themeMode !== "light") : true
 
     // App Branding Icons
     readonly property string logoUrl: isDark ? "qrc:/resources/cmw.svg" : "qrc:/resources/cmb.svg"
@@ -17,23 +17,23 @@ QtObject {
     // ==========================================
 
     // Primary Roles
-    readonly property color primary: isDark ? "#a8c7fa" : "#0b57d0"
-    readonly property color onPrimary: isDark ? "#062e6f" : "#ffffff"
+    readonly property color primary: isDark ? "#1a73e8" : "#0b57d0"
+    readonly property color textOnPrimary: "#ffffff"
     readonly property color primaryContainer: isDark ? "#004a77" : "#d3e3fd"
-    readonly property color onPrimaryContainer: isDark ? "#c2e7ff" : "#041e49"
+    readonly property color textOnPrimaryContainer: isDark ? "#c2e7ff" : "#041e49"
     readonly property color inversePrimary: isDark ? "#0b57d0" : "#a8c7fa"
 
-    // Secondary Roles (Navigation Rail Indicator, Tonal Buttons, Filter Chips)
+    // Secondary Roles (Navigation Rail Indicator, Active Pills, Tonal Buttons, Filter Chips)
     readonly property color secondary: isDark ? "#bec6dc" : "#535f70"
-    readonly property color onSecondary: isDark ? "#283141" : "#ffffff"
-    readonly property color secondaryContainer: isDark ? "#004a77" : "#c2e7ff"
-    readonly property color onSecondaryContainer: isDark ? "#c2e7ff" : "#001d35"
+    readonly property color textOnSecondary: "#ffffff"
+    readonly property color secondaryContainer: isDark ? "#1a73e8" : "#0b57d0"
+    readonly property color textOnSecondaryContainer: "#ffffff"
 
     // Tertiary Roles
     readonly property color tertiary: isDark ? "#efb8c8" : "#7d5260"
-    readonly property color onTertiary: isDark ? "#492532" : "#ffffff"
+    readonly property color textOnTertiary: "#ffffff"
     readonly property color tertiaryContainer: isDark ? "#492532" : "#ffd8e4"
-    readonly property color onTertiaryContainer: isDark ? "#ffd8e4" : "#31111d"
+    readonly property color textOnTertiaryContainer: isDark ? "#ffd8e4" : "#31111d"
 
     // Surface Container Hierarchy (M3 Tonal Elevation)
     readonly property color surface: isDark ? "#111318" : "#fdf8fd"
@@ -47,19 +47,19 @@ QtObject {
 
     // Inverse Surfaces (Snackbars / Toasts)
     readonly property color inverseSurface: isDark ? "#e2e2e6" : "#2e3135"
-    readonly property color inverseOnSurface: isDark ? "#2e3135" : "#f1f0f4"
+    readonly property color textInverseOnSurface: isDark ? "#2e3135" : "#f1f0f4"
 
     // Outline Roles
     readonly property color outline: isDark ? "#8c9199" : "#72777f"
     readonly property color outlineVariant: isDark ? "#42474e" : "#c2c7cf"
 
-    // Typography & Content Roles
-    readonly property color onSurface: isDark ? "#e2e2e6" : "#191c20"
-    readonly property color onSurfaceVariant: isDark ? "#c2c7cf" : "#42474e"
-    readonly property color textPrimary: onSurface
-    readonly property color textSecondary: onSurfaceVariant
+    // Typography & Content Roles (M3 Compliant & Safe QML Property Identifiers)
+    readonly property color textOnSurface: isDark ? "#e2e2e6" : "#191c20"
+    readonly property color textOnSurfaceVariant: isDark ? "#c2c7cf" : "#42474e"
+    readonly property color textPrimary: textOnSurface
+    readonly property color textSecondary: textOnSurfaceVariant
     readonly property color textMuted: outline
-    readonly property color textOnAccent: onPrimary
+    readonly property color textOnAccent: textOnPrimary
 
     // Legacy Aliases for Seamless Backward Compatibility
     readonly property color background: surface
@@ -69,7 +69,7 @@ QtObject {
     readonly property color border: outlineVariant
     readonly property color borderFocus: primary
     readonly property color accent: primary
-    readonly property color accentHover: isDark ? "#c2e7ff" : "#0842a0"
+    readonly property color accentHover: isDark ? "#4285f4" : "#0842a0"
     readonly property color accentPressed: isDark ? "#7dadf8" : "#062e6f"
     readonly property color accentDim: secondaryContainer
 
@@ -77,9 +77,9 @@ QtObject {
     readonly property color danger: isDark ? "#f2b8b5" : "#b3261e"
     readonly property color dangerBg: isDark ? "#8c1d18" : "#f9dedc"
     readonly property color error: danger
-    readonly property color onError: isDark ? "#601410" : "#ffffff"
+    readonly property color textOnError: "#ffffff"
     readonly property color errorContainer: dangerBg
-    readonly property color onErrorContainer: isDark ? "#f9dedc" : "#410e0b"
+    readonly property color textOnErrorContainer: isDark ? "#f9dedc" : "#410e0b"
 
     readonly property color success: isDark ? "#6dd58c" : "#198754"
     readonly property color successBg: isDark ? "#0d3b19" : "#c8f7d5"

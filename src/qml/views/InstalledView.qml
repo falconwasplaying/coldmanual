@@ -28,13 +28,13 @@ Item {
                     font.family: Theme.fontSans
                     font.pixelSize: 22
                     font.bold: true
-                    color: Theme.onSurface
+                    color: Theme.textOnSurface
                 }
                 Text {
                     text: docsetMgr.installedCount + " libraries installed • " + docsetMgr.totalStorageUsage + " on disk"
                     font.family: Theme.fontSans
                     font.pixelSize: 13
-                    color: Theme.onSurfaceVariant
+                    color: Theme.textOnSurfaceVariant
                 }
             }
 
@@ -75,7 +75,7 @@ Item {
                         font.family: Theme.fontSans
                         font.pixelSize: 12
                         font.bold: true
-                        color: Theme.onSurface
+                        color: Theme.textOnSurface
                     }
                 }
 
@@ -113,14 +113,14 @@ Item {
                     LucideIcon {
                         name: "download"
                         size: 14
-                        color: Theme.onPrimary
+                        color: Theme.textOnPrimary
                     }
                     Text {
                         text: "Update All"
                         font.family: Theme.fontSans
                         font.pixelSize: 12
                         font.bold: true
-                        color: Theme.onPrimary
+                        color: Theme.textOnPrimary
                     }
                 }
 
@@ -195,7 +195,7 @@ Item {
                                 font.family: Theme.fontSans
                                 font.pixelSize: 16
                                 font.bold: true
-                                color: Theme.onSurface
+                                color: Theme.textOnSurface
                             }
 
                             Rectangle {
@@ -210,7 +210,7 @@ Item {
                                     text: "v" + model.installedVersion
                                     font.family: Theme.fontSans
                                     font.pixelSize: 10
-                                    color: Theme.onSurfaceVariant
+                                    color: Theme.textOnSurfaceVariant
                                 }
                             }
 
@@ -226,7 +226,7 @@ Item {
                                     text: model.sizeFormatted
                                     font.family: Theme.fontSans
                                     font.pixelSize: 10
-                                    color: Theme.onSurfaceVariant
+                                    color: Theme.textOnSurfaceVariant
                                 }
                             }
 
@@ -264,7 +264,7 @@ Item {
                             text: "Installed: " + model.installedAt + " • Last checked: " + model.lastChecked
                             font.family: Theme.fontSans
                             font.pixelSize: 11
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                         }
                     }
 
@@ -276,7 +276,7 @@ Item {
                             text: "Auto-update latest"
                             font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: model.trackLatest ? Theme.onSurface : Theme.onSurfaceVariant
+                            color: model.trackLatest ? Theme.textOnSurface : Theme.textOnSurfaceVariant
                         }
 
                         Switch {
@@ -347,14 +347,14 @@ Item {
                                 LucideIcon {
                                     name: "book-open"
                                     size: 14
-                                    color: Theme.onPrimary
+                                    color: Theme.textOnPrimary
                                 }
                                 Text {
                                     text: "Open Reader"
                                     font.family: Theme.fontSans
                                     font.pixelSize: 12
                                     font.bold: true
-                                    color: Theme.onPrimary
+                                    color: Theme.textOnPrimary
                                 }
                             }
 
@@ -420,7 +420,7 @@ Item {
                         font.family: Theme.fontSans
                         font.pixelSize: 16
                         font.bold: true
-                        color: Theme.onSurface
+                        color: Theme.textOnSurface
                     }
 
                     Text {
@@ -428,7 +428,7 @@ Item {
                         text: "Visit the Browse tab to download offline docs for languages and frameworks."
                         font.family: Theme.fontSans
                         font.pixelSize: 13
-                        color: Theme.onSurfaceVariant
+                        color: Theme.textOnSurfaceVariant
                     }
 
                     Rectangle {
@@ -447,14 +447,14 @@ Item {
                                 visible: !networkMgr.isOnline
                                 name: "wifi-off"
                                 size: 14
-                                color: Theme.onSurfaceVariant
+                                color: Theme.textOnSurfaceVariant
                             }
                             Text {
                                 text: networkMgr.isOnline ? "Browse Documentation" : "Browse (Offline)"
                                 font.family: Theme.fontSans
                                 font.pixelSize: 13
                                 font.bold: true
-                                color: networkMgr.isOnline ? Theme.onPrimary : Theme.onSurfaceVariant
+                                color: networkMgr.isOnline ? Theme.textOnPrimary : Theme.textOnSurfaceVariant
                             }
                         }
 

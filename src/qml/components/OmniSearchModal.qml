@@ -84,8 +84,8 @@ Item {
                     id: searchField
                     Layout.fillWidth: true
                     placeholderText: "Search symbols, functions, types, guides across installed docs..."
-                    placeholderTextColor: Theme.onSurfaceVariant
-                    color: Theme.onSurface
+                    placeholderTextColor: Theme.textOnSurfaceVariant
+                    color: Theme.textOnSurface
                     font.family: Theme.fontSans
                     font.pixelSize: 15
                     background: Rectangle {
@@ -125,7 +125,7 @@ Item {
                         font.family: Theme.fontSans
                         font.pixelSize: 10
                         font.bold: true
-                        color: Theme.onSurfaceVariant
+                        color: Theme.textOnSurfaceVariant
                     }
                 }
             }
@@ -155,7 +155,7 @@ Item {
                     height: 52
                     radius: Theme.shapeMedium
                     color: (resultsList.currentIndex === index) ? Theme.secondaryContainer :
-                           (mouseArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent")
+                           (mouseArea.containsMouse ? Qt.rgba(Theme.textOnSurface.r, Theme.textOnSurface.g, Theme.textOnSurface.b, 0.08) : "transparent")
                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                     RowLayout {
@@ -187,7 +187,7 @@ Item {
                                 font.family: Theme.fontSans
                                 font.pixelSize: 11
                                 font.bold: true
-                                color: (resultsList.currentIndex === index) ? Theme.onSecondaryContainer : Theme.primary
+                                color: (resultsList.currentIndex === index) ? Theme.textOnSecondaryContainer : Theme.primary
                             }
                         }
 
@@ -201,7 +201,7 @@ Item {
                                 font.family: Theme.fontMono
                                 font.pixelSize: 13
                                 font.bold: true
-                                color: (resultsList.currentIndex === index) ? Theme.onSecondaryContainer : Theme.onSurface
+                                color: (resultsList.currentIndex === index) ? Theme.textOnSecondaryContainer : Theme.textOnSurface
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }
@@ -210,7 +210,7 @@ Item {
                                 text: model.docsetName + " • " + model.relativePath
                                 font.family: Theme.fontSans
                                 font.pixelSize: 11
-                                color: (resultsList.currentIndex === index) ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                color: (resultsList.currentIndex === index) ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
                                 opacity: (resultsList.currentIndex === index) ? 0.8 : 1.0
                                 elide: Text.ElideMiddle
                                 Layout.fillWidth: true
@@ -220,7 +220,7 @@ Item {
                         LucideIcon {
                             name: "chevron-right"
                             size: 16
-                            color: Theme.onSecondaryContainer
+                            color: Theme.textOnSecondaryContainer
                             visible: resultsList.currentIndex === index
                         }
                     }
@@ -259,14 +259,14 @@ Item {
                             font.family: Theme.fontSans
                             font.pixelSize: 14
                             font.bold: true
-                            color: Theme.onSurface
+                            color: Theme.textOnSurface
                         }
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Type any function, class, type, or module from your downloaded docs"
                             font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                         }
                     }
                 }
@@ -282,7 +282,7 @@ Item {
                             Layout.alignment: Qt.AlignHCenter
                             name: "search"
                             size: 32
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                         }
 
                         Text {
@@ -290,14 +290,14 @@ Item {
                             text: "No symbols found for \"" + searchEngine.query + "\""
                             font.family: Theme.fontSans
                             font.pixelSize: 14
-                            color: Theme.onSurface
+                            color: Theme.textOnSurface
                         }
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Make sure you have downloaded the relevant framework in the Browse tab"
                             font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.onSurfaceVariant
+                            color: Theme.textOnSurfaceVariant
                         }
                     }
                 }
@@ -317,19 +317,19 @@ Item {
                     text: "↑↓ Navigate"
                     font.family: Theme.fontSans
                     font.pixelSize: 11
-                    color: Theme.onSurfaceVariant
+                    color: Theme.textOnSurfaceVariant
                 }
                 Text {
                     text: "↵ Select"
                     font.family: Theme.fontSans
                     font.pixelSize: 11
-                    color: Theme.onSurfaceVariant
+                    color: Theme.textOnSurfaceVariant
                 }
                 Text {
                     text: "ESC Close"
                     font.family: Theme.fontSans
                     font.pixelSize: 11
-                    color: Theme.onSurfaceVariant
+                    color: Theme.textOnSurfaceVariant
                 }
                 Item { Layout.fillWidth: true }
                 Text {

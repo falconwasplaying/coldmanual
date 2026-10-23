@@ -78,7 +78,7 @@ Item {
                         LucideIcon {
                             name: modelData.icon
                             size: 14
-                            color: optionItem.isSelected ? Theme.onSecondaryContainer : (mouseArea.containsMouse ? Theme.onSurface : Theme.onSurfaceVariant)
+                            color: optionItem.isSelected ? Theme.textOnSecondaryContainer : (mouseArea.containsMouse ? Theme.textOnSurface : Theme.textOnSurfaceVariant)
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                         }
 
@@ -87,7 +87,7 @@ Item {
                             font.family: Theme.fontSans
                             font.pixelSize: 12
                             font.bold: optionItem.isSelected
-                            color: optionItem.isSelected ? Theme.onSecondaryContainer : (mouseArea.containsMouse ? Theme.onSurface : Theme.onSurfaceVariant)
+                            color: optionItem.isSelected ? Theme.textOnSecondaryContainer : (mouseArea.containsMouse ? Theme.textOnSurface : Theme.textOnSurfaceVariant)
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                         }
                     }

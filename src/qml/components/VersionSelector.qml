@@ -39,7 +39,7 @@ Item {
                 text: root.selectedText ? root.selectedText : "Latest Release"
                 font.family: Theme.fontSans
                 font.pixelSize: 11
-                color: Theme.onSurface
+                color: Theme.textOnSurface
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
             }
@@ -86,7 +86,7 @@ Item {
                 id: chevronIcon
                 name: "chevron-down"
                 size: 12
-                color: Theme.onSurfaceVariant
+                color: Theme.textOnSurfaceVariant
                 rotation: dropdownPopup.opened ? 180 : 0
                 Behavior on rotation {
                     NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel }
@@ -177,7 +177,7 @@ Item {
                     anchors.fill: parent
                     visible: !parent.isDivider
                     radius: Theme.shapeSmall
-                    color: isSelected ? Theme.secondaryContainer : (itemMouse.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent")
+                    color: isSelected ? Theme.secondaryContainer : (itemMouse.containsMouse ? Qt.rgba(Theme.textOnSurface.r, Theme.textOnSurface.g, Theme.textOnSurface.b, 0.08) : "transparent")
                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                     RowLayout {
@@ -192,7 +192,7 @@ Item {
                             font.family: Theme.fontSans
                             font.pixelSize: 12
                             font.bold: isSelected
-                            color: isSelected ? Theme.onSecondaryContainer : Theme.onSurface
+                            color: isSelected ? Theme.textOnSecondaryContainer : Theme.textOnSurface
                             elide: Text.ElideRight
                         }
 
@@ -239,7 +239,7 @@ Item {
                             visible: isSelected
                             name: "check"
                             size: 13
-                            color: Theme.onSecondaryContainer
+                            color: Theme.textOnSecondaryContainer
                         }
                     }
 
