@@ -242,19 +242,19 @@ ApplicationWindow {
         // Material 3 Navigation Rail & Navigation Drawer
         Rectangle {
             id: sidebarRect
-            Layout.preferredWidth: window.sidebarMinimized ? 72 : 250
-            Layout.fillHeight: true
-            color: Theme.sidebarBg
-            border.color: Theme.outlineVariant
-            border.width: 1
-            clip: true
-
-            Behavior on Layout.preferredWidth {
+            property real expandProgress: window.sidebarMinimized ? 0.0 : 1.0
+            Behavior on expandProgress {
                 NumberAnimation {
                     duration: Theme.animDurationNormal
                     easing.type: Easing.OutCubic
                 }
             }
+            Layout.preferredWidth: Math.round(72 + (250 - 72) * expandProgress)
+            Layout.fillHeight: true
+            color: Theme.sidebarBg
+            border.color: Theme.outlineVariant
+            border.width: 1
+            clip: true
 
             Item {
                 anchors.fill: parent
@@ -267,7 +267,7 @@ ApplicationWindow {
                     anchors.right: parent.right
                     spacing: 12
 
-                    // 1. Logo & App Title (Anchored icon, smooth text reveal)
+                    // 1. Logo & App Title (Anchored icon, smooth left-to-right fade)
                     Item {
                         width: parent.width
                         height: 36
@@ -292,7 +292,8 @@ ApplicationWindow {
                             anchors.leftMargin: 14
                             anchors.verticalCenter: parent.verticalCenter
                             spacing: 1
-                            opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 120) / 70))
+                            transform: Translate { x: Math.round(-18 * (1.0 - sidebarRect.expandProgress)) }
+                            opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
                             visible: opacity > 0
 
                             Text {
@@ -311,7 +312,7 @@ ApplicationWindow {
                         }
                     }
 
-                    // 2. Material 3 Search Bar (Anchored icon, right-expanding container)
+                    // 2. Material 3 Search Bar (Anchored icon, left-to-right text slide & fade)
                     Rectangle {
                         id: omniBtn
                         anchors.left: parent.left
@@ -349,7 +350,8 @@ ApplicationWindow {
                             font.pixelSize: 13
                             color: Theme.onSurfaceVariant
                             elide: Text.ElideRight
-                            opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 120) / 70))
+                            transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
+                            opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
                             visible: opacity > 0
                         }
 
@@ -362,7 +364,7 @@ ApplicationWindow {
                             height: 20
                             radius: Theme.shapeSmall
                             color: Theme.surfaceContainerHighest
-                            opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 160) / 50))
+                            opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.expandProgress - 0.25) * 1.33))
                             visible: opacity > 0
 
                             Text {
@@ -384,7 +386,7 @@ ApplicationWindow {
                         }
                     }
 
-                    // Tonal Divider (Expanding from left margin to right margin)
+                    // Tonal Divider
                     Rectangle {
                         anchors.left: parent.left
                         anchors.leftMargin: 12
@@ -442,7 +444,8 @@ ApplicationWindow {
                                     font.bold: currentTab === 0
                                     color: (currentTab === 0) ? Theme.onSecondaryContainer : Theme.onSurface
                                     elide: Text.ElideRight
-                                    opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 100) / 70))
+                                    transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
+                                    opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
                                     visible: opacity > 0
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
@@ -490,9 +493,9 @@ ApplicationWindow {
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
 
-                                // Minimized offline dot (anchored directly to icon)
+                                // Minimized offline dot
                                 Rectangle {
-                                    visible: !networkMgr.isOnline && sidebarRect.width < 130
+                                    visible: !networkMgr.isOnline && sidebarRect.expandProgress < 0.3
                                     width: 7
                                     height: 7
                                     radius: 3.5
@@ -515,7 +518,8 @@ ApplicationWindow {
                                     font.bold: currentTab === 1
                                     color: (currentTab === 1) ? Theme.onSecondaryContainer : Theme.onSurface
                                     elide: Text.ElideRight
-                                    opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 100) / 70))
+                                    transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
+                                    opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
                                     visible: opacity > 0
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
@@ -529,7 +533,7 @@ ApplicationWindow {
                                     radius: Theme.shapeFull
                                     width: offlineBadgeRow.implicitWidth + 12
                                     color: Theme.surfaceContainerHighest
-                                    opacity: !networkMgr.isOnline ? Math.max(0.0, Math.min(1.0, (sidebarRect.width - 160) / 60)) : 0.0
+                                    opacity: !networkMgr.isOnline ? Math.max(0.0, Math.min(1.0, (sidebarRect.expandProgress - 0.3) * 1.43)) : 0.0
                                     visible: opacity > 0
 
                                     RowLayout {
@@ -600,7 +604,7 @@ ApplicationWindow {
 
                                 // Minimized installed badge dot
                                 Rectangle {
-                                    visible: docsetMgr.installedCount > 0 && sidebarRect.width < 130
+                                    visible: docsetMgr.installedCount > 0 && sidebarRect.expandProgress < 0.3
                                     width: 7
                                     height: 7
                                     radius: 3.5
@@ -623,7 +627,8 @@ ApplicationWindow {
                                     font.bold: currentTab === 2
                                     color: (currentTab === 2) ? Theme.onSecondaryContainer : Theme.onSurface
                                     elide: Text.ElideRight
-                                    opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 100) / 70))
+                                    transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
+                                    opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
                                     visible: opacity > 0
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
@@ -638,7 +643,7 @@ ApplicationWindow {
                                     height: 20
                                     radius: Theme.shapeFull
                                     color: (currentTab === 2) ? Theme.primary : Theme.surfaceContainerHighest
-                                    opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 160) / 60))
+                                    opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.expandProgress - 0.3) * 1.43))
                                     visible: opacity > 0
 
                                     Text {
@@ -705,7 +710,8 @@ ApplicationWindow {
                                     font.bold: currentTab === 3
                                     color: (currentTab === 3) ? Theme.onSecondaryContainer : Theme.onSurface
                                     elide: Text.ElideRight
-                                    opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 100) / 70))
+                                    transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
+                                    opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
                                     visible: opacity > 0
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                 }
@@ -741,7 +747,7 @@ ApplicationWindow {
                             id: arrowSvgImg
                             anchors.fill: parent
                             visible: opacity > 0
-                            opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 110) / 40))
+                            opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.expandProgress - 0.2) * 1.25))
                             smooth: true
                             mipmap: true
                             source: {
@@ -770,7 +776,7 @@ ApplicationWindow {
                             width: 24
                             height: 24
                             visible: opacity > 0
-                            opacity: Math.max(0.0, Math.min(1.0, (120 - sidebarRect.width) / 40))
+                            opacity: Math.max(0.0, Math.min(1.0, (0.5 - sidebarRect.expandProgress) * 2.0))
                             smooth: true
                             mipmap: true
                             source: {
@@ -806,7 +812,8 @@ ApplicationWindow {
                             font.family: Theme.fontSans
                             font.pixelSize: 11
                             color: Theme.onSurfaceVariant
-                            opacity: Math.max(0.0, Math.min(1.0, (sidebarRect.width - 140) / 50))
+                            transform: Translate { x: Math.round(-16 * (1.0 - sidebarRect.expandProgress)) }
+                            opacity: Math.min(1.0, sidebarRect.expandProgress * 1.5)
                             visible: opacity > 0
                         }
 
@@ -817,7 +824,7 @@ ApplicationWindow {
                             color: Theme.onSurfaceVariant
                             anchors.verticalCenter: parent.verticalCenter
                             anchors.right: parent.right
-                            anchors.rightMargin: sidebarRect.width < 120 ? Math.round((sidebarRect.width - implicitWidth) / 2) : 16
+                            anchors.rightMargin: sidebarRect.expandProgress < 0.5 ? Math.round((sidebarRect.width - implicitWidth) / 2) : 16
                         }
                     }
                 }
