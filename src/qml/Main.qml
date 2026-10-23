@@ -257,7 +257,7 @@ ApplicationWindow {
                     easing.type: Easing.OutCubic
                 }
             }
-            Layout.preferredWidth: Math.round(72 + (250 - 72) * expandProgress)
+            Layout.preferredWidth: Math.round(72 + (260 - 72) * expandProgress)
             Layout.fillHeight: true
             color: Theme.sidebarBg
             border.color: Theme.outlineVariant
@@ -517,8 +517,8 @@ ApplicationWindow {
                                 Text {
                                     anchors.left: tab1Icon.right
                                     anchors.leftMargin: 14
-                                    anchors.right: offlineBadge.left
-                                    anchors.rightMargin: 6
+                                    anchors.right: (!networkMgr.isOnline && offlineBadge.visible) ? offlineBadge.left : parent.right
+                                    anchors.rightMargin: (!networkMgr.isOnline && offlineBadge.visible) ? 6 : 12
                                     anchors.verticalCenter: parent.verticalCenter
                                     text: "Browse Catalog"
                                     font.family: Theme.fontSans
@@ -539,10 +539,10 @@ ApplicationWindow {
                                     anchors.verticalCenter: parent.verticalCenter
                                     height: 20
                                     radius: Theme.shapeFull
-                                    width: offlineBadgeRow.implicitWidth + 12
+                                    width: (!networkMgr.isOnline && opacity > 0) ? (offlineBadgeRow.implicitWidth + 12) : 0
                                     color: Theme.surfaceContainerHighest
                                     opacity: !networkMgr.isOnline ? Math.max(0.0, Math.min(1.0, (sidebarRect.expandProgress - 0.3) * 1.43)) : 0.0
-                                    visible: opacity > 0
+                                    visible: !networkMgr.isOnline && opacity > 0
 
                                     RowLayout {
                                         id: offlineBadgeRow
