@@ -46,9 +46,9 @@ Item {
         anchors.top: parent.top
         anchors.topMargin: (root.opacity > 0.01) ? 60 : 36
         scale: (root.opacity > 0.01) ? 1.0 : 0.95
-        radius: Theme.radiusLg
-        color: Theme.surface
-        border.color: Theme.border
+        radius: Theme.shapeExtraLarge
+        color: Theme.surfaceContainerHigh
+        border.color: Theme.outlineVariant
         border.width: 1
 
         Behavior on anchors.topMargin {
@@ -65,26 +65,26 @@ Item {
 
         ColumnLayout {
             anchors.fill: parent
-            anchors.margins: 14
-            spacing: 10
+            anchors.margins: 18
+            spacing: 12
 
             // Search Header
             RowLayout {
                 Layout.fillWidth: true
-                spacing: 10
+                spacing: 12
 
                 LucideIcon {
                     name: "search"
-                    size: 16
-                    color: Theme.accent
+                    size: 18
+                    color: Theme.primary
                 }
 
                 TextField {
                     id: searchField
                     Layout.fillWidth: true
                     placeholderText: "Search symbols, functions, types, guides across installed docs..."
-                    placeholderTextColor: Theme.textMuted
-                    color: Theme.textPrimary
+                    placeholderTextColor: Theme.onSurfaceVariant
+                    color: Theme.onSurface
                     font.family: Theme.fontSans
                     font.pixelSize: 15
                     background: Rectangle {
@@ -114,16 +114,17 @@ Item {
                 }
 
                 Rectangle {
-                    width: 38
-                    height: 22
-                    radius: Theme.radiusSm
-                    color: Theme.surfaceHover
+                    width: 44
+                    height: 24
+                    radius: Theme.shapeFull
+                    color: Theme.surfaceContainerHighest
                     Text {
                         anchors.centerIn: parent
                         text: "ESC"
+                        font.family: Theme.fontSans
                         font.pixelSize: 10
                         font.bold: true
-                        color: Theme.textMuted
+                        color: Theme.onSurfaceVariant
                     }
                 }
             }
@@ -131,7 +132,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 height: 1
-                color: Theme.border
+                color: Theme.outlineVariant
             }
 
             // Results List
@@ -150,45 +151,42 @@ Item {
                 delegate: Rectangle {
                     id: delegateItem
                     width: resultsList.width
-                    height: 48
-                    radius: Theme.radiusSm
-                    color: (resultsList.currentIndex === index || mouseArea.containsMouse) ? Theme.surfaceHover : "transparent"
+                    height: 52
+                    radius: Theme.shapeMedium
+                    color: (resultsList.currentIndex === index) ? Theme.secondaryContainer :
+                           (mouseArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent")
                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.leftMargin: 10
-                        anchors.rightMargin: 10
-                        spacing: 10
+                        anchors.leftMargin: 12
+                        anchors.rightMargin: 12
+                        spacing: 12
 
                         // Docset Logo
                         DocLogo {
                             docId: model.docsetId
-                            size: 22
+                            size: 24
                             showBackground: false
                         }
 
-                        // Type Badge
+                        // Type Badge (M3 Tonal Chip)
                         Rectangle {
-                            width: Math.max(50, typeText.implicitWidth + 12)
-                            height: 22
-                            radius: Theme.radiusSm
-                            color: {
-                                var t = model.type.toLowerCase()
-                                if (t.indexOf("func") >= 0 || t.indexOf("method") >= 0) return "#1e3a5f"
-                                if (t.indexOf("class") >= 0 || t.indexOf("struct") >= 0) return "#3b1e5f"
-                                if (t.indexOf("type") >= 0 || t.indexOf("enum") >= 0) return "#1e4d3f"
-                                if (t.indexOf("guide") >= 0 || t.indexOf("module") >= 0) return "#4d3e1e"
-                                return Theme.surfaceElevated
-                            }
+                            width: Math.max(54, typeText.implicitWidth + 14)
+                            height: 24
+                            radius: Theme.shapeSmall
+                            color: (resultsList.currentIndex === index) ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
+                            border.color: Theme.outlineVariant
+                            border.width: 1
 
                             Text {
                                 id: typeText
                                 anchors.centerIn: parent
                                 text: model.type ? model.type : "Doc"
+                                font.family: Theme.fontSans
                                 font.pixelSize: 11
                                 font.bold: true
-                                color: Theme.accent
+                                color: (resultsList.currentIndex === index) ? Theme.onSecondaryContainer : Theme.primary
                             }
                         }
 
@@ -202,15 +200,17 @@ Item {
                                 font.family: Theme.fontMono
                                 font.pixelSize: 13
                                 font.bold: true
-                                color: Theme.textPrimary
+                                color: (resultsList.currentIndex === index) ? Theme.onSecondaryContainer : Theme.onSurface
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }
 
                             Text {
                                 text: model.docsetName + " • " + model.relativePath
+                                font.family: Theme.fontSans
                                 font.pixelSize: 11
-                                color: Theme.textMuted
+                                color: (resultsList.currentIndex === index) ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                opacity: (resultsList.currentIndex === index) ? 0.8 : 1.0
                                 elide: Text.ElideMiddle
                                 Layout.fillWidth: true
                             }
@@ -218,8 +218,8 @@ Item {
 
                         LucideIcon {
                             name: "chevron-right"
-                            size: 14
-                            color: Theme.accent
+                            size: 16
+                            color: Theme.onSecondaryContainer
                             visible: resultsList.currentIndex === index
                         }
                     }
@@ -249,21 +249,23 @@ Item {
                             Layout.alignment: Qt.AlignHCenter
                             name: "zap"
                             size: 32
-                            color: Theme.accent
+                            color: Theme.primary
                         }
 
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Instant Symbol & Topic Lookup"
+                            font.family: Theme.fontSans
                             font.pixelSize: 14
                             font.bold: true
-                            color: Theme.textSecondary
+                            color: Theme.onSurface
                         }
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Type any function, class, type, or module from your downloaded docs"
+                            font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.textMuted
+                            color: Theme.onSurfaceVariant
                         }
                     }
                 }
@@ -279,20 +281,22 @@ Item {
                             Layout.alignment: Qt.AlignHCenter
                             name: "search"
                             size: 32
-                            color: Theme.textMuted
+                            color: Theme.onSurfaceVariant
                         }
 
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "No symbols found for \"" + searchEngine.query + "\""
+                            font.family: Theme.fontSans
                             font.pixelSize: 14
-                            color: Theme.textSecondary
+                            color: Theme.onSurface
                         }
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Make sure you have downloaded the relevant framework in the Browse tab"
+                            font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.textMuted
+                            color: Theme.onSurfaceVariant
                         }
                     }
                 }
@@ -302,7 +306,7 @@ Item {
             Rectangle {
                 Layout.fillWidth: true
                 height: 1
-                color: Theme.border
+                color: Theme.outlineVariant
             }
 
             RowLayout {
@@ -310,24 +314,29 @@ Item {
                 spacing: 14
                 Text {
                     text: "↑↓ Navigate"
+                    font.family: Theme.fontSans
                     font.pixelSize: 11
-                    color: Theme.textMuted
+                    color: Theme.onSurfaceVariant
                 }
                 Text {
                     text: "↵ Select"
+                    font.family: Theme.fontSans
                     font.pixelSize: 11
-                    color: Theme.textMuted
+                    color: Theme.onSurfaceVariant
                 }
                 Text {
                     text: "ESC Close"
+                    font.family: Theme.fontSans
                     font.pixelSize: 11
-                    color: Theme.textMuted
+                    color: Theme.onSurfaceVariant
                 }
                 Item { Layout.fillWidth: true }
                 Text {
                     text: (searchEngine.resultCount > 0 ? (searchEngine.resultCount + " results") : "")
+                    font.family: Theme.fontSans
                     font.pixelSize: 11
-                    color: Theme.accent
+                    font.bold: true
+                    color: Theme.primary
                 }
             }
         }

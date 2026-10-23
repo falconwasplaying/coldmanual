@@ -8,7 +8,7 @@ Item {
     property string category: "Languages"
     property string logoSource: ""
     property int size: 36
-    property int radius: Theme.radiusSm
+    property int radius: Theme.shapeSmall
     property bool showBackground: true
 
     implicitWidth: size
@@ -46,8 +46,8 @@ Item {
     Rectangle {
         anchors.fill: parent
         radius: root.radius
-        color: root.showBackground ? Theme.surfaceElevated : "transparent"
-        border.color: root.showBackground ? Theme.border : "transparent"
+        color: root.showBackground ? Theme.surfaceContainerHighest : "transparent"
+        border.color: root.showBackground ? Theme.outlineVariant : "transparent"
         border.width: root.showBackground ? 1 : 0
 
         // Official Logo Image (downloaded docset, local db, local cache, or remote CDN)
@@ -68,7 +68,7 @@ Item {
             anchors.centerIn: parent
             visible: !logoImg.visible
             size: Math.round(root.size * 0.52)
-            color: Theme.accent
+            color: Theme.primary
             name: {
                 var cat = root.category ? root.category.toLowerCase() : ""
                 if (cat.indexOf("lang") !== -1) return "code-2"

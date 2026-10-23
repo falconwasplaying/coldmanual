@@ -4,62 +4,131 @@ import QtQuick
 QtObject {
     id: theme
 
-    // Colors
+    // Active Theme State
     readonly property bool isDark: (typeof settingsMgr !== "undefined") ? (settingsMgr.themeMode !== "light") : true
 
-    // App Branding Icons (cmw for dark mode, cmb for white/light mode, cmi for OS/Windows)
+    // App Branding Icons
     readonly property string logoUrl: isDark ? "qrc:/resources/cmw.svg" : "qrc:/resources/cmb.svg"
     readonly property string appIconUrl: "qrc:/resources/cmi.svg"
 
-    readonly property color background: isDark ? "#121214" : "#f8fafc"
-    readonly property color sidebarBg: isDark ? "#18181b" : "#f1f5f9"
-    readonly property color surface: isDark ? "#202024" : "#ffffff"
-    readonly property color surfaceElevated: isDark ? "#27272a" : "#ffffff"
-    readonly property color surfaceHover: isDark ? "#2e2e33" : "#e2e8f0"
-    readonly property color border: isDark ? "#2e2e33" : "#e2e8f0"
-    readonly property color borderFocus: isDark ? "#38bdf8" : "#0284c7"
+    // ==========================================
+    // MATERIAL DESIGN 3: COLOR SYSTEM
+    // Classic Pixel Blue Key / Seed Palette
+    // ==========================================
 
-    // Accents
-    readonly property color accent: isDark ? "#38bdf8" : "#0284c7"
-    readonly property color accentHover: isDark ? "#7dd3fc" : "#0369a1"
-    readonly property color accentPressed: isDark ? "#0284c7" : "#075985"
-    readonly property color accentDim: isDark ? "#1e3a5f" : "#e0f2fe"
+    // Primary Roles
+    readonly property color primary: isDark ? "#a8c7fa" : "#0b57d0"
+    readonly property color onPrimary: isDark ? "#062e6f" : "#ffffff"
+    readonly property color primaryContainer: isDark ? "#004a77" : "#d3e3fd"
+    readonly property color onPrimaryContainer: isDark ? "#c2e7ff" : "#041e49"
+    readonly property color inversePrimary: isDark ? "#0b57d0" : "#a8c7fa"
 
-    // Semantic Colors
-    readonly property color success: "#22c55e"
-    readonly property color successBg: isDark ? "#14532d" : "#dcfce7"
-    readonly property color warning: "#eab308"
-    readonly property color warningBg: isDark ? "#713f12" : "#fef9c3"
-    readonly property color danger: "#ef4444"
-    readonly property color dangerBg: isDark ? "#7f1d1d" : "#fee2e2"
+    // Secondary Roles (Navigation Rail Indicator, Tonal Buttons, Filter Chips)
+    readonly property color secondary: isDark ? "#bec6dc" : "#535f70"
+    readonly property color onSecondary: isDark ? "#283141" : "#ffffff"
+    readonly property color secondaryContainer: isDark ? "#004a77" : "#c2e7ff"
+    readonly property color onSecondaryContainer: isDark ? "#c2e7ff" : "#001d35"
 
-    // Typography
-    readonly property color textPrimary: isDark ? "#f4f4f5" : "#0f172a"
-    readonly property color textSecondary: isDark ? "#a1a1aa" : "#475569"
-    readonly property color textMuted: isDark ? "#71717a" : "#94a3b8"
-    readonly property color textOnAccent: "#ffffff"
+    // Tertiary Roles
+    readonly property color tertiary: isDark ? "#efb8c8" : "#7d5260"
+    readonly property color onTertiary: isDark ? "#492532" : "#ffffff"
+    readonly property color tertiaryContainer: isDark ? "#492532" : "#ffd8e4"
+    readonly property color onTertiaryContainer: isDark ? "#ffd8e4" : "#31111d"
 
-    // Reader styling
-    readonly property color readerBg: isDark ? "#141416" : "#ffffff"
-    readonly property color readerCodeBg: isDark ? "#1a1a1e" : "#f1f5f9"
-    readonly property color readerBorder: isDark ? "#27272a" : "#e2e8f0"
+    // Surface Container Hierarchy (M3 Tonal Elevation)
+    readonly property color surface: isDark ? "#111318" : "#fdf8fd"
+    readonly property color surfaceDim: isDark ? "#111318" : "#ded8e1"
+    readonly property color surfaceBright: isDark ? "#37393e" : "#fdf8fd"
+    readonly property color surfaceContainerLowest: isDark ? "#0c0e13" : "#ffffff"
+    readonly property color surfaceContainerLow: isDark ? "#191c20" : "#f3f3f8"
+    readonly property color surfaceContainer: isDark ? "#1d2024" : "#ededf2"
+    readonly property color surfaceContainerHigh: isDark ? "#282a2f" : "#e7e8ed"
+    readonly property color surfaceContainerHighest: isDark ? "#33353a" : "#e1e2e7"
+
+    // Inverse Surfaces (Snackbars / Toasts)
+    readonly property color inverseSurface: isDark ? "#e2e2e6" : "#2e3135"
+    readonly property color inverseOnSurface: isDark ? "#2e3135" : "#f1f0f4"
+
+    // Outline Roles
+    readonly property color outline: isDark ? "#8c9199" : "#72777f"
+    readonly property color outlineVariant: isDark ? "#42474e" : "#c2c7cf"
+
+    // Typography & Content Roles
+    readonly property color onSurface: isDark ? "#e2e2e6" : "#191c20"
+    readonly property color onSurfaceVariant: isDark ? "#c2c7cf" : "#42474e"
+    readonly property color textPrimary: onSurface
+    readonly property color textSecondary: onSurfaceVariant
+    readonly property color textMuted: outline
+    readonly property color textOnAccent: onPrimary
+
+    // Legacy Aliases for Seamless Backward Compatibility
+    readonly property color background: surface
+    readonly property color sidebarBg: surfaceContainerLow
+    readonly property color surfaceElevated: surfaceContainerHigh
+    readonly property color surfaceHover: surfaceContainerHighest
+    readonly property color border: outlineVariant
+    readonly property color borderFocus: primary
+    readonly property color accent: primary
+    readonly property color accentHover: isDark ? "#c2e7ff" : "#0842a0"
+    readonly property color accentPressed: isDark ? "#7dadf8" : "#062e6f"
+    readonly property color accentDim: secondaryContainer
+
+    // Semantic Colors (M3 Error & Feedback)
+    readonly property color danger: isDark ? "#f2b8b5" : "#b3261e"
+    readonly property color dangerBg: isDark ? "#8c1d18" : "#f9dedc"
+    readonly property color error: danger
+    readonly property color onError: isDark ? "#601410" : "#ffffff"
+    readonly property color errorContainer: dangerBg
+    readonly property color onErrorContainer: isDark ? "#f9dedc" : "#410e0b"
+
+    readonly property color success: isDark ? "#6dd58c" : "#198754"
+    readonly property color successBg: isDark ? "#0d3b19" : "#c8f7d5"
+    readonly property color warning: isDark ? "#f9cf58" : "#b26a00"
+    readonly property color warningBg: isDark ? "#4a3000" : "#fff0c7"
+
+    // Reader Styling
+    readonly property color readerBg: isDark ? "#111318" : "#ffffff"
+    readonly property color readerCodeBg: isDark ? "#1d2024" : "#f3f3f8"
+    readonly property color readerBorder: surfaceContainerHighest
 
     // Fonts
     readonly property string fontSans: "Segoe UI, -apple-system, BlinkMacSystemFont, Roboto, sans-serif"
     readonly property string fontMono: "Cascadia Code, Consolas, Fira Code, monospace"
 
-    // Radii & Padding
-    readonly property int radiusSm: 4
-    readonly property int radiusMd: 8
-    readonly property int radiusLg: 12
+    // ==========================================
+    // MATERIAL DESIGN 3: SHAPE SCALE
+    // ==========================================
+    readonly property int shapeNone: 0
+    readonly property int shapeExtraSmall: 4
+    readonly property int shapeSmall: 8
+    readonly property int shapeMedium: 12
+    readonly property int shapeLarge: 16
+    readonly property int shapeExtraLarge: 28
+    readonly property int shapeFull: 9999
+
+    // Legacy radius aliases
+    readonly property int radiusSm: shapeSmall
+    readonly property int radiusMd: shapeMedium
+    readonly property int radiusLg: shapeLarge
+    readonly property int radiusXl: shapeExtraLarge
+    readonly property int radiusPill: shapeFull
+
+    // Spacing
     readonly property int spacingSm: 6
     readonly property int spacingMd: 12
     readonly property int spacingLg: 20
+    readonly property int spacingXl: 28
 
-    // Motion & Animation Constants
-    readonly property int animDurationFast: 110
-    readonly property int animDurationNormal: 180
-    readonly property int animDurationSlow: 260
+    // State Layer Opacities
+    readonly property real stateHover: 0.08
+    readonly property real stateFocus: 0.12
+    readonly property real statePress: 0.12
+    readonly property real stateDrag: 0.16
+
+    // Motion & Animation Constants (M3 Emphasized / Decelerated Curves)
+    readonly property int animDurationFast: 120
+    readonly property int animDurationNormal: 220
+    readonly property int animDurationSlow: 350
     readonly property int animEasingDecel: Easing.OutCubic
     readonly property int animEasingAccel: Easing.InQuad
 }

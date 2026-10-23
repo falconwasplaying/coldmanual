@@ -21,19 +21,20 @@ Item {
                 font.family: Theme.fontSans
                 font.pixelSize: 22
                 font.bold: true
-                color: Theme.textPrimary
+                color: Theme.onSurface
             }
             Text {
                 text: "Configure storage location, update preferences, and appearance"
+                font.family: Theme.fontSans
                 font.pixelSize: 13
-                color: Theme.textMuted
+                color: Theme.onSurfaceVariant
             }
         }
 
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: Theme.border
+            color: Theme.outlineVariant
         }
 
         ScrollView {
@@ -45,19 +46,19 @@ Item {
                 width: parent.width - 20
                 spacing: 20
 
-                // Storage Section
+                // Storage Section (Material 3 Card)
                 Rectangle {
                     Layout.fillWidth: true
                     height: storageCol.implicitHeight + 28
-                    radius: Theme.radiusMd
-                    color: Theme.surface
-                    border.color: Theme.border
+                    radius: Theme.shapeLarge
+                    color: Theme.surfaceContainerLow
+                    border.color: Theme.outlineVariant
                     border.width: 1
 
                     ColumnLayout {
                         id: storageCol
                         anchors.fill: parent
-                        anchors.margins: 14
+                        anchors.margins: 16
                         spacing: 12
 
                         RowLayout {
@@ -65,20 +66,22 @@ Item {
                             LucideIcon {
                                 name: "folder"
                                 size: 16
-                                color: Theme.accent
+                                color: Theme.primary
                             }
                             Text {
                                 text: "Storage Location"
+                                font.family: Theme.fontSans
                                 font.pixelSize: 15
                                 font.bold: true
-                                color: Theme.textPrimary
+                                color: Theme.onSurface
                             }
                         }
 
                         Text {
                             text: "Directory where downloaded documentation sets and SQLite indexes are stored."
+                            font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.textMuted
+                            color: Theme.onSurfaceVariant
                         }
 
                         RowLayout {
@@ -87,31 +90,32 @@ Item {
 
                             Rectangle {
                                 Layout.fillWidth: true
-                                height: 36
-                                radius: Theme.radiusSm
-                                color: Theme.surfaceElevated
-                                border.color: Theme.border
+                                height: 38
+                                radius: Theme.shapeSmall
+                                color: Theme.surfaceContainerHigh
+                                border.color: Theme.outlineVariant
                                 border.width: 1
 
                                 Text {
                                     anchors.fill: parent
-                                    anchors.leftMargin: 10
-                                    anchors.rightMargin: 10
+                                    anchors.leftMargin: 12
+                                    anchors.rightMargin: 12
                                     verticalAlignment: Text.AlignVCenter
                                     text: settingsMgr.storagePath
                                     font.family: Theme.fontMono
                                     font.pixelSize: 11
-                                    color: Theme.textPrimary
+                                    color: Theme.onSurface
                                     elide: Text.ElideMiddle
                                 }
                             }
 
+                            // Material 3 Tonal Button: Open Folder
                             Rectangle {
-                                width: openFolderRow.implicitWidth + 24
-                                height: 36
-                                radius: Theme.radiusSm
-                                color: openFolderArea.containsMouse ? Theme.surfaceHover : Theme.surfaceElevated
-                                border.color: Theme.border
+                                width: openFolderRow.implicitWidth + 28
+                                height: 38
+                                radius: Theme.shapeFull
+                                color: openFolderArea.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
+                                border.color: Theme.outlineVariant
                                 border.width: 1
 
                                 RowLayout {
@@ -121,13 +125,14 @@ Item {
                                     LucideIcon {
                                         name: "external-link"
                                         size: 13
-                                        color: Theme.textPrimary
+                                        color: Theme.onSurface
                                     }
                                     Text {
                                         text: "Open Folder"
+                                        font.family: Theme.fontSans
                                         font.pixelSize: 12
                                         font.bold: true
-                                        color: Theme.textPrimary
+                                        color: Theme.onSurface
                                     }
                                 }
 
@@ -135,6 +140,7 @@ Item {
                                     id: openFolderArea
                                     anchors.fill: parent
                                     hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
                                     onClicked: {
                                         Qt.openUrlExternally("file:///" + settingsMgr.storagePath)
                                     }
@@ -144,25 +150,27 @@ Item {
 
                         Text {
                             text: "Current storage footprint: " + docsetMgr.totalStorageUsage
+                            font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.accent
+                            font.bold: true
+                            color: Theme.primary
                         }
                     }
                 }
 
-                // Automatic Updates Section
+                // Automatic Updates Section (Material 3 Card)
                 Rectangle {
                     Layout.fillWidth: true
                     height: updatesCol.implicitHeight + 28
-                    radius: Theme.radiusMd
-                    color: Theme.surface
-                    border.color: Theme.border
+                    radius: Theme.shapeLarge
+                    color: Theme.surfaceContainerLow
+                    border.color: Theme.outlineVariant
                     border.width: 1
 
                     ColumnLayout {
                         id: updatesCol
                         anchors.fill: parent
-                        anchors.margins: 14
+                        anchors.margins: 16
                         spacing: 12
 
                         RowLayout {
@@ -170,20 +178,22 @@ Item {
                             LucideIcon {
                                 name: "refresh-cw"
                                 size: 16
-                                color: Theme.accent
+                                color: Theme.primary
                             }
                             Text {
                                 text: "Automatic Updates"
+                                font.family: Theme.fontSans
                                 font.pixelSize: 15
                                 font.bold: true
-                                color: Theme.textPrimary
+                                color: Theme.onSurface
                             }
                         }
 
                         Text {
                             text: "ColdManual checks for new releases of libraries you have set to 'Latest Stable'."
+                            font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.textMuted
+                            color: Theme.onSurfaceVariant
                         }
 
                         RowLayout {
@@ -195,14 +205,16 @@ Item {
                                 spacing: 2
                                 Text {
                                     text: "Enable Automatic Background Checks"
+                                    font.family: Theme.fontSans
                                     font.pixelSize: 13
                                     font.bold: true
-                                    color: Theme.textPrimary
+                                    color: Theme.onSurface
                                 }
                                 Text {
                                     text: "Periodically check remote manifests and notify when updates exist"
+                                    font.family: Theme.fontSans
                                     font.pixelSize: 11
-                                    color: Theme.textMuted
+                                    color: Theme.onSurfaceVariant
                                 }
                             }
 
@@ -219,8 +231,9 @@ Item {
 
                             Text {
                                 text: "Check Frequency:"
+                                font.family: Theme.fontSans
                                 font.pixelSize: 13
-                                color: Theme.textPrimary
+                                color: Theme.onSurface
                             }
 
                             ComboBox {
@@ -244,19 +257,19 @@ Item {
                     }
                 }
 
-                // Window Display Mode Section
+                // Window Display Mode Section (Material 3 Card)
                 Rectangle {
                     Layout.fillWidth: true
                     height: windowModeCol.implicitHeight + 28
-                    radius: Theme.radiusMd
-                    color: Theme.surface
-                    border.color: Theme.border
+                    radius: Theme.shapeLarge
+                    color: Theme.surfaceContainerLow
+                    border.color: Theme.outlineVariant
                     border.width: 1
 
                     ColumnLayout {
                         id: windowModeCol
                         anchors.fill: parent
-                        anchors.margins: 14
+                        anchors.margins: 16
                         spacing: 12
 
                         RowLayout {
@@ -264,20 +277,22 @@ Item {
                             LucideIcon {
                                 name: "app-window"
                                 size: 16
-                                color: Theme.accent
+                                color: Theme.primary
                             }
                             Text {
                                 text: "Window Display Mode"
+                                font.family: Theme.fontSans
                                 font.pixelSize: 15
                                 font.bold: true
-                                color: Theme.textPrimary
+                                color: Theme.onSurface
                             }
                         }
 
                         Text {
                             text: "Select your preferred window presentation. You can also toggle fullscreen at any time using F11."
+                            font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.textMuted
+                            color: Theme.onSurfaceVariant
                         }
 
                         RowLayout {
@@ -300,26 +315,27 @@ Item {
                                         return "Standard operating system window"
                                     }
                                 }
+                                font.family: Theme.fontSans
                                 font.pixelSize: 12
-                                color: Theme.textMuted
+                                color: Theme.onSurfaceVariant
                             }
                         }
                     }
                 }
 
-                // Appearance & Reader Section
+                // Appearance & Reader Section (Material 3 Card)
                 Rectangle {
                     Layout.fillWidth: true
                     height: appearCol.implicitHeight + 28
-                    radius: Theme.radiusMd
-                    color: Theme.surface
-                    border.color: Theme.border
+                    radius: Theme.shapeLarge
+                    color: Theme.surfaceContainerLow
+                    border.color: Theme.outlineVariant
                     border.width: 1
 
                     ColumnLayout {
                         id: appearCol
                         anchors.fill: parent
-                        anchors.margins: 14
+                        anchors.margins: 16
                         spacing: 14
 
                         RowLayout {
@@ -327,13 +343,14 @@ Item {
                             LucideIcon {
                                 name: "sparkles"
                                 size: 16
-                                color: Theme.accent
+                                color: Theme.primary
                             }
                             Text {
                                 text: "Appearance & Typography"
+                                font.family: Theme.fontSans
                                 font.pixelSize: 15
                                 font.bold: true
-                                color: Theme.textPrimary
+                                color: Theme.onSurface
                             }
                         }
 
@@ -343,70 +360,87 @@ Item {
 
                             Text {
                                 text: "Theme:"
+                                font.family: Theme.fontSans
                                 font.pixelSize: 13
-                                color: Theme.textPrimary
+                                color: Theme.onSurface
                             }
 
-                            RowLayout {
-                                spacing: 8
+                            // Material 3 Segmented Theme Selector
+                            Rectangle {
+                                width: 196
+                                height: 36
+                                radius: Theme.shapeFull
+                                color: Theme.surfaceContainerHigh
+                                border.color: Theme.outlineVariant
+                                border.width: 1
 
-                                Rectangle {
-                                    width: 90
-                                    height: 32
-                                    radius: Theme.radiusSm
-                                    color: settingsMgr.themeMode === "dark" ? Theme.accent : Theme.surfaceElevated
-                                    border.color: Theme.border
-                                    border.width: 1
+                                Row {
+                                    anchors.fill: parent
+                                    anchors.margins: 3
+                                    spacing: 2
 
-                                    RowLayout {
-                                        anchors.centerIn: parent
-                                        spacing: 6
-                                        LucideIcon {
-                                            name: "moon"
-                                            size: 13
-                                            color: settingsMgr.themeMode === "dark" ? Theme.textOnAccent : Theme.textPrimary
+                                    // Dark segment
+                                    Rectangle {
+                                        width: (parent.width - 2) / 2
+                                        height: parent.height
+                                        radius: Theme.shapeFull
+                                        color: settingsMgr.themeMode === "dark" ? Theme.secondaryContainer : "transparent"
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+
+                                        RowLayout {
+                                            anchors.centerIn: parent
+                                            spacing: 6
+                                            LucideIcon {
+                                                name: "moon"
+                                                size: 13
+                                                color: settingsMgr.themeMode === "dark" ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                            }
+                                            Text {
+                                                text: "Dark"
+                                                font.family: Theme.fontSans
+                                                font.pixelSize: 12
+                                                font.bold: settingsMgr.themeMode === "dark"
+                                                color: settingsMgr.themeMode === "dark" ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                            }
                                         }
-                                        Text {
-                                            text: "Dark"
-                                            font.pixelSize: 12
-                                            font.bold: settingsMgr.themeMode === "dark"
-                                            color: settingsMgr.themeMode === "dark" ? Theme.textOnAccent : Theme.textPrimary
-                                        }
-                                    }
 
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: settingsMgr.themeMode = "dark"
-                                    }
-                                }
-
-                                Rectangle {
-                                    width: 90
-                                    height: 32
-                                    radius: Theme.radiusSm
-                                    color: settingsMgr.themeMode === "light" ? Theme.accent : Theme.surfaceElevated
-                                    border.color: Theme.border
-                                    border.width: 1
-
-                                    RowLayout {
-                                        anchors.centerIn: parent
-                                        spacing: 6
-                                        LucideIcon {
-                                            name: "sun"
-                                            size: 13
-                                            color: settingsMgr.themeMode === "light" ? Theme.textOnAccent : Theme.textPrimary
-                                        }
-                                        Text {
-                                            text: "Light"
-                                            font.pixelSize: 12
-                                            font.bold: settingsMgr.themeMode === "light"
-                                            color: settingsMgr.themeMode === "light" ? Theme.textOnAccent : Theme.textPrimary
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: settingsMgr.themeMode = "dark"
                                         }
                                     }
 
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        onClicked: settingsMgr.themeMode = "light"
+                                    // Light segment
+                                    Rectangle {
+                                        width: (parent.width - 2) / 2
+                                        height: parent.height
+                                        radius: Theme.shapeFull
+                                        color: settingsMgr.themeMode === "light" ? Theme.secondaryContainer : "transparent"
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+
+                                        RowLayout {
+                                            anchors.centerIn: parent
+                                            spacing: 6
+                                            LucideIcon {
+                                                name: "sun"
+                                                size: 13
+                                                color: settingsMgr.themeMode === "light" ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                            }
+                                            Text {
+                                                text: "Light"
+                                                font.family: Theme.fontSans
+                                                font.pixelSize: 12
+                                                font.bold: settingsMgr.themeMode === "light"
+                                                color: settingsMgr.themeMode === "light" ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                                            }
+                                        }
+
+                                        MouseArea {
+                                            anchors.fill: parent
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: settingsMgr.themeMode = "light"
+                                        }
                                     }
                                 }
                             }
@@ -421,15 +455,17 @@ Item {
                                 Layout.fillWidth: true
                                 Text {
                                     text: "Reader Base Font Size:"
+                                    font.family: Theme.fontSans
                                     font.pixelSize: 13
-                                    color: Theme.textPrimary
+                                    color: Theme.onSurface
                                 }
                                 Item { Layout.fillWidth: true }
                                 Text {
                                     text: settingsMgr.readerFontSize + " px"
+                                    font.family: Theme.fontSans
                                     font.pixelSize: 13
                                     font.bold: true
-                                    color: Theme.accent
+                                    color: Theme.primary
                                 }
                             }
 
@@ -445,14 +481,16 @@ Item {
                     }
                 }
 
-                // Reset Action
+                // Reset Action Card
                 Rectangle {
                     Layout.fillWidth: true
-                    height: 48
-                    radius: Theme.radiusMd
-                    color: resetArea.containsMouse ? Theme.surfaceHover : Theme.surface
-                    border.color: Theme.border
+                    height: 52
+                    radius: Theme.shapeLarge
+                    color: resetArea.containsMouse ? Theme.errorContainer : Theme.surfaceContainerLow
+                    border.color: resetArea.containsMouse ? Theme.danger : Theme.outlineVariant
                     border.width: 1
+                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                    Behavior on border.color { ColorAnimation { duration: Theme.animDurationFast } }
 
                     RowLayout {
                         anchors.centerIn: parent
@@ -464,7 +502,9 @@ Item {
                         }
                         Text {
                             text: "Reset All Settings to Defaults"
+                            font.family: Theme.fontSans
                             font.pixelSize: 12
+                            font.bold: true
                             color: Theme.danger
                         }
                     }
@@ -473,6 +513,7 @@ Item {
                         id: resetArea
                         anchors.fill: parent
                         hoverEnabled: true
+                        cursorShape: Qt.PointingHandCursor
                         onClicked: settingsMgr.resetToDefaults()
                     }
                 }

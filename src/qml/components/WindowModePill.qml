@@ -28,12 +28,12 @@ Item {
         animationsReady = true
     }
 
-    // Outer Pill Container
+    // Outer Pill Container (Material 3 Segmented Button)
     Rectangle {
         anchors.fill: parent
         radius: height / 2
-        color: Theme.surfaceElevated
-        border.color: Theme.border
+        color: Theme.surfaceContainerHigh
+        border.color: Theme.outlineVariant
         border.width: 1
 
         // Sliding Indicator Pill
@@ -44,12 +44,12 @@ Item {
             width: root.itemWidth
             height: parent.height - 8
             radius: height / 2
-            color: Theme.accent
+            color: Theme.secondaryContainer
 
             Behavior on x {
                 enabled: root.animationsReady
                 NumberAnimation {
-                    duration: 220
+                    duration: Theme.animDurationNormal
                     easing.type: Easing.OutCubic
                 }
             }
@@ -77,8 +77,8 @@ Item {
 
                         LucideIcon {
                             name: modelData.icon
-                            size: 13
-                            color: optionItem.isSelected ? Theme.textOnAccent : (mouseArea.containsMouse ? Theme.textPrimary : Theme.textMuted)
+                            size: 14
+                            color: optionItem.isSelected ? Theme.onSecondaryContainer : (mouseArea.containsMouse ? Theme.onSurface : Theme.onSurfaceVariant)
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                         }
 
@@ -87,7 +87,7 @@ Item {
                             font.family: Theme.fontSans
                             font.pixelSize: 12
                             font.bold: optionItem.isSelected
-                            color: optionItem.isSelected ? Theme.textOnAccent : (mouseArea.containsMouse ? Theme.textPrimary : Theme.textMuted)
+                            color: optionItem.isSelected ? Theme.onSecondaryContainer : (mouseArea.containsMouse ? Theme.onSurface : Theme.onSurfaceVariant)
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                         }
                     }

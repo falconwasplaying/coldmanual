@@ -31,21 +31,21 @@ Rectangle {
     anchors.bottomMargin: showing ? 24 : -80
     z: 999999
 
-    implicitWidth: Math.min(parent ? parent.width - 48 : 420, Math.max(340, contentRow.implicitWidth + 36))
-    height: 54
-    radius: Theme.radiusMd
-    color: Theme.surfaceElevated
-    border.color: Theme.border
+    implicitWidth: Math.min(parent ? parent.width - 48 : 440, Math.max(340, contentRow.implicitWidth + 36))
+    height: 56
+    radius: Theme.shapeSmall
+    color: Theme.inverseSurface
+    border.color: Theme.outlineVariant
     border.width: 1
 
     opacity: showing ? 1.0 : 0.0
     visible: opacity > 0.001
 
     Behavior on anchors.bottomMargin {
-        NumberAnimation { duration: 250; easing.type: Easing.OutCubic }
+        NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutCubic }
     }
     Behavior on opacity {
-        NumberAnimation { duration: 200; easing.type: Easing.OutQuad }
+        NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutQuad }
     }
 
     Timer {
@@ -71,13 +71,13 @@ Rectangle {
         Rectangle {
             width: 32
             height: 32
-            radius: 16
-            color: Theme.accentDim
+            radius: Theme.shapeFull
+            color: Theme.primaryContainer
             LucideIcon {
                 anchors.centerIn: parent
                 name: root.iconName
                 size: 16
-                color: Theme.accent
+                color: Theme.onPrimaryContainer
             }
         }
 
@@ -90,15 +90,16 @@ Rectangle {
                 font.family: Theme.fontSans
                 font.pixelSize: 13
                 font.bold: true
-                color: Theme.textPrimary
+                color: Theme.inverseOnSurface
                 visible: root.title.length > 0
             }
 
             Text {
                 text: root.message
                 font.family: Theme.fontSans
-                font.pixelSize: 11
-                color: Theme.textSecondary
+                font.pixelSize: 12
+                color: Theme.inverseOnSurface
+                opacity: 0.85
                 elide: Text.ElideRight
                 Layout.fillWidth: true
             }
@@ -106,15 +107,15 @@ Rectangle {
 
         // Close button
         Rectangle {
-            width: 26
-            height: 26
-            radius: 13
-            color: closeMouse.containsMouse ? Theme.surfaceHover : "transparent"
+            width: 28
+            height: 28
+            radius: Theme.shapeFull
+            color: closeMouse.containsMouse ? Qt.rgba(1, 1, 1, 0.12) : "transparent"
             LucideIcon {
                 anchors.centerIn: parent
                 name: "x"
-                size: 13
-                color: Theme.textMuted
+                size: 14
+                color: Theme.inverseOnSurface
             }
             MouseArea {
                 id: closeMouse

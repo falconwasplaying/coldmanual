@@ -64,19 +64,19 @@ int main(int argc, char* argv[]) {
     DocsetManager docsetMgr(&catalogMgr, &downloader, &searchEngine, &settingsMgr);
 
     const bool isDark = (settingsMgr.themeMode() != "light");
-    const QColor initialBgColor = isDark ? QColor("#121214") : QColor("#f8fafc");
+    const QColor initialBgColor = isDark ? QColor("#111318") : QColor("#fdf8fd");
 
     // Apply global palette immediately to prevent native Windows OS white flashbang on window creation
     QPalette globalPalette;
     globalPalette.setColor(QPalette::Window, initialBgColor);
-    globalPalette.setColor(QPalette::WindowText, isDark ? QColor("#f4f4f5") : QColor("#0f172a"));
+    globalPalette.setColor(QPalette::WindowText, isDark ? QColor("#e2e2e6") : QColor("#191c20"));
     globalPalette.setColor(QPalette::Base, initialBgColor);
-    globalPalette.setColor(QPalette::AlternateBase, isDark ? QColor("#18181b") : QColor("#f1f5f9"));
-    globalPalette.setColor(QPalette::Text, isDark ? QColor("#f4f4f5") : QColor("#0f172a"));
-    globalPalette.setColor(QPalette::Button, isDark ? QColor("#202024") : QColor("#ffffff"));
-    globalPalette.setColor(QPalette::ButtonText, isDark ? QColor("#f4f4f5") : QColor("#0f172a"));
-    globalPalette.setColor(QPalette::Highlight, isDark ? QColor("#38bdf8") : QColor("#0284c7"));
-    globalPalette.setColor(QPalette::HighlightedText, Qt::white);
+    globalPalette.setColor(QPalette::AlternateBase, isDark ? QColor("#191c20") : QColor("#f3f3f8"));
+    globalPalette.setColor(QPalette::Text, isDark ? QColor("#e2e2e6") : QColor("#191c20"));
+    globalPalette.setColor(QPalette::Button, isDark ? QColor("#282a2f") : QColor("#ededf2"));
+    globalPalette.setColor(QPalette::ButtonText, isDark ? QColor("#e2e2e6") : QColor("#191c20"));
+    globalPalette.setColor(QPalette::Highlight, isDark ? QColor("#a8c7fa") : QColor("#0b57d0"));
+    globalPalette.setColor(QPalette::HighlightedText, isDark ? QColor("#062e6f") : Qt::white);
     QGuiApplication::setPalette(globalPalette);
 
     QQmlApplicationEngine engine;
@@ -174,19 +174,19 @@ int main(int argc, char* argv[]) {
 
         auto updateWindowTheme = [window, &settingsMgr]() {
             const bool dark = (settingsMgr.themeMode() != "light");
-            const QColor bgColor = dark ? QColor("#121214") : QColor("#f8fafc");
+            const QColor bgColor = dark ? QColor("#111318") : QColor("#fdf8fd");
             window->setColor(bgColor);
 
             QPalette pal;
             pal.setColor(QPalette::Window, bgColor);
-            pal.setColor(QPalette::WindowText, dark ? QColor("#f4f4f5") : QColor("#0f172a"));
+            pal.setColor(QPalette::WindowText, dark ? QColor("#e2e2e6") : QColor("#191c20"));
             pal.setColor(QPalette::Base, bgColor);
-            pal.setColor(QPalette::AlternateBase, dark ? QColor("#18181b") : QColor("#f1f5f9"));
-            pal.setColor(QPalette::Text, dark ? QColor("#f4f4f5") : QColor("#0f172a"));
-            pal.setColor(QPalette::Button, dark ? QColor("#202024") : QColor("#ffffff"));
-            pal.setColor(QPalette::ButtonText, dark ? QColor("#f4f4f5") : QColor("#0f172a"));
-            pal.setColor(QPalette::Highlight, dark ? QColor("#38bdf8") : QColor("#0284c7"));
-            pal.setColor(QPalette::HighlightedText, Qt::white);
+            pal.setColor(QPalette::AlternateBase, dark ? QColor("#191c20") : QColor("#f3f3f8"));
+            pal.setColor(QPalette::Text, dark ? QColor("#e2e2e6") : QColor("#191c20"));
+            pal.setColor(QPalette::Button, dark ? QColor("#282a2f") : QColor("#ededf2"));
+            pal.setColor(QPalette::ButtonText, dark ? QColor("#e2e2e6") : QColor("#191c20"));
+            pal.setColor(QPalette::Highlight, dark ? QColor("#a8c7fa") : QColor("#0b57d0"));
+            pal.setColor(QPalette::HighlightedText, dark ? QColor("#062e6f") : Qt::white);
             QGuiApplication::setPalette(pal);
 
 #ifdef Q_OS_WIN
@@ -197,9 +197,9 @@ int main(int argc, char* argv[]) {
                 DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE, &darkMode, sizeof(darkMode));
                 DwmSetWindowAttribute(hwnd, DWMWA_USE_IMMERSIVE_DARK_MODE_OLD, &darkMode, sizeof(darkMode));
 
-                // 2. Windows 11 exact caption and text color match
-                COLORREF captionColor = dark ? RGB(18, 18, 20) : RGB(248, 250, 252);
-                COLORREF textColor = dark ? RGB(244, 244, 245) : RGB(15, 23, 42);
+                // 2. Windows 11 exact caption and text color match (Material 3 Surface Container)
+                COLORREF captionColor = dark ? RGB(17, 19, 24) : RGB(253, 248, 253);
+                COLORREF textColor = dark ? RGB(226, 226, 230) : RGB(25, 28, 32);
                 DwmSetWindowAttribute(hwnd, DWMWA_CAPTION_COLOR, &captionColor, sizeof(captionColor));
                 DwmSetWindowAttribute(hwnd, DWMWA_TEXT_COLOR, &textColor, sizeof(textColor));
 

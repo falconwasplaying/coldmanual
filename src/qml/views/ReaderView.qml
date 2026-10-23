@@ -163,13 +163,13 @@ Item {
             Layout.preferredWidth: 280
             Layout.fillHeight: true
             color: Theme.sidebarBg
-            border.color: Theme.border
+            border.color: Theme.outlineVariant
             border.width: 1
 
             ColumnLayout {
                 anchors.fill: parent
-                anchors.margins: 10
-                spacing: 8
+                anchors.margins: 12
+                spacing: 10
 
                 // Docset Picker
                 RowLayout {
@@ -186,16 +186,17 @@ Item {
                     LucideIcon {
                         name: "book-open"
                         size: 14
-                        color: Theme.accent
+                        color: Theme.primary
                         visible: root.currentDocsetId === ""
                     }
 
                     Text {
                         Layout.fillWidth: true
                         text: currentDocsetName ? currentDocsetName : "Select Documentation"
+                        font.family: Theme.fontSans
                         font.pixelSize: 13
                         font.bold: true
-                        color: Theme.textPrimary
+                        color: Theme.onSurface
                         elide: Text.ElideRight
                     }
                 }
@@ -203,43 +204,45 @@ Item {
                 Rectangle {
                     Layout.fillWidth: true
                     height: 1
-                    color: Theme.border
+                    color: Theme.outlineVariant
                 }
 
-                // Symbol Filter Input
+                // Symbol Filter Input (M3 Stadium Search)
                 Rectangle {
                     Layout.fillWidth: true
-                    height: 30
-                    radius: Theme.radiusSm
-                    color: Theme.surface
-                    border.color: Theme.border
+                    height: 36
+                    radius: Theme.shapeFull
+                    color: Theme.surfaceContainerHigh
+                    border.color: Theme.outlineVariant
                     border.width: 1
 
                     RowLayout {
                         anchors.fill: parent
-                        anchors.leftMargin: 8
-                        anchors.rightMargin: 8
-                        spacing: 6
+                        anchors.leftMargin: 12
+                        anchors.rightMargin: 12
+                        spacing: 8
 
                         LucideIcon {
                             name: "search"
-                            size: 11
-                            color: Theme.textMuted
+                            size: 13
+                            color: Theme.onSurfaceVariant
                         }
 
                         TextInput {
                             id: symbolSearchInput
                             Layout.fillWidth: true
-                            font.pixelSize: 11
-                            color: Theme.textPrimary
+                            font.family: Theme.fontSans
+                            font.pixelSize: 12
+                            color: Theme.onSurface
                             clip: true
                             onTextChanged: root.loadSymbols()
 
                             Text {
                                 anchors.fill: parent
                                 text: "Filter symbols..."
-                                font.pixelSize: 11
-                                color: Theme.textMuted
+                                font.family: Theme.fontSans
+                                font.pixelSize: 12
+                                color: Theme.onSurfaceVariant
                                 visible: !symbolSearchInput.text
                             }
                         }
@@ -315,11 +318,12 @@ Item {
                             Repeater {
                                 model: symbolTypesModel
                                 Rectangle {
-                                    height: 26
+                                    readonly property bool isSelected: selectedSymbolType === model.type
+                                    height: 28
                                     width: typeLabel.implicitWidth + 16
-                                    radius: 13
-                                    color: (selectedSymbolType === model.type) ? Theme.accent : (pillArea.containsMouse ? Theme.surfaceHover : Theme.surface)
-                                    border.color: (selectedSymbolType === model.type) ? Theme.accent : Theme.border
+                                    radius: Theme.shapeSmall
+                                    color: isSelected ? Theme.secondaryContainer : (pillArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : Theme.surfaceContainerLow)
+                                    border.color: isSelected ? "transparent" : Theme.outlineVariant
                                     border.width: 1
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
@@ -327,9 +331,10 @@ Item {
                                         id: typeLabel
                                         anchors.centerIn: parent
                                         text: model.type + (model.count > 0 ? (" (" + model.count + ")") : "")
-                                        font.pixelSize: 10
-                                        font.bold: selectedSymbolType === model.type
-                                        color: (selectedSymbolType === model.type) ? Theme.textOnAccent : Theme.textSecondary
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 11
+                                        font.bold: parent.isSelected
+                                        color: parent.isSelected ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
                                         Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                     }
 
@@ -350,10 +355,10 @@ Item {
 
                     // Scroll Right Chevron
                     Rectangle {
-                        width: 18
-                        height: 24
-                        radius: Theme.radiusSm
-                        color: rightPillScrollArea.containsMouse ? Theme.surfaceHover : "transparent"
+                        width: 22
+                        height: 26
+                        radius: Theme.shapeFull
+                        color: rightPillScrollArea.containsMouse ? Theme.surfaceContainerHighest : "transparent"
                         visible: categoryFlickable.contentWidth > categoryFlickable.width && categoryFlickable.contentX < (categoryFlickable.contentWidth - categoryFlickable.width - 2)
                         opacity: visible ? 1.0 : 0.0
                         Behavior on opacity { NumberAnimation { duration: 120 } }
@@ -361,8 +366,8 @@ Item {
                         LucideIcon {
                             anchors.centerIn: parent
                             name: "chevron-right"
-                            size: 12
-                            color: rightPillScrollArea.containsMouse ? Theme.accent : Theme.textMuted
+                            size: 13
+                            color: rightPillScrollArea.containsMouse ? Theme.primary : Theme.onSurfaceVariant
                         }
 
                         MouseArea {
@@ -394,22 +399,22 @@ Item {
 
                     delegate: Rectangle {
                         width: symbolsList.width
-                        height: 30
-                        radius: Theme.radiusSm
-                        color: symMouseArea.containsMouse ? Theme.surfaceHover : "transparent"
+                        height: 32
+                        radius: Theme.shapeSmall
+                        color: symMouseArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent"
                         Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                         RowLayout {
                             anchors.fill: parent
-                            anchors.leftMargin: 6
-                            anchors.rightMargin: 6
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 8
                             spacing: 6
 
                             Text {
                                 text: model.name
                                 font.family: Theme.fontMono
                                 font.pixelSize: 11
-                                color: Theme.textPrimary
+                                color: Theme.onSurface
                                 elide: Text.ElideRight
                                 Layout.fillWidth: true
                             }
@@ -429,8 +434,9 @@ Item {
                     Text {
                         anchors.centerIn: parent
                         text: "No symbols available"
-                        font.pixelSize: 11
-                        color: Theme.textMuted
+                        font.family: Theme.fontSans
+                        font.pixelSize: 12
+                        color: Theme.onSurfaceVariant
                         visible: symbolsList.count === 0
                     }
                 }
@@ -443,29 +449,29 @@ Item {
             Layout.fillHeight: true
             spacing: 0
 
-            // Reader Toolbar
+            // Reader Toolbar (Material 3 Top App Bar)
             Rectangle {
                 Layout.fillWidth: true
-                height: 44
-                color: Theme.surface
-                border.color: Theme.border
+                height: 48
+                color: Theme.surfaceContainer
+                border.color: Theme.outlineVariant
                 border.width: 1
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 12
-                    anchors.rightMargin: 12
-                    spacing: 10
+                    anchors.leftMargin: 14
+                    anchors.rightMargin: 14
+                    spacing: 12
 
                     // Navigation buttons
                     RowLayout {
                         spacing: 4
 
                         Rectangle {
-                            width: 28
-                            height: 28
-                            radius: Theme.radiusSm
-                            color: backArea.containsMouse ? Theme.surfaceHover : "transparent"
+                            width: 32
+                            height: 32
+                            radius: Theme.shapeFull
+                            color: backArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent"
                             opacity: historyIndex > 0 ? 1.0 : 0.4
                             scale: backArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
@@ -474,8 +480,8 @@ Item {
                             LucideIcon {
                                 anchors.centerIn: parent
                                 name: "chevron-left"
-                                size: 14
-                                color: Theme.textPrimary
+                                size: 16
+                                color: Theme.onSurface
                             }
 
                             MouseArea {
@@ -489,10 +495,10 @@ Item {
                         }
 
                         Rectangle {
-                            width: 28
-                            height: 28
-                            radius: Theme.radiusSm
-                            color: fwdArea.containsMouse ? Theme.surfaceHover : "transparent"
+                            width: 32
+                            height: 32
+                            radius: Theme.shapeFull
+                            color: fwdArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent"
                             opacity: historyIndex < history.length - 1 ? 1.0 : 0.4
                             scale: fwdArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
@@ -501,8 +507,8 @@ Item {
                             LucideIcon {
                                 anchors.centerIn: parent
                                 name: "chevron-right"
-                                size: 14
-                                color: Theme.textPrimary
+                                size: 16
+                                color: Theme.onSurface
                             }
 
                             MouseArea {
@@ -516,10 +522,10 @@ Item {
                         }
 
                         Rectangle {
-                            width: 28
-                            height: 28
-                            radius: Theme.radiusSm
-                            color: reloadArea.containsMouse ? Theme.surfaceHover : "transparent"
+                            width: 32
+                            height: 32
+                            radius: Theme.shapeFull
+                            color: reloadArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent"
                             scale: reloadArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -527,8 +533,8 @@ Item {
                             LucideIcon {
                                 anchors.centerIn: parent
                                 name: "refresh-cw"
-                                size: 13
-                                color: Theme.textPrimary
+                                size: 14
+                                color: Theme.onSurface
                             }
 
                             MouseArea {
@@ -546,15 +552,16 @@ Item {
                     Rectangle {
                         width: 1
                         height: 20
-                        color: Theme.border
+                        color: Theme.outlineVariant
                     }
 
                     // Title / breadcrumb
                     Text {
                         text: (currentDocsetName ? (currentDocsetName + " › ") : "") + (currentTitle ? currentTitle : "Offline Reader")
+                        font.family: Theme.fontSans
                         font.pixelSize: 13
                         font.bold: true
-                        color: Theme.textPrimary
+                        color: Theme.onSurface
                         elide: Text.ElideRight
                         Layout.fillWidth: true
                     }
@@ -564,10 +571,10 @@ Item {
                         spacing: 4
 
                         Rectangle {
-                            width: 26
-                            height: 26
-                            radius: Theme.radiusSm
-                            color: zoomOutArea.containsMouse ? Theme.surfaceHover : "transparent"
+                            width: 30
+                            height: 30
+                            radius: Theme.shapeFull
+                            color: zoomOutArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent"
                             scale: zoomOutArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -575,8 +582,8 @@ Item {
                             LucideIcon {
                                 anchors.centerIn: parent
                                 name: "zoom-out"
-                                size: 13
-                                color: Theme.textPrimary
+                                size: 14
+                                color: Theme.onSurface
                             }
 
                             MouseArea {
@@ -592,15 +599,16 @@ Item {
 
                         Text {
                             text: Math.round(zoomFactor * 100) + "%"
+                            font.family: Theme.fontSans
                             font.pixelSize: 11
-                            color: Theme.textMuted
+                            color: Theme.onSurfaceVariant
                         }
 
                         Rectangle {
-                            width: 26
-                            height: 26
-                            radius: Theme.radiusSm
-                            color: zoomInArea.containsMouse ? Theme.surfaceHover : "transparent"
+                            width: 30
+                            height: 30
+                            radius: Theme.shapeFull
+                            color: zoomInArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent"
                             scale: zoomInArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -608,8 +616,8 @@ Item {
                             LucideIcon {
                                 anchors.centerIn: parent
                                 name: "zoom-in"
-                                size: 13
-                                color: Theme.textPrimary
+                                size: 14
+                                color: Theme.onSurface
                             }
 
                             MouseArea {
@@ -853,47 +861,50 @@ Item {
                             Layout.alignment: Qt.AlignHCenter
                             name: "book-open"
                             size: 48
-                            color: Theme.accent
+                            color: Theme.primary
                         }
 
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "No Documentation Open"
+                            font.family: Theme.fontSans
                             font.pixelSize: 18
                             font.bold: true
-                            color: Theme.textPrimary
+                            color: Theme.onSurface
                         }
 
                         Text {
                             Layout.alignment: Qt.AlignHCenter
                             text: "Select a symbol from the left sidebar, press Ctrl+K to search, or browse libraries."
+                            font.family: Theme.fontSans
                             font.pixelSize: 13
-                            color: Theme.textMuted
+                            color: Theme.onSurfaceVariant
                         }
 
                         Rectangle {
                             Layout.alignment: Qt.AlignHCenter
-                            width: 180
-                            height: 36
-                            radius: Theme.radiusMd
-                            color: !networkMgr.isOnline ? Theme.surfaceElevated : (browseLibArea.containsMouse ? Theme.accentHover : Theme.accent)
-                            border.color: !networkMgr.isOnline ? Theme.border : "transparent"
+                            width: 190
+                            height: 38
+                            radius: Theme.shapeFull
+                            color: !networkMgr.isOnline ? Theme.surfaceContainerHigh : (browseLibArea.containsMouse ? Theme.accentHover : Theme.primary)
+                            border.color: !networkMgr.isOnline ? Theme.outlineVariant : "transparent"
                             border.width: 1
 
                             RowLayout {
                                 anchors.centerIn: parent
-                                spacing: 6
+                                spacing: 8
                                 LucideIcon {
                                     visible: !networkMgr.isOnline
                                     name: "wifi-off"
-                                    size: 13
-                                    color: Theme.textMuted
+                                    size: 14
+                                    color: Theme.onSurfaceVariant
                                 }
                                 Text {
                                     text: networkMgr.isOnline ? "Browse Libraries" : "Browse (Offline)"
+                                    font.family: Theme.fontSans
                                     font.pixelSize: 13
                                     font.bold: true
-                                    color: networkMgr.isOnline ? Theme.textOnAccent : Theme.textMuted
+                                    color: networkMgr.isOnline ? Theme.onPrimary : Theme.onSurfaceVariant
                                 }
                             }
 

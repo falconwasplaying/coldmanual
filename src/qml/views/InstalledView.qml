@@ -27,24 +27,25 @@ Item {
                     font.family: Theme.fontSans
                     font.pixelSize: 22
                     font.bold: true
-                    color: Theme.textPrimary
+                    color: Theme.onSurface
                 }
                 Text {
                     text: docsetMgr.installedCount + " libraries installed • " + docsetMgr.totalStorageUsage + " on disk"
+                    font.family: Theme.fontSans
                     font.pixelSize: 13
-                    color: Theme.textMuted
+                    color: Theme.onSurfaceVariant
                 }
             }
 
             Item { Layout.fillWidth: true }
 
-            // Check Updates Button
+            // Material 3 Tonal Button: Check Updates
             Rectangle {
-                width: checkText.implicitWidth + 34
-                height: 36
-                radius: Theme.radiusMd
-                color: checkArea.containsMouse ? Theme.surfaceHover : Theme.surface
-                border.color: Theme.border
+                width: checkText.implicitWidth + 36
+                height: 38
+                radius: Theme.shapeFull
+                color: checkArea.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
+                border.color: Theme.outlineVariant
                 border.width: 1
                 scale: checkArea.pressed ? 0.96 : 1.0
                 Behavior on scale { NumberAnimation { duration: 80 } }
@@ -52,11 +53,11 @@ Item {
 
                 RowLayout {
                     anchors.centerIn: parent
-                    spacing: 6
+                    spacing: 8
                     LucideIcon {
                         name: "refresh-cw"
-                        size: 13
-                        color: Theme.textPrimary
+                        size: 14
+                        color: Theme.primary
                         rotation: 0
 
                         RotationAnimation on rotation {
@@ -70,9 +71,10 @@ Item {
                     Text {
                         id: checkText
                         text: docsetMgr.isCheckingUpdates ? "Checking..." : "Check for Updates"
+                        font.family: Theme.fontSans
                         font.pixelSize: 12
                         font.bold: true
-                        color: Theme.textPrimary
+                        color: Theme.onSurface
                     }
                 }
 
@@ -92,12 +94,12 @@ Item {
                 }
             }
 
-            // Update All Button
+            // Material 3 Filled Button: Update All
             Rectangle {
-                width: updateAllRow.implicitWidth + 24
-                height: 36
-                radius: Theme.radiusMd
-                color: updateAllArea.containsMouse ? Theme.accentHover : Theme.accent
+                width: updateAllRow.implicitWidth + 28
+                height: 38
+                radius: Theme.shapeFull
+                color: updateAllArea.containsMouse ? Theme.accentHover : Theme.primary
                 visible: docsetMgr.installedCount > 0
                 scale: updateAllArea.pressed ? 0.96 : 1.0
                 Behavior on scale { NumberAnimation { duration: 80 } }
@@ -109,14 +111,15 @@ Item {
                     spacing: 6
                     LucideIcon {
                         name: "download"
-                        size: 13
-                        color: Theme.textOnAccent
+                        size: 14
+                        color: Theme.onPrimary
                     }
                     Text {
                         text: "Update All"
+                        font.family: Theme.fontSans
                         font.pixelSize: 12
                         font.bold: true
-                        color: Theme.textOnAccent
+                        color: Theme.onPrimary
                     }
                 }
 
@@ -133,7 +136,7 @@ Item {
         Rectangle {
             Layout.fillWidth: true
             height: 1
-            color: Theme.border
+            color: Theme.outlineVariant
         }
 
         // Installed List
@@ -143,19 +146,20 @@ Item {
             Layout.fillHeight: true
             clip: true
             model: docsetMgr
-            spacing: 10
+            spacing: 12
 
             ScrollBar.vertical: ScrollBar {
                 active: true
             }
 
+            // Material 3 Outlined / Elevated Card Delegate
             delegate: Rectangle {
                 id: cardItem
                 width: installedList.width
-                height: 84
-                radius: Theme.radiusMd
-                color: cardArea.containsMouse ? Theme.surfaceHover : Theme.surface
-                border.color: cardArea.containsMouse ? Theme.accent : Theme.border
+                height: 88
+                radius: Theme.shapeLarge
+                color: cardArea.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainerLow
+                border.color: cardArea.containsMouse ? Theme.primary : Theme.outlineVariant
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                 Behavior on border.color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -187,47 +191,50 @@ Item {
                             spacing: 8
                             Text {
                                 text: model.name
+                                font.family: Theme.fontSans
                                 font.pixelSize: 16
                                 font.bold: true
-                                color: Theme.textPrimary
+                                color: Theme.onSurface
                             }
 
                             Rectangle {
-                                height: 20
-                                width: verText.implicitWidth + 10
-                                radius: Theme.radiusSm
-                                color: Theme.surfaceElevated
+                                height: 22
+                                width: verText.implicitWidth + 12
+                                radius: Theme.shapeSmall
+                                color: Theme.surfaceContainerHighest
 
                                 Text {
                                     id: verText
                                     anchors.centerIn: parent
                                     text: "v" + model.installedVersion
+                                    font.family: Theme.fontSans
                                     font.pixelSize: 10
-                                    color: Theme.textSecondary
+                                    color: Theme.onSurfaceVariant
                                 }
                             }
 
                             Rectangle {
-                                height: 20
-                                width: sizeText.implicitWidth + 10
-                                radius: Theme.radiusSm
-                                color: Theme.surfaceElevated
+                                height: 22
+                                width: sizeText.implicitWidth + 12
+                                radius: Theme.shapeSmall
+                                color: Theme.surfaceContainerHighest
 
                                 Text {
                                     id: sizeText
                                     anchors.centerIn: parent
                                     text: model.sizeFormatted
+                                    font.family: Theme.fontSans
                                     font.pixelSize: 10
-                                    color: Theme.textMuted
+                                    color: Theme.onSurfaceVariant
                                 }
                             }
 
-                            // Update Available Alert
+                            // Update Available Alert (M3 Warning Chip)
                             Rectangle {
                                 visible: model.updateAvailable
-                                height: 20
+                                height: 22
                                 width: alertRow.implicitWidth + 14
-                                radius: Theme.radiusSm
+                                radius: Theme.shapeSmall
                                 color: Theme.warningBg
                                 border.color: Theme.warning
                                 border.width: 1
@@ -238,11 +245,12 @@ Item {
                                     spacing: 4
                                     LucideIcon {
                                         name: "zap"
-                                        size: 10
+                                        size: 11
                                         color: Theme.warning
                                     }
                                     Text {
                                         text: "v" + model.availableVersion + " Available"
+                                        font.family: Theme.fontSans
                                         font.pixelSize: 10
                                         font.bold: true
                                         color: Theme.warning
@@ -253,8 +261,9 @@ Item {
 
                         Text {
                             text: "Installed: " + model.installedAt + " • Last checked: " + model.lastChecked
+                            font.family: Theme.fontSans
                             font.pixelSize: 11
-                            color: Theme.textMuted
+                            color: Theme.onSurfaceVariant
                         }
                     }
 
@@ -264,8 +273,9 @@ Item {
 
                         Text {
                             text: "Auto-update latest"
+                            font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: model.trackLatest ? Theme.textPrimary : Theme.textMuted
+                            color: model.trackLatest ? Theme.onSurface : Theme.onSurfaceVariant
                         }
 
                         Switch {
@@ -283,9 +293,9 @@ Item {
                         // Update Now Button (if update available)
                         Rectangle {
                             visible: model.updateAvailable
-                            width: updateRow.implicitWidth + 16
-                            height: 32
-                            radius: Theme.radiusSm
+                            width: updateRow.implicitWidth + 18
+                            height: 34
+                            radius: Theme.shapeFull
                             color: updateNowArea.containsMouse ? Theme.warning : Theme.warningBg
                             border.color: Theme.warning
                             border.width: 1
@@ -299,11 +309,12 @@ Item {
                                 spacing: 4
                                 LucideIcon {
                                     name: "download"
-                                    size: 11
+                                    size: 12
                                     color: updateNowArea.containsMouse ? "#000000" : Theme.warning
                                 }
                                 Text {
                                     text: "Update Now"
+                                    font.family: Theme.fontSans
                                     font.pixelSize: 11
                                     font.bold: true
                                     color: updateNowArea.containsMouse ? "#000000" : Theme.warning
@@ -319,12 +330,12 @@ Item {
                             }
                         }
 
-                        // Open Reader
+                        // Open Reader (M3 Filled Button)
                         Rectangle {
-                            width: 116
-                            height: 32
-                            radius: Theme.radiusSm
-                            color: readArea.containsMouse ? Theme.accentHover : Theme.accent
+                            width: 124
+                            height: 34
+                            radius: Theme.shapeFull
+                            color: readArea.containsMouse ? Theme.accentHover : Theme.primary
                             scale: readArea.pressed ? 0.95 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -334,14 +345,15 @@ Item {
                                 spacing: 6
                                 LucideIcon {
                                     name: "book-open"
-                                    size: 13
-                                    color: Theme.textOnAccent
+                                    size: 14
+                                    color: Theme.onPrimary
                                 }
                                 Text {
                                     text: "Open Reader"
+                                    font.family: Theme.fontSans
                                     font.pixelSize: 12
                                     font.bold: true
-                                    color: Theme.textOnAccent
+                                    color: Theme.onPrimary
                                 }
                             }
 
@@ -354,13 +366,13 @@ Item {
                             }
                         }
 
-                        // Delete
+                        // Delete (M3 Tonal Icon Button)
                         Rectangle {
-                            width: 32
-                            height: 32
-                            radius: Theme.radiusSm
-                            color: delArea.containsMouse ? Theme.dangerBg : Theme.surfaceElevated
-                            border.color: Theme.border
+                            width: 34
+                            height: 34
+                            radius: Theme.shapeFull
+                            color: delArea.containsMouse ? Theme.errorContainer : Theme.surfaceContainerHighest
+                            border.color: Theme.outlineVariant
                             border.width: 1
                             scale: delArea.pressed ? 0.92 : 1.0
                             Behavior on scale { NumberAnimation { duration: 80 } }
@@ -369,7 +381,7 @@ Item {
                             LucideIcon {
                                 anchors.centerIn: parent
                                 name: "trash-2"
-                                size: 13
+                                size: 14
                                 color: Theme.danger
                             }
 
@@ -398,47 +410,50 @@ Item {
                         Layout.alignment: Qt.AlignHCenter
                         name: "library"
                         size: 48
-                        color: Theme.accent
+                        color: Theme.primary
                     }
 
                     Text {
                         Layout.alignment: Qt.AlignHCenter
                         text: "No documentation sets installed yet"
+                        font.family: Theme.fontSans
                         font.pixelSize: 16
                         font.bold: true
-                        color: Theme.textPrimary
+                        color: Theme.onSurface
                     }
 
                     Text {
                         Layout.alignment: Qt.AlignHCenter
                         text: "Visit the Browse tab to download offline docs for languages and frameworks."
+                        font.family: Theme.fontSans
                         font.pixelSize: 13
-                        color: Theme.textMuted
+                        color: Theme.onSurfaceVariant
                     }
 
                     Rectangle {
                         Layout.alignment: Qt.AlignHCenter
-                        width: 190
-                        height: 36
-                        radius: Theme.radiusMd
-                        color: !networkMgr.isOnline ? Theme.surfaceElevated : (browseBtnArea.containsMouse ? Theme.accentHover : Theme.accent)
-                        border.color: !networkMgr.isOnline ? Theme.border : "transparent"
+                        width: 200
+                        height: 40
+                        radius: Theme.shapeFull
+                        color: !networkMgr.isOnline ? Theme.surfaceContainerHigh : (browseBtnArea.containsMouse ? Theme.accentHover : Theme.primary)
+                        border.color: !networkMgr.isOnline ? Theme.outlineVariant : "transparent"
                         border.width: 1
 
                         RowLayout {
                             anchors.centerIn: parent
-                            spacing: 6
+                            spacing: 8
                             LucideIcon {
                                 visible: !networkMgr.isOnline
                                 name: "wifi-off"
-                                size: 13
-                                color: Theme.textMuted
+                                size: 14
+                                color: Theme.onSurfaceVariant
                             }
                             Text {
                                 text: networkMgr.isOnline ? "Browse Documentation" : "Browse (Offline)"
+                                font.family: Theme.fontSans
                                 font.pixelSize: 13
                                 font.bold: true
-                                color: networkMgr.isOnline ? Theme.textOnAccent : Theme.textMuted
+                                color: networkMgr.isOnline ? Theme.onPrimary : Theme.onSurfaceVariant
                             }
                         }
 

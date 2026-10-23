@@ -15,16 +15,16 @@ Item {
 
     signal versionSelected(string version, string text)
 
-    implicitHeight: 28
+    implicitHeight: 30
     implicitWidth: 160
 
-    // Main Closed Selector Box
+    // Main Closed Selector Box (M3 Outlined Box)
     Rectangle {
         id: selectorBox
         anchors.fill: parent
-        radius: Theme.radiusSm
-        color: selectorMouseArea.containsMouse ? Theme.surfaceHover : Theme.surfaceElevated
-        border.color: dropdownPopup.opened ? Theme.accent : Theme.border
+        radius: Theme.shapeSmall
+        color: selectorMouseArea.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
+        border.color: dropdownPopup.opened ? Theme.primary : Theme.outlineVariant
         border.width: 1
 
         RowLayout {
@@ -36,8 +36,9 @@ Item {
             Text {
                 Layout.fillWidth: true
                 text: root.selectedText ? root.selectedText : "Latest Release"
+                font.family: Theme.fontSans
                 font.pixelSize: 11
-                color: Theme.textPrimary
+                color: Theme.onSurface
                 elide: Text.ElideRight
                 verticalAlignment: Text.AlignVCenter
             }
@@ -47,18 +48,17 @@ Item {
                 visible: root.isLtsSelected || root.selectedVersion === "Latest LTS" || root.selectedText === "Latest LTS"
                 height: 16
                 width: boxLtsText.implicitWidth + 8
-                radius: 2
-                color: "#163824"
-                border.color: "#22c55e"
-                border.width: 1
+                radius: Theme.shapeExtraSmall
+                color: Theme.successBg
 
                 Text {
                     id: boxLtsText
                     anchors.centerIn: parent
                     text: "LTS"
+                    font.family: Theme.fontSans
                     font.pixelSize: 8
                     font.bold: true
-                    color: "#4ade80"
+                    color: Theme.success
                 }
             }
 
@@ -67,26 +67,25 @@ Item {
                 visible: root.isEolSelected
                 height: 16
                 width: boxEolText.implicitWidth + 8
-                radius: 2
-                color: "#3b1818"
-                border.color: "#ef4444"
-                border.width: 1
+                radius: Theme.shapeExtraSmall
+                color: Theme.dangerBg
 
                 Text {
                     id: boxEolText
                     anchors.centerIn: parent
                     text: "EOL"
+                    font.family: Theme.fontSans
                     font.pixelSize: 8
                     font.bold: true
-                    color: "#f87171"
+                    color: Theme.danger
                 }
             }
 
             LucideIcon {
                 id: chevronIcon
                 name: "chevron-down"
-                size: 11
-                color: Theme.textMuted
+                size: 12
+                color: Theme.onSurfaceVariant
                 rotation: dropdownPopup.opened ? 180 : 0
                 Behavior on rotation {
                     NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel }
@@ -113,7 +112,7 @@ Item {
         }
     }
 
-    // Floating Dropdown Popup
+    // Floating Dropdown Popup (M3 Menu)
     Popup {
         id: dropdownPopup
         y: root.height + 4
@@ -134,19 +133,10 @@ Item {
         }
 
         background: Rectangle {
-            radius: Theme.radiusMd
-            color: Theme.surfaceElevated
-            border.color: Theme.border
+            radius: Theme.shapeMedium
+            color: Theme.surfaceContainerHigh
+            border.color: Theme.outlineVariant
             border.width: 1
-
-            // Drop shadow simulation
-            Rectangle {
-                anchors.fill: parent
-                anchors.margins: -1
-                z: -1
-                radius: Theme.radiusMd + 1
-                color: "#20000000"
-            }
         }
 
         contentItem: ListView {
@@ -163,7 +153,7 @@ Item {
 
             delegate: Item {
                 width: versionsListView.width
-                height: isDivider ? 9 : 30
+                height: isDivider ? 9 : 32
 
                 property bool isDivider: modelData && modelData.isDivider === true
                 property bool isLts: modelData && modelData.isLts === true
@@ -177,7 +167,7 @@ Item {
                     anchors.centerIn: parent
                     width: parent.width - 8
                     height: 1
-                    color: Theme.border
+                    color: Theme.outlineVariant
                     visible: parent.isDivider
                 }
 
@@ -185,8 +175,8 @@ Item {
                 Rectangle {
                     anchors.fill: parent
                     visible: !parent.isDivider
-                    radius: Theme.radiusSm
-                    color: isSelected ? Theme.surfaceHover : (itemMouse.containsMouse ? Theme.surface : "transparent")
+                    radius: Theme.shapeSmall
+                    color: isSelected ? Theme.secondaryContainer : (itemMouse.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : "transparent")
                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
                     RowLayout {
@@ -198,49 +188,48 @@ Item {
                         Text {
                             Layout.fillWidth: true
                             text: itemText
-                            font.pixelSize: 11
+                            font.family: Theme.fontSans
+                            font.pixelSize: 12
                             font.bold: isSelected
-                            color: isSelected ? Theme.accent : Theme.textPrimary
+                            color: isSelected ? Theme.onSecondaryContainer : Theme.onSurface
                             elide: Text.ElideRight
                         }
 
-                        // Green "LTS" Tag
+                        // LTS Badge
                         Rectangle {
                             visible: isLts
-                            height: 18
+                            height: 16
                             width: ltsLabel.implicitWidth + 8
-                            radius: 3
-                            color: "#163824"
-                            border.color: "#22c55e"
-                            border.width: 1
+                            radius: Theme.shapeExtraSmall
+                            color: Theme.successBg
 
                             Text {
                                 id: ltsLabel
                                 anchors.centerIn: parent
                                 text: "LTS"
-                                font.pixelSize: 9
+                                font.family: Theme.fontSans
+                                font.pixelSize: 8
                                 font.bold: true
-                                color: "#4ade80"
+                                color: Theme.success
                             }
                         }
 
-                        // Red "EOL" Tag
+                        // EOL Badge
                         Rectangle {
                             visible: isEol
-                            height: 18
+                            height: 16
                             width: eolLabel.implicitWidth + 8
-                            radius: 3
-                            color: "#3b1818"
-                            border.color: "#ef4444"
-                            border.width: 1
+                            radius: Theme.shapeExtraSmall
+                            color: Theme.dangerBg
 
                             Text {
                                 id: eolLabel
                                 anchors.centerIn: parent
                                 text: "EOL"
-                                font.pixelSize: 9
+                                font.family: Theme.fontSans
+                                font.pixelSize: 8
                                 font.bold: true
-                                color: "#f87171"
+                                color: Theme.danger
                             }
                         }
 
@@ -248,8 +237,8 @@ Item {
                         LucideIcon {
                             visible: isSelected
                             name: "check"
-                            size: 12
-                            color: Theme.accent
+                            size: 13
+                            color: Theme.onSecondaryContainer
                         }
                     }
 

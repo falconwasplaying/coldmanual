@@ -52,25 +52,25 @@ Item {
 
             Item { Layout.fillWidth: true }
 
-            // Search input
+            // Material 3 Search Input
             Rectangle {
-                width: 260
-                height: 38
-                radius: Theme.radiusMd
-                color: Theme.surface
-                border.color: searchInput.activeFocus ? Theme.borderFocus : Theme.border
+                width: 280
+                height: 42
+                radius: Theme.shapeFull
+                color: Theme.surfaceContainerHigh
+                border.color: searchInput.activeFocus ? Theme.primary : Theme.outlineVariant
                 border.width: 1
 
                 RowLayout {
                     anchors.fill: parent
-                    anchors.leftMargin: 10
-                    anchors.rightMargin: 10
+                    anchors.leftMargin: 12
+                    anchors.rightMargin: 12
                     spacing: 8
 
                     LucideIcon {
                         name: "search"
-                        size: 13
-                        color: Theme.textMuted
+                        size: 15
+                        color: searchInput.activeFocus ? Theme.primary : Theme.onSurfaceVariant
                     }
 
                     TextInput {
@@ -78,39 +78,41 @@ Item {
                         Layout.fillWidth: true
                         font.family: Theme.fontSans
                         font.pixelSize: 13
-                        color: Theme.textPrimary
+                        color: Theme.onSurface
                         clip: true
                         onTextChanged: catalogMgr.searchQuery = text
 
                         Text {
                             anchors.fill: parent
                             text: "Filter languages..."
+                            font.family: Theme.fontSans
                             font.pixelSize: 13
-                            color: Theme.textMuted
+                            color: Theme.onSurfaceVariant
                             visible: !searchInput.text && !searchInput.activeFocus
                         }
                     }
 
                     LucideIcon {
                         name: "x"
-                        size: 12
-                        color: Theme.textMuted
+                        size: 14
+                        color: Theme.onSurfaceVariant
                         visible: searchInput.text.length > 0
                         MouseArea {
                             anchors.fill: parent
+                            cursorShape: Qt.PointingHandCursor
                             onClicked: searchInput.text = ""
                         }
                     }
                 }
             }
 
-            // Refresh Button
+            // Material 3 Refresh Button (Tonal Icon Button)
             Rectangle {
-                width: 38
-                height: 38
-                radius: Theme.radiusMd
-                color: refreshArea.containsMouse ? Theme.surfaceHover : Theme.surface
-                border.color: Theme.border
+                width: 42
+                height: 42
+                radius: Theme.shapeFull
+                color: refreshArea.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
+                border.color: Theme.outlineVariant
                 border.width: 1
                 Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
 
@@ -118,8 +120,8 @@ Item {
                     id: refreshIcon
                     anchors.centerIn: parent
                     name: "refresh-cw"
-                    size: 14
-                    color: Theme.textPrimary
+                    size: 16
+                    color: Theme.primary
                     rotation: 0
 
                     RotationAnimation on rotation {
@@ -141,7 +143,7 @@ Item {
             }
         }
 
-        // Category Filter Pills
+        // Material 3 Filter Chips
         RowLayout {
             Layout.fillWidth: true
             spacing: 8
@@ -150,25 +152,38 @@ Item {
                 model: catalogMgr.categories
 
                 Rectangle {
-                    height: 28
-                    radius: 14
-                    width: catText.implicitWidth + 24
-                    color: (catalogMgr.selectedCategory === modelData) ? Theme.accent :
-                           (catArea.containsMouse ? Theme.surfaceHover : Theme.surface)
-                    border.color: (catalogMgr.selectedCategory === modelData) ? Theme.accent : Theme.border
+                    readonly property bool isSelected: catalogMgr.selectedCategory === modelData
+                    height: 32
+                    radius: Theme.shapeSmall
+                    width: catRow.implicitWidth + 24
+                    color: isSelected ? Theme.secondaryContainer :
+                           (catArea.containsMouse ? Qt.rgba(Theme.onSurface.r, Theme.onSurface.g, Theme.onSurface.b, 0.08) : Theme.surfaceContainerLow)
+                    border.color: isSelected ? "transparent" : Theme.outlineVariant
                     border.width: 1
 
                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                     Behavior on border.color { ColorAnimation { duration: Theme.animDurationFast } }
 
-                    Text {
-                        id: catText
+                    RowLayout {
+                        id: catRow
                         anchors.centerIn: parent
-                        text: modelData
-                        font.pixelSize: 12
-                        font.bold: catalogMgr.selectedCategory === modelData
-                        color: (catalogMgr.selectedCategory === modelData) ? Theme.textOnAccent : Theme.textSecondary
-                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                        spacing: 6
+
+                        LucideIcon {
+                            visible: parent.parent.isSelected
+                            name: "check"
+                            size: 13
+                            color: Theme.onSecondaryContainer
+                        }
+
+                        Text {
+                            text: modelData
+                            font.family: Theme.fontSans
+                            font.pixelSize: 12
+                            font.bold: parent.parent.isSelected
+                            color: parent.parent.isSelected ? Theme.onSecondaryContainer : Theme.onSurfaceVariant
+                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                        }
                     }
 
                     MouseArea {
@@ -185,8 +200,9 @@ Item {
 
             Text {
                 text: catalogMgr.totalItems + " available"
+                font.family: Theme.fontSans
                 font.pixelSize: 12
-                color: Theme.textMuted
+                color: Theme.onSurfaceVariant
             }
         }
 
@@ -276,7 +292,7 @@ Item {
             visible: catalogGrid.count > 0
             clip: true
             cellWidth: Math.max(340, (width - 10) / Math.max(1, Math.floor(width / 340)))
-            cellHeight: 215
+            cellHeight: 228
             model: catalogMgr
 
             ScrollBar.vertical: ScrollBar {
@@ -287,16 +303,18 @@ Item {
                 width: catalogGrid.cellWidth
                 height: catalogGrid.cellHeight
 
+                // Material 3 Outlined / Elevated Card
                 Rectangle {
                     anchors.fill: parent
                     anchors.margins: 6
-                    radius: Theme.radiusMd
-                    color: Theme.surface
-                    border.color: cardHoverArea.containsMouse ? Theme.accent : Theme.border
+                    radius: Theme.shapeLarge
+                    color: cardHoverArea.containsMouse ? Theme.surfaceContainerHigh : Theme.surfaceContainerLow
+                    border.color: cardHoverArea.containsMouse ? Theme.primary : Theme.outlineVariant
                     border.width: 1
                     scale: cardHoverArea.containsMouse ? 1.015 : 1.0
                     y: cardHoverArea.containsMouse ? -2 : 0
 
+                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                     Behavior on border.color { ColorAnimation { duration: Theme.animDurationFast } }
                     Behavior on scale { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
                     Behavior on y { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
@@ -330,26 +348,28 @@ Item {
 
                                 Text {
                                     text: model.name
+                                    font.family: Theme.fontSans
                                     font.pixelSize: 15
                                     font.bold: true
-                                    color: Theme.textPrimary
+                                    color: Theme.onSurface
                                     elide: Text.ElideRight
                                     Layout.fillWidth: true
                                 }
 
                                 Text {
                                     text: model.category
+                                    font.family: Theme.fontSans
                                     font.pixelSize: 11
-                                    color: Theme.textMuted
+                                    color: Theme.onSurfaceVariant
                                 }
                             }
 
-                            // Installed badge if applicable
+                            // Installed badge if applicable (M3 Tonal Chip)
                             Rectangle {
                                 visible: model.isInstalled
                                 height: 22
                                 width: instRow.implicitWidth + 14
-                                radius: Theme.radiusSm
+                                radius: Theme.shapeSmall
                                 color: Theme.successBg
 
                                 RowLayout {
@@ -365,6 +385,7 @@ Item {
 
                                     Text {
                                         text: model.installedVersion
+                                        font.family: Theme.fontSans
                                         font.pixelSize: 10
                                         font.bold: true
                                         color: Theme.success
@@ -376,8 +397,9 @@ Item {
                         // Description
                         Text {
                             text: model.description
+                            font.family: Theme.fontSans
                             font.pixelSize: 12
-                            color: Theme.textSecondary
+                            color: Theme.onSurfaceVariant
                             wrapMode: Text.WordWrap
                             maximumLineCount: 2
                             elide: Text.ElideRight
@@ -392,8 +414,9 @@ Item {
 
                             Text {
                                 text: "Version:"
+                                font.family: Theme.fontSans
                                 font.pixelSize: 12
-                                color: Theme.textMuted
+                                color: Theme.onSurfaceVariant
                             }
 
                             VersionSelector {
@@ -407,7 +430,7 @@ Item {
                         // Download progress or action buttons
                         Item {
                             Layout.fillWidth: true
-                            height: 32
+                            height: 34
 
                             // Downloading state
                             RowLayout {
@@ -424,16 +447,16 @@ Item {
                                         value: model.downloadProgress
                                         background: Rectangle {
                                             implicitHeight: 6
-                                            radius: 3
-                                            color: Theme.surfaceElevated
+                                            radius: Theme.shapeFull
+                                            color: Theme.surfaceContainerHighest
                                         }
                                         contentItem: Item {
                                             implicitHeight: 6
                                             Rectangle {
                                                 width: parent.width * model.downloadProgress
                                                 height: parent.height
-                                                radius: 3
-                                                color: Theme.accent
+                                                radius: Theme.shapeFull
+                                                color: Theme.primary
                                                 Behavior on width {
                                                     NumberAnimation { duration: 160; easing.type: Theme.animEasingDecel }
                                                 }
@@ -445,24 +468,26 @@ Item {
                                         Layout.fillWidth: true
                                         Text {
                                             text: Math.round(model.downloadProgress * 100) + "%"
+                                            font.family: Theme.fontSans
                                             font.pixelSize: 10
                                             font.bold: true
-                                            color: Theme.accent
+                                            color: Theme.primary
                                         }
                                         Item { Layout.fillWidth: true }
                                         Text {
                                             text: model.downloadSpeed
+                                            font.family: Theme.fontSans
                                             font.pixelSize: 10
-                                            color: Theme.textMuted
+                                            color: Theme.onSurfaceVariant
                                         }
                                     }
                                 }
 
                                 Rectangle {
-                                    width: 26
-                                    height: 26
-                                    radius: 13
-                                    color: cancelArea.containsMouse ? Theme.dangerBg : Theme.surfaceElevated
+                                    width: 28
+                                    height: 28
+                                    radius: Theme.shapeFull
+                                    color: cancelArea.containsMouse ? Theme.errorContainer : Theme.surfaceContainerHighest
                                     scale: cancelArea.pressed ? 0.92 : 1.0
                                     Behavior on scale { NumberAnimation { duration: 80 } }
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -470,7 +495,7 @@ Item {
                                     LucideIcon {
                                         anchors.centerIn: parent
                                         name: "x"
-                                        size: 11
+                                        size: 12
                                         color: Theme.danger
                                     }
 
@@ -484,18 +509,18 @@ Item {
                                 }
                             }
 
-                            // Normal / Installed State Buttons
+                            // Normal / Installed State Buttons (Material 3 Buttons)
                             RowLayout {
                                 anchors.fill: parent
                                 visible: !model.isDownloading
                                 spacing: 8
 
-                                // Update Available button
+                                // Update Available button (M3 Warning Pill)
                                 Rectangle {
                                     visible: model.isInstalled && model.updateAvailable
                                     Layout.fillWidth: true
-                                    height: 30
-                                    radius: Theme.radiusSm
+                                    height: 34
+                                    radius: Theme.shapeFull
                                     color: updateArea.containsMouse ? Theme.warning : Theme.warningBg
                                     border.color: Theme.warning
                                     border.width: 1
@@ -508,11 +533,12 @@ Item {
                                         spacing: 4
                                         LucideIcon {
                                             name: "zap"
-                                            size: 12
+                                            size: 13
                                             color: updateArea.containsMouse ? "#000000" : Theme.warning
                                         }
                                         Text {
                                             text: "Update Available"
+                                            font.family: Theme.fontSans
                                             font.pixelSize: 11
                                             font.bold: true
                                             color: updateArea.containsMouse ? "#000000" : Theme.warning
@@ -528,14 +554,20 @@ Item {
                                     }
                                 }
 
-                                // Install / Reinstall button
+                                // Install / Reinstall button (M3 Filled / Tonal Button)
                                 Rectangle {
                                     Layout.fillWidth: true
-                                    height: 30
-                                    radius: Theme.radiusSm
-                                    color: instBtnArea.containsMouse ? Theme.accentHover : (model.isInstalled ? Theme.surfaceElevated : Theme.accent)
-                                    border.color: model.isInstalled ? Theme.border : Theme.accent
-                                    border.width: 1
+                                    height: 34
+                                    radius: Theme.shapeFull
+                                    color: {
+                                        if (model.isInstalled) {
+                                            return instBtnArea.containsMouse ? Theme.surfaceContainerHighest : Theme.surfaceContainerHigh
+                                        } else {
+                                            return instBtnArea.containsMouse ? Theme.accentHover : Theme.primary
+                                        }
+                                    }
+                                    border.color: model.isInstalled ? Theme.outlineVariant : "transparent"
+                                    border.width: model.isInstalled ? 1 : 0
                                     scale: instBtnArea.pressed ? 0.96 : 1.0
                                     Behavior on scale { NumberAnimation { duration: 80 } }
                                     Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
@@ -546,13 +578,14 @@ Item {
                                         LucideIcon {
                                             name: model.isInstalled ? "refresh-cw" : "download"
                                             size: 13
-                                            color: model.isInstalled ? Theme.textPrimary : Theme.textOnAccent
+                                            color: model.isInstalled ? Theme.onSurface : Theme.onPrimary
                                         }
                                         Text {
                                             text: model.isInstalled ? "Reinstall" : "Download & Install"
+                                            font.family: Theme.fontSans
                                             font.pixelSize: 12
                                             font.bold: !model.isInstalled
-                                            color: model.isInstalled ? Theme.textPrimary : Theme.textOnAccent
+                                            color: model.isInstalled ? Theme.onSurface : Theme.onPrimary
                                         }
                                     }
 
@@ -567,14 +600,14 @@ Item {
                                     }
                                 }
 
-                                // Read button if installed
+                                // Read button if installed (M3 Tonal Icon Button)
                                 Rectangle {
                                     visible: model.isInstalled
-                                    width: 34
-                                    height: 30
-                                    radius: Theme.radiusSm
-                                    color: readBtnArea.containsMouse ? Theme.surfaceHover : Theme.surfaceElevated
-                                    border.color: Theme.border
+                                    width: 38
+                                    height: 34
+                                    radius: Theme.shapeFull
+                                    color: readBtnArea.containsMouse ? Theme.surfaceContainerHighest : Theme.secondaryContainer
+                                    border.color: Theme.outlineVariant
                                     border.width: 1
                                     scale: readBtnArea.pressed ? 0.94 : 1.0
                                     Behavior on scale { NumberAnimation { duration: 80 } }
@@ -583,8 +616,8 @@ Item {
                                     LucideIcon {
                                         anchors.centerIn: parent
                                         name: "book-open"
-                                        size: 13
-                                        color: Theme.textPrimary
+                                        size: 14
+                                        color: Theme.onSecondaryContainer
                                     }
 
                                     MouseArea {
