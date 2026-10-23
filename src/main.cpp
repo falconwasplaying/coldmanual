@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
     QGuiApplication::setApplicationDisplayName("ColdManual");
     QGuiApplication::setApplicationVersion("1.0.0");
 
-    QQuickStyle::setStyle("Basic");
+    QQuickStyle::setStyle("Material");
 
     QGuiApplication app(argc, argv);
     app.setWindowIcon(QIcon(":/resources/cmi.svg"));

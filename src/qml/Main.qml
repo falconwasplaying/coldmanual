@@ -1,5 +1,6 @@
 import QtQuick
 import QtQuick.Controls
+import QtQuick.Controls.Material
 import QtQuick.Layouts
 import "views"
 import "components"
@@ -13,6 +14,11 @@ ApplicationWindow {
     minimumHeight: 640
     title: ""
     color: Theme.background
+    Material.theme: Theme.isDark ? Material.Dark : Material.Light
+    Material.accent: Theme.primary
+    Material.primary: Theme.primary
+    Material.background: Theme.surface
+    Material.foreground: Theme.onSurface
 
     onVisibleChanged: {
         if (visible) {
