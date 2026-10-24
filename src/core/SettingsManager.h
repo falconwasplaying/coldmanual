@@ -6,6 +6,8 @@
 #include <QStandardPaths>
 #include <QDir>
 
+class QTimer;
+
 class SettingsManager : public QObject {
     Q_OBJECT
     Q_PROPERTY(QString storagePath READ storagePath WRITE setStoragePath NOTIFY storagePathChanged)
@@ -97,6 +99,7 @@ private:
     bool m_tabHoverPreviewEnabled{true};
     QString m_tabRamUsageMode{"preview"};
     mutable QString m_cachedProcessMemoryUsage;
+    QTimer* m_ramTimer{nullptr};
 
     void ensureStoragePathExists();
 };

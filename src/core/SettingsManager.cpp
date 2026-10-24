@@ -1,4 +1,5 @@
 #include "SettingsManager.h"
+#include <QTimer>
 
 #ifdef Q_OS_WIN
 #ifndef WIN32_LEAN_AND_MEAN
@@ -43,6 +44,17 @@ SettingsManager::SettingsManager(QObject* parent)
     }
 
     ensureStoragePathExists();
+
+    m_ramTimer = new QTimer(this);
+    m_ramTimer->setInterval(2000);
+    connect(m_ramTimer, &QTimer::timeout, this, [this]() {
+        QString currentMem = queryProcessMemoryUsage();
+        if (currentMem != m_cachedProcessMemoryUsage) {
+            m_cachedProcessMemoryUsage = currentMem;
+            emit processMemoryUsageChanged(m_cachedProcessMemoryUsage);
+        }
+    });
+    m_ramTimer->start();
 }
 
 SettingsManager::~SettingsManager() {
@@ -243,9 +255,36 @@ QString SettingsManager::processMemoryUsage() const {
 
 QString SettingsManager::queryProcessMemoryUsage() const {
 #ifdef Q_OS_WIN
+    typedef struct _PROCESS_MEMORY_COUNTERS_EX2 {
+        DWORD cb;
+        DWORD PageFaultCount;
+        SIZE_T PeakWorkingSetSize;
+        SIZE_T WorkingSetSize;
+        SIZE_T QuotaPeakPagedPoolUsage;
+        SIZE_T QuotaPagedPoolUsage;
+        SIZE_T QuotaPeakNonPagedPoolUsage;
+        SIZE_T QuotaNonPagedPoolUsage;
+        SIZE_T PagefileUsage;
+        SIZE_T PeakPagefileUsage;
+        SIZE_T PrivateUsage;
+        SIZE_T PrivateWorkingSetSize;
+        ULONG64 SharedCommitUsage;
+    } PROCESS_MEMORY_COUNTERS_EX2;
+
+    PROCESS_MEMORY_COUNTERS_EX2 pmc2;
+    ZeroMemory(&pmc2, sizeof(pmc2));
+    pmc2.cb = sizeof(pmc2);
+    if (GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc2), sizeof(pmc2)) && pmc2.PrivateWorkingSetSize > 0) {
+        double mb = static_cast<double>(pmc2.PrivateWorkingSetSize) / (1024.0 * 1024.0);
+        m_cachedProcessMemoryUsage = QString::asprintf("%.1f MB", mb);
+        return m_cachedProcessMemoryUsage;
+    }
+
     PROCESS_MEMORY_COUNTERS_EX pmc;
+    ZeroMemory(&pmc, sizeof(pmc));
+    pmc.cb = sizeof(pmc);
     if (GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc))) {
-        SIZE_T memBytes = pmc.WorkingSetSize;
+        SIZE_T memBytes = (pmc.PrivateUsage > 0) ? pmc.PrivateUsage : pmc.WorkingSetSize;
         double mb = static_cast<double>(memBytes) / (1024.0 * 1024.0);
         m_cachedProcessMemoryUsage = QString::asprintf("%.1f MB", mb);
         return m_cachedProcessMemoryUsage;

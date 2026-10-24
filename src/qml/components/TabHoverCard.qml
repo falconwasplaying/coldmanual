@@ -10,6 +10,7 @@ Rectangle {
     property string docsetName: ""
     property string title: ""
     property string previewSnippet: ""
+    property string iconName: "file-text"
     property string ramUsage: ""
     property bool showRam: true
 
@@ -51,7 +52,7 @@ Rectangle {
             }
 
             LucideIcon {
-                name: "file-text"
+                name: root.iconName ? root.iconName : "file-text"
                 size: 14
                 color: Theme.primary
                 visible: root.docsetId === ""

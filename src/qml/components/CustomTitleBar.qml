@@ -113,17 +113,23 @@ Rectangle {
 
                                 // Doc Logo / Icon
                                 DocLogo {
-                                    docId: model.docsetId ? model.docsetId : ""
+                                    docId: (model.pageType === "reader" || !model.pageType) && model.docsetId ? model.docsetId : ""
                                     size: 16
                                     showBackground: false
-                                    visible: model.docsetId !== ""
+                                    visible: (model.pageType === "reader" || !model.pageType) && model.docsetId && model.docsetId !== ""
                                 }
 
                                 LucideIcon {
-                                    name: "file-text"
+                                    name: {
+                                        if (model.pageType === "catalog") return "compass"
+                                        if (model.pageType === "installed") return "download"
+                                        if (model.pageType === "settings") return "settings"
+                                        if (model.icon && model.icon.length > 0) return model.icon
+                                        return "file-text"
+                                    }
                                     size: 13
                                     color: tabItem.isActive ? Theme.primary : Theme.textOnSurfaceVariant
-                                    visible: !model.docsetId || model.docsetId === ""
+                                    visible: !((model.pageType === "reader" || !model.pageType) && model.docsetId && model.docsetId !== "")
                                 }
 
                                 // Document Title
@@ -139,7 +145,7 @@ Rectangle {
 
                                 // Tab RAM Footprint Badge
                                 Rectangle {
-                                    visible: tabItem.showRamOnTab && model.ramUsage && model.ramUsage.length > 0
+                                    visible: tabItem.showRamOnTab && (typeof settingsMgr !== "undefined" && settingsMgr.processMemoryUsage.length > 0)
                                     Layout.preferredHeight: 16
                                     Layout.preferredWidth: tabRamText.implicitWidth + 8
                                     radius: Theme.shapeFull
@@ -148,7 +154,7 @@ Rectangle {
                                     Text {
                                         id: tabRamText
                                         anchors.centerIn: parent
-                                        text: model.ramUsage ? model.ramUsage : ""
+                                        text: (typeof settingsMgr !== "undefined") ? settingsMgr.processMemoryUsage : ""
                                         font.family: Theme.fontSans
                                         font.pixelSize: 9
                                         font.bold: true
@@ -379,12 +385,17 @@ Rectangle {
         onTriggered: {
             if (targetIndex >= 0 && root.tabsModel && targetIndex < root.tabsModel.count) {
                 var item = root.tabsModel.get(targetIndex)
-                tabHoverCard.docsetId = item.docsetId ? item.docsetId : ""
-                tabHoverCard.docsetName = item.docsetName ? item.docsetName : ""
-                tabHoverCard.title = item.title ? item.title : "Document"
+                var isReader = (item.pageType === "reader" || !item.pageType)
+                tabHoverCard.docsetId = (isReader && item.docsetId) ? item.docsetId : ""
+                tabHoverCard.docsetName = item.docsetName ? item.docsetName : (item.pageType ? item.pageType.toUpperCase() : "COLDMANUAL")
+                tabHoverCard.title = item.title ? item.title : "ColdManual"
                 tabHoverCard.previewSnippet = item.previewSnippet ? item.previewSnippet : ""
-                tabHoverCard.ramUsage = item.ramUsage ? item.ramUsage : settingsMgr.processMemoryUsage
-                tabHoverCard.showRam = (settingsMgr.tabRamUsageMode === "preview" || settingsMgr.tabRamUsageMode === "both")
+                tabHoverCard.iconName = (item.pageType === "catalog") ? "compass" :
+                                        (item.pageType === "installed") ? "download" :
+                                        (item.pageType === "settings") ? "settings" :
+                                        (item.icon ? item.icon : "file-text")
+                tabHoverCard.ramUsage = (typeof settingsMgr !== "undefined") ? settingsMgr.processMemoryUsage : ""
+                tabHoverCard.showRam = (typeof settingsMgr !== "undefined") && (settingsMgr.tabRamUsageMode === "preview" || settingsMgr.tabRamUsageMode === "both")
                 
                 // Position card safely within window bounds
                 var cardX = Math.max(10, Math.min(root.width - tabHoverCard.width - 10, targetX))
