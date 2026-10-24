@@ -376,13 +376,13 @@ Item {
                             }
 
                             SegmentedPill {
-                                width: 360
+                                width: 380
                                 height: 36
                                 currentValue: settingsMgr.tabCloseButtonMode
                                 options: [
-                                    { id: "hover", label: "On Hover", icon: "eye" },
-                                    { id: "always", label: "Always Show", icon: "x-circle" },
-                                    { id: "never", label: "Hidden", icon: "eye-off" }
+                                    { id: "hover", label: "On Hover" },
+                                    { id: "always", label: "Always Show" },
+                                    { id: "never", label: "Hidden" }
                                 ]
                                 onValueSelected: function(val) {
                                     settingsMgr.tabCloseButtonMode = val
@@ -464,14 +464,14 @@ Item {
                             }
 
                             SegmentedPill {
-                                width: 460
+                                width: 480
                                 height: 36
                                 currentValue: settingsMgr.tabRamUsageMode
                                 options: [
-                                    { id: "preview", label: "Hover Card", icon: "layers" },
-                                    { id: "tab", label: "On Tab Directly", icon: "tag" },
-                                    { id: "both", label: "Both", icon: "check-check" },
-                                    { id: "none", label: "Hidden", icon: "slash" }
+                                    { id: "preview", label: "Hover Card" },
+                                    { id: "tab", label: "On Tab" },
+                                    { id: "both", label: "Both" },
+                                    { id: "none", label: "Hidden" }
                                 ]
                                 onValueSelected: function(val) {
                                     settingsMgr.tabRamUsageMode = val

@@ -74,12 +74,14 @@ Item {
 
                     RowLayout {
                         anchors.centerIn: parent
-                        spacing: 6
+                        spacing: (modelData.icon && modelData.icon.length > 0) ? 6 : 0
 
                         LucideIcon {
                             name: modelData.icon ? modelData.icon : ""
                             size: 13
                             visible: modelData.icon !== undefined && modelData.icon !== ""
+                            Layout.preferredWidth: visible ? 13 : 0
+                            Layout.preferredHeight: visible ? 13 : 0
                             color: optionItem.isSelected ? Theme.textOnSecondaryContainer : (mouseArea.containsMouse ? Theme.textOnSurface : Theme.textOnSurfaceVariant)
                             Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                         }
