@@ -70,27 +70,19 @@ Rectangle {
             // Real-time RAM Footprint Pill (Chrome Memory Saver Style)
             Rectangle {
                 visible: root.showRam && root.ramUsage.length > 0
-                Layout.preferredHeight: 20
+                Layout.preferredHeight: 18
                 Layout.preferredWidth: ramText.implicitWidth + 14
                 radius: Theme.shapeFull
                 color: Theme.secondaryContainer
 
-                RowLayout {
+                Text {
+                    id: ramText
                     anchors.centerIn: parent
-                    spacing: 4
-                    LucideIcon {
-                        name: "cpu"
-                        size: 10
-                        color: Theme.textOnSecondaryContainer
-                    }
-                    Text {
-                        id: ramText
-                        text: root.ramUsage
-                        font.family: Theme.fontSans
-                        font.pixelSize: 10
-                        font.bold: true
-                        color: Theme.textOnSecondaryContainer
-                    }
+                    text: root.ramUsage
+                    font.family: Theme.fontSans
+                    font.pixelSize: 10
+                    font.bold: true
+                    color: Theme.textOnSecondaryContainer
                 }
             }
         }
