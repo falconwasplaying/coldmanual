@@ -1,5 +1,16 @@
 #include "SettingsManager.h"
 
+#ifdef Q_OS_WIN
+#ifndef WIN32_LEAN_AND_MEAN
+#define WIN32_LEAN_AND_MEAN
+#endif
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#include <psapi.h>
+#endif
+
 SettingsManager::SettingsManager(QObject* parent)
     : QObject(parent)
     , m_settings("ColdManual", "ColdManual")
@@ -20,6 +31,16 @@ SettingsManager::SettingsManager(QObject* parent)
     m_windowWidth = m_settings.value("window/width", 1200).toInt();
     m_windowHeight = m_settings.value("window/height", 800).toInt();
     m_windowState = m_settings.value("window/state", "normal").toString();
+
+    m_tabCloseButtonMode = m_settings.value("tabs/closeButtonMode", "hover").toString();
+    if (m_tabCloseButtonMode != "always" && m_tabCloseButtonMode != "hover" && m_tabCloseButtonMode != "never") {
+        m_tabCloseButtonMode = "hover";
+    }
+    m_tabHoverPreviewEnabled = m_settings.value("tabs/hoverPreviewEnabled", true).toBool();
+    m_tabRamUsageMode = m_settings.value("tabs/ramUsageMode", "preview").toString();
+    if (m_tabRamUsageMode != "none" && m_tabRamUsageMode != "tab" && m_tabRamUsageMode != "preview" && m_tabRamUsageMode != "both") {
+        m_tabRamUsageMode = "preview";
+    }
 
     ensureStoragePathExists();
 }
@@ -167,6 +188,68 @@ void SettingsManager::resetToDefaults() {
     m_windowWidth = 1200;
     m_windowHeight = 800;
     m_windowState = "normal";
+    setTabCloseButtonMode("hover");
+    setTabHoverPreviewEnabled(true);
+    setTabRamUsageMode("preview");
     m_settings.remove("window");
+    m_settings.remove("tabs");
     m_settings.sync();
+}
+
+QString SettingsManager::tabCloseButtonMode() const {
+    return m_tabCloseButtonMode;
+}
+
+void SettingsManager::setTabCloseButtonMode(const QString& mode) {
+    if (mode != "always" && mode != "hover" && mode != "never") return;
+    if (m_tabCloseButtonMode != mode) {
+        m_tabCloseButtonMode = mode;
+        m_settings.setValue("tabs/closeButtonMode", m_tabCloseButtonMode);
+        m_settings.sync();
+        emit tabCloseButtonModeChanged(m_tabCloseButtonMode);
+    }
+}
+
+bool SettingsManager::tabHoverPreviewEnabled() const {
+    return m_tabHoverPreviewEnabled;
+}
+
+void SettingsManager::setTabHoverPreviewEnabled(bool enabled) {
+    if (m_tabHoverPreviewEnabled != enabled) {
+        m_tabHoverPreviewEnabled = enabled;
+        m_settings.setValue("tabs/hoverPreviewEnabled", m_tabHoverPreviewEnabled);
+        m_settings.sync();
+        emit tabHoverPreviewEnabledChanged(m_tabHoverPreviewEnabled);
+    }
+}
+
+QString SettingsManager::tabRamUsageMode() const {
+    return m_tabRamUsageMode;
+}
+
+void SettingsManager::setTabRamUsageMode(const QString& mode) {
+    if (mode != "none" && mode != "tab" && mode != "preview" && mode != "both") return;
+    if (m_tabRamUsageMode != mode) {
+        m_tabRamUsageMode = mode;
+        m_settings.setValue("tabs/ramUsageMode", m_tabRamUsageMode);
+        m_settings.sync();
+        emit tabRamUsageModeChanged(m_tabRamUsageMode);
+    }
+}
+
+QString SettingsManager::processMemoryUsage() const {
+    return queryProcessMemoryUsage();
+}
+
+QString SettingsManager::queryProcessMemoryUsage() const {
+#ifdef Q_OS_WIN
+    PROCESS_MEMORY_COUNTERS_EX pmc;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc))) {
+        SIZE_T memBytes = pmc.WorkingSetSize;
+        double mb = static_cast<double>(memBytes) / (1024.0 * 1024.0);
+        m_cachedProcessMemoryUsage = QString::asprintf("%.1f MB", mb);
+        return m_cachedProcessMemoryUsage;
+    }
+#endif
+    return QStringLiteral("~46 MB");
 }

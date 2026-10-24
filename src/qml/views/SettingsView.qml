@@ -324,6 +324,305 @@ Item {
                     }
                 }
 
+                // Browser Tabs & Title Bar Section (Material 3 Card)
+                Rectangle {
+                    Layout.fillWidth: true
+                    height: tabSettingsCol.implicitHeight + 28
+                    radius: Theme.shapeLarge
+                    color: Theme.surfaceContainerLow
+                    border.color: Theme.outlineVariant
+                    border.width: 1
+
+                    ColumnLayout {
+                        id: tabSettingsCol
+                        anchors.fill: parent
+                        anchors.margins: 16
+                        spacing: 14
+
+                        RowLayout {
+                            spacing: 8
+                            LucideIcon {
+                                name: "layout"
+                                size: 16
+                                color: Theme.primary
+                            }
+                            Text {
+                                text: "Browser Tabs & Title Bar"
+                                font.family: Theme.fontSans
+                                font.pixelSize: 15
+                                font.bold: true
+                                color: Theme.textOnSurface
+                            }
+                        }
+
+                        Text {
+                            text: "Customize tab close buttons, floating hover preview cards, and live memory usage."
+                            font.family: Theme.fontSans
+                            font.pixelSize: 12
+                            color: Theme.textOnSurfaceVariant
+                        }
+
+                        // 1. Close Button (X) Mode
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 6
+
+                            Text {
+                                text: "Tab Close Button (\"X\") Visibility:"
+                                font.family: Theme.fontSans
+                                font.pixelSize: 13
+                                font.bold: true
+                                color: Theme.textOnSurface
+                            }
+
+                            RowLayout {
+                                spacing: 8
+
+                                // Hover only
+                                Rectangle {
+                                    width: 110
+                                    height: 32
+                                    radius: Theme.shapeFull
+                                    color: (settingsMgr.tabCloseButtonMode === "hover") ? Theme.primary : Theme.surfaceContainerHigh
+                                    border.color: (settingsMgr.tabCloseButtonMode === "hover") ? Theme.primary : Theme.outlineVariant
+                                    border.width: 1
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "On Hover"
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 12
+                                        font.bold: settingsMgr.tabCloseButtonMode === "hover"
+                                        color: (settingsMgr.tabCloseButtonMode === "hover") ? Theme.textOnPrimary : Theme.textOnSurface
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: settingsMgr.tabCloseButtonMode = "hover"
+                                    }
+                                }
+
+                                // Always
+                                Rectangle {
+                                    width: 110
+                                    height: 32
+                                    radius: Theme.shapeFull
+                                    color: (settingsMgr.tabCloseButtonMode === "always") ? Theme.primary : Theme.surfaceContainerHigh
+                                    border.color: (settingsMgr.tabCloseButtonMode === "always") ? Theme.primary : Theme.outlineVariant
+                                    border.width: 1
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "Always Show"
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 12
+                                        font.bold: settingsMgr.tabCloseButtonMode === "always"
+                                        color: (settingsMgr.tabCloseButtonMode === "always") ? Theme.textOnPrimary : Theme.textOnSurface
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: settingsMgr.tabCloseButtonMode = "always"
+                                    }
+                                }
+
+                                // Never
+                                Rectangle {
+                                    width: 110
+                                    height: 32
+                                    radius: Theme.shapeFull
+                                    color: (settingsMgr.tabCloseButtonMode === "never") ? Theme.primary : Theme.surfaceContainerHigh
+                                    border.color: (settingsMgr.tabCloseButtonMode === "never") ? Theme.primary : Theme.outlineVariant
+                                    border.width: 1
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "Hidden"
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 12
+                                        font.bold: settingsMgr.tabCloseButtonMode === "never"
+                                        color: (settingsMgr.tabCloseButtonMode === "never") ? Theme.textOnPrimary : Theme.textOnSurface
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: settingsMgr.tabCloseButtonMode = "never"
+                                    }
+                                }
+                            }
+                        }
+
+                        // 2. Tab Hover Preview Card
+                        RowLayout {
+                            Layout.fillWidth: true
+                            spacing: 10
+
+                            ColumnLayout {
+                                Layout.fillWidth: true
+                                spacing: 2
+
+                                Text {
+                                    text: "Enable Tab Hover Preview Cards"
+                                    font.family: Theme.fontSans
+                                    font.pixelSize: 13
+                                    font.bold: true
+                                    color: Theme.textOnSurface
+                                }
+                                Text {
+                                    text: "Shows a floating card preview with document title, section, and memory when hovering over a tab"
+                                    font.family: Theme.fontSans
+                                    font.pixelSize: 11
+                                    color: Theme.textOnSurfaceVariant
+                                }
+                            }
+
+                            Switch {
+                                checked: settingsMgr.tabHoverPreviewEnabled
+                                onToggled: settingsMgr.tabHoverPreviewEnabled = checked
+                            }
+                        }
+
+                        // 3. Memory (RAM) Usage Mode
+                        ColumnLayout {
+                            Layout.fillWidth: true
+                            spacing: 6
+
+                            RowLayout {
+                                spacing: 8
+                                Text {
+                                    text: "Memory (RAM) Footprint Display:"
+                                    font.family: Theme.fontSans
+                                    font.pixelSize: 13
+                                    font.bold: true
+                                    color: Theme.textOnSurface
+                                }
+
+                                Text {
+                                    text: "(Current footprint: " + settingsMgr.processMemoryUsage + ")"
+                                    font.family: Theme.fontSans
+                                    font.pixelSize: 12
+                                    font.bold: true
+                                    color: Theme.primary
+                                }
+                            }
+
+                            RowLayout {
+                                spacing: 8
+
+                                // In Preview Only
+                                Rectangle {
+                                    width: 130
+                                    height: 32
+                                    radius: Theme.shapeFull
+                                    color: (settingsMgr.tabRamUsageMode === "preview") ? Theme.primary : Theme.surfaceContainerHigh
+                                    border.color: (settingsMgr.tabRamUsageMode === "preview") ? Theme.primary : Theme.outlineVariant
+                                    border.width: 1
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "Hover Card Only"
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 12
+                                        font.bold: settingsMgr.tabRamUsageMode === "preview"
+                                        color: (settingsMgr.tabRamUsageMode === "preview") ? Theme.textOnPrimary : Theme.textOnSurface
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: settingsMgr.tabRamUsageMode = "preview"
+                                    }
+                                }
+
+                                // On Tab
+                                Rectangle {
+                                    width: 110
+                                    height: 32
+                                    radius: Theme.shapeFull
+                                    color: (settingsMgr.tabRamUsageMode === "tab") ? Theme.primary : Theme.surfaceContainerHigh
+                                    border.color: (settingsMgr.tabRamUsageMode === "tab") ? Theme.primary : Theme.outlineVariant
+                                    border.width: 1
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "On Tab Directly"
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 12
+                                        font.bold: settingsMgr.tabRamUsageMode === "tab"
+                                        color: (settingsMgr.tabRamUsageMode === "tab") ? Theme.textOnPrimary : Theme.textOnSurface
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: settingsMgr.tabRamUsageMode = "tab"
+                                    }
+                                }
+
+                                // Both
+                                Rectangle {
+                                    width: 110
+                                    height: 32
+                                    radius: Theme.shapeFull
+                                    color: (settingsMgr.tabRamUsageMode === "both") ? Theme.primary : Theme.surfaceContainerHigh
+                                    border.color: (settingsMgr.tabRamUsageMode === "both") ? Theme.primary : Theme.outlineVariant
+                                    border.width: 1
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "Both"
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 12
+                                        font.bold: settingsMgr.tabRamUsageMode === "both"
+                                        color: (settingsMgr.tabRamUsageMode === "both") ? Theme.textOnPrimary : Theme.textOnSurface
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: settingsMgr.tabRamUsageMode = "both"
+                                    }
+                                }
+
+                                // None
+                                Rectangle {
+                                    width: 110
+                                    height: 32
+                                    radius: Theme.shapeFull
+                                    color: (settingsMgr.tabRamUsageMode === "none") ? Theme.primary : Theme.surfaceContainerHigh
+                                    border.color: (settingsMgr.tabRamUsageMode === "none") ? Theme.primary : Theme.outlineVariant
+                                    border.width: 1
+
+                                    Text {
+                                        anchors.centerIn: parent
+                                        text: "Hidden (None)"
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 12
+                                        font.bold: settingsMgr.tabRamUsageMode === "none"
+                                        color: (settingsMgr.tabRamUsageMode === "none") ? Theme.textOnPrimary : Theme.textOnSurface
+                                    }
+
+                                    MouseArea {
+                                        anchors.fill: parent
+                                        hoverEnabled: true
+                                        cursorShape: Qt.PointingHandCursor
+                                        onClicked: settingsMgr.tabRamUsageMode = "none"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
                 // Appearance & Reader Section (Material 3 Card)
                 Rectangle {
                     Layout.fillWidth: true

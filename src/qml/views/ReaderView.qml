@@ -58,6 +58,29 @@ Item {
     }
 
     signal navigateToCatalog()
+    signal documentOpened(string docsetId, string docsetName, string fullFilePath, string title, string snippet)
+
+    function restoreTabState(tab) {
+        stopAutoScroll()
+        if (!tab || !tab.filePath) {
+            currentDocsetId = ""
+            currentDocsetName = ""
+            currentFilePath = ""
+            currentTitle = ""
+            history = []
+            historyIndex = -1
+            docArea.text = ""
+            return
+        }
+        currentDocsetId = tab.docsetId ? tab.docsetId : ""
+        currentDocsetName = tab.docsetName ? tab.docsetName : ""
+        currentTitle = tab.title ? tab.title : "Documentation"
+        currentFilePath = tab.filePath ? tab.filePath : ""
+        history = (tab.history && tab.history.length > 0) ? tab.history : [{ docsetId: currentDocsetId, docsetName: currentDocsetName, filePath: currentFilePath, title: currentTitle }]
+        historyIndex = (typeof tab.historyIndex !== "undefined" && tab.historyIndex >= 0) ? tab.historyIndex : 0
+        loadPage(currentFilePath)
+        loadSymbolTypes()
+    }
 
     function openDocument(docsetId, docsetName, fullFilePath, title) {
         stopAutoScroll()
@@ -74,6 +97,8 @@ Item {
 
         loadPage(fullFilePath)
         loadSymbolTypes()
+
+        documentOpened(docsetId, docsetName, fullFilePath, currentTitle, currentDocsetName + " — " + currentTitle)
     }
 
     function loadPage(path) {

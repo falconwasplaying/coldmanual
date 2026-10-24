@@ -67,15 +67,85 @@ ApplicationWindow {
         }
     }
 
+    ListModel {
+        id: browserTabsModel
+    }
+
+    property int currentActiveBrowserTab: 0
+
+    function switchBrowserTab(index) {
+        if (index < 0 || index >= browserTabsModel.count) return
+        currentActiveBrowserTab = index
+        var tabData = browserTabsModel.get(index)
+        currentTab = 0
+        readerView.restoreTabState(tabData)
+    }
+
+    function createNewBrowserTab(docsetId, docsetName, filePath, title) {
+        var ram = settingsMgr.processMemoryUsage
+        if (!docsetId && !filePath && docsetMgr.installedCount > 0) {
+            var firstDoc = docsetMgr.getInstalledDocset(docsetMgr.data(docsetMgr.index(0), 1).toString())
+            docsetId = firstDoc.id
+            docsetName = firstDoc.name
+            filePath = firstDoc.indexPath
+            title = firstDoc.name
+        }
+        browserTabsModel.append({
+            tabId: "tab_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+            docsetId: docsetId ? docsetId : "",
+            docsetName: docsetName ? docsetName : "New Tab",
+            filePath: filePath ? filePath : "",
+            title: title ? title : "New Tab",
+            previewSnippet: (docsetName ? docsetName + " Documentation" : "New Tab"),
+            ramUsage: ram,
+            history: [],
+            historyIndex: 0
+        })
+        switchBrowserTab(browserTabsModel.count - 1)
+    }
+
+    function closeBrowserTab(index) {
+        if (browserTabsModel.count <= 1) {
+            createNewBrowserTab()
+            browserTabsModel.remove(0)
+            switchBrowserTab(0)
+            return
+        }
+        browserTabsModel.remove(index)
+        if (currentActiveBrowserTab >= browserTabsModel.count) {
+            currentActiveBrowserTab = browserTabsModel.count - 1
+        }
+        switchBrowserTab(currentActiveBrowserTab)
+    }
+
+    Connections {
+        target: readerView
+        function onDocumentOpened(docsetId, docsetName, fullFilePath, title, snippet) {
+            if (browserTabsModel.count === 0) {
+                createNewBrowserTab(docsetId, docsetName, fullFilePath, title)
+            } else {
+                browserTabsModel.setProperty(currentActiveBrowserTab, "docsetId", docsetId)
+                browserTabsModel.setProperty(currentActiveBrowserTab, "docsetName", docsetName)
+                browserTabsModel.setProperty(currentActiveBrowserTab, "filePath", fullFilePath)
+                browserTabsModel.setProperty(currentActiveBrowserTab, "title", title)
+                browserTabsModel.setProperty(currentActiveBrowserTab, "previewSnippet", snippet)
+                browserTabsModel.setProperty(currentActiveBrowserTab, "ramUsage", settingsMgr.processMemoryUsage)
+            }
+        }
+    }
+
     Component.onCompleted: {
         Theme.isDark = (settingsMgr.themeMode !== "light")
         if (docsetMgr.installedCount > 0) {
             currentTab = 0
             var firstDoc = docsetMgr.getInstalledDocset(docsetMgr.data(docsetMgr.index(0), 1).toString())
             if (firstDoc.indexPath) {
-                readerView.openDocument(firstDoc.id, firstDoc.name, firstDoc.indexPath, firstDoc.name)
+                createNewBrowserTab(firstDoc.id, firstDoc.name, firstDoc.indexPath, firstDoc.name)
+            } else {
+                createNewBrowserTab()
             }
         } else {
+            createNewBrowserTab("", "ColdManual", "", "Getting Started")
             if (networkMgr.isOnline) {
                 currentTab = 1
             } else {
@@ -89,6 +159,32 @@ ApplicationWindow {
     Shortcut {
         sequences: ["Ctrl+K", "Ctrl+P"]
         onActivated: omniSearch.open()
+    }
+    Shortcut {
+        sequence: "Ctrl+T"
+        onActivated: createNewBrowserTab()
+    }
+    Shortcut {
+        sequence: "Ctrl+W"
+        onActivated: closeBrowserTab(currentActiveBrowserTab)
+    }
+    Shortcut {
+        sequence: "Ctrl+Tab"
+        onActivated: {
+            if (browserTabsModel.count > 1) {
+                switchBrowserTab((currentActiveBrowserTab + 1) % browserTabsModel.count)
+            }
+        }
+    }
+    Shortcut {
+        sequence: "Ctrl+Shift+Tab"
+        onActivated: {
+            if (browserTabsModel.count > 1) {
+                var prev = currentActiveBrowserTab - 1
+                if (prev < 0) prev = browserTabsModel.count - 1
+                switchBrowserTab(prev)
+            }
+        }
     }
     Shortcut {
         sequence: "Ctrl+1"
@@ -149,103 +245,24 @@ ApplicationWindow {
         }
     }
 
-    // Floating Quick Controls in Borderless & Fullscreen modes
-    Rectangle {
-        id: floatingControls
-        anchors.top: parent.top
-        anchors.right: parent.right
-        anchors.topMargin: 10
-        anchors.rightMargin: 16
-        z: 99999
-        width: 108
-        height: 32
-        radius: Theme.shapeFull
-        color: Theme.surfaceContainerHigh
-        border.color: Theme.outlineVariant
-        border.width: 1
-        visible: settingsMgr.windowDisplayMode !== "windowed"
-
-        opacity: floatHover.hovered ? 1.0 : 0.4
-        Behavior on opacity { NumberAnimation { duration: Theme.animDurationNormal } }
-
-        RowLayout {
-            anchors.fill: parent
-            anchors.leftMargin: 6
-            anchors.rightMargin: 6
-            spacing: 2
-
-            // Minimize
-            Rectangle {
-                Layout.preferredWidth: 28
-                Layout.preferredHeight: 24
-                radius: Theme.shapeFull
-                color: minArea.containsMouse ? Theme.surfaceContainerHighest : "transparent"
-                LucideIcon {
-                    anchors.centerIn: parent
-                    name: "minimize"
-                    size: 11
-                    color: Theme.textPrimary
-                }
-                MouseArea {
-                    id: minArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: window.showMinimized()
-                }
-            }
-
-            // Restore to Windowed
-            Rectangle {
-                Layout.preferredWidth: 28
-                Layout.preferredHeight: 24
-                radius: Theme.shapeFull
-                color: restoreArea.containsMouse ? Theme.surfaceContainerHighest : "transparent"
-                LucideIcon {
-                    anchors.centerIn: parent
-                    name: "app-window"
-                    size: 11
-                    color: Theme.textPrimary
-                }
-                MouseArea {
-                    id: restoreArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: settingsMgr.windowDisplayMode = "windowed"
-                }
-            }
-
-            // Close
-            Rectangle {
-                Layout.preferredWidth: 28
-                Layout.preferredHeight: 24
-                radius: Theme.shapeFull
-                color: closeArea.containsMouse ? Theme.danger : "transparent"
-                LucideIcon {
-                    anchors.centerIn: parent
-                    name: "x"
-                    size: 11
-                    color: closeArea.containsMouse ? Theme.textOnError : Theme.textPrimary
-                }
-                MouseArea {
-                    id: closeArea
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: window.close()
-                }
-            }
-        }
-
-        HoverHandler {
-            id: floatHover
-        }
-    }
-
-    RowLayout {
+    ColumnLayout {
         anchors.fill: parent
         spacing: 0
+
+        CustomTitleBar {
+            id: customTitleBar
+            Layout.fillWidth: true
+            tabsModel: browserTabsModel
+            activeTabIndex: currentActiveBrowserTab
+            onSelectTabRequested: function(idx) { switchBrowserTab(idx) }
+            onCloseTabRequested: function(idx) { closeBrowserTab(idx) }
+            onNewTabRequested: createNewBrowserTab()
+        }
+
+        RowLayout {
+            Layout.fillWidth: true
+            Layout.fillHeight: true
+            spacing: 0
 
         // Material 3 Navigation Rail & Navigation Drawer
         Rectangle {
@@ -993,6 +1010,7 @@ ApplicationWindow {
             }
         }
     }
+    }
 
     // Global Floating Omni-Search Modal
     OmniSearchModal {
@@ -1000,7 +1018,11 @@ ApplicationWindow {
         anchors.fill: parent
         z: 9999
         onNavigateToItem: function(docsetId, docsetName, fullFilePath, title) {
-            readerView.openDocument(docsetId, docsetName, fullFilePath, title)
+            if (browserTabsModel.count === 0 || !browserTabsModel.get(currentActiveBrowserTab).filePath) {
+                readerView.openDocument(docsetId, docsetName, fullFilePath, title)
+            } else {
+                createNewBrowserTab(docsetId, docsetName, fullFilePath, title)
+            }
             window.currentTab = 0
         }
     }

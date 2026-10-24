@@ -43,6 +43,7 @@
 #include "core/DocsetSearchEngine.h"
 #include "core/DocsetManager.h"
 #include "core/NetworkManager.h"
+#include "core/WindowsFramelessHelper.h"
 
 int main(int argc, char* argv[]) {
     QGuiApplication::setOrganizationName("ColdManual");
@@ -62,6 +63,7 @@ int main(int argc, char* argv[]) {
     DocsetDownloader downloader;
     DocsetSearchEngine searchEngine;
     DocsetManager docsetMgr(&catalogMgr, &downloader, &searchEngine, &settingsMgr);
+    WindowsFramelessHelper framelessHelper;
 
     const bool isDark = (settingsMgr.themeMode() != "light");
     const QColor initialBgColor = isDark ? QColor("#111318") : QColor("#fdf8fd");
@@ -89,6 +91,7 @@ int main(int argc, char* argv[]) {
     ctx->setContextProperty("downloader", &downloader);
     ctx->setContextProperty("searchEngine", &searchEngine);
     ctx->setContextProperty("docsetMgr", &docsetMgr);
+    ctx->setContextProperty("framelessHelper", &framelessHelper);
 
     qDebug() << "ColdManual starting...";
 
@@ -115,6 +118,7 @@ int main(int argc, char* argv[]) {
 
     auto* rootObj = engine.rootObjects().first();
     if (auto* window = qobject_cast<QQuickWindow*>(rootObj)) {
+        framelessHelper.init(window);
         window->setColor(initialBgColor);
         window->setIcon(QIcon(":/resources/cmi.svg"));
 

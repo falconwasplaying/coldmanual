@@ -37,6 +37,8 @@ set(SOURCES
     src/core/SettingsManager.cpp
     src/core/NetworkManager.h
     src/core/NetworkManager.cpp
+    src/core/WindowsFramelessHelper.h
+    src/core/WindowsFramelessHelper.cpp
     resources.qrc
 )
 
@@ -66,7 +68,7 @@ target_link_libraries(coldmanual PRIVATE
 )
 
 if(WIN32)
-    target_link_libraries(coldmanual PRIVATE dwmapi gdi32 wininet)
+    target_link_libraries(coldmanual PRIVATE dwmapi gdi32 wininet comctl32 psapi)
 endif()
 
 # if(WIN32)
@@ -91,6 +93,8 @@ add_executable(test_core
     src/core/SettingsManager.cpp
     src/core/NetworkManager.h
     src/core/NetworkManager.cpp
+    src/core/WindowsFramelessHelper.h
+    src/core/WindowsFramelessHelper.cpp
     resources.qrc
 )
 
@@ -114,5 +118,5 @@ target_link_libraries(test_core PRIVATE
 )
 
 if(WIN32)
-    target_link_libraries(test_core PRIVATE wininet)
+    target_link_libraries(test_core PRIVATE wininet psapi comctl32 dwmapi)
 endif()

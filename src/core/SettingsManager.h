@@ -19,6 +19,10 @@ class SettingsManager : public QObject {
     Q_PROPERTY(int windowWidth READ windowWidth CONSTANT)
     Q_PROPERTY(int windowHeight READ windowHeight CONSTANT)
     Q_PROPERTY(QString windowState READ windowState CONSTANT)
+    Q_PROPERTY(QString tabCloseButtonMode READ tabCloseButtonMode WRITE setTabCloseButtonMode NOTIFY tabCloseButtonModeChanged)
+    Q_PROPERTY(bool tabHoverPreviewEnabled READ tabHoverPreviewEnabled WRITE setTabHoverPreviewEnabled NOTIFY tabHoverPreviewEnabledChanged)
+    Q_PROPERTY(QString tabRamUsageMode READ tabRamUsageMode WRITE setTabRamUsageMode NOTIFY tabRamUsageModeChanged)
+    Q_PROPERTY(QString processMemoryUsage READ processMemoryUsage NOTIFY processMemoryUsageChanged)
 
 public:
     explicit SettingsManager(QObject* parent = nullptr);
@@ -48,6 +52,18 @@ public:
     int windowHeight() const;
     QString windowState() const;
 
+    QString tabCloseButtonMode() const;
+    void setTabCloseButtonMode(const QString& mode);
+
+    bool tabHoverPreviewEnabled() const;
+    void setTabHoverPreviewEnabled(bool enabled);
+
+    QString tabRamUsageMode() const;
+    void setTabRamUsageMode(const QString& mode);
+
+    QString processMemoryUsage() const;
+    Q_INVOKABLE QString queryProcessMemoryUsage() const;
+
     Q_INVOKABLE void saveWindowGeometry(int x, int y, int width, int height, const QString& state);
     Q_INVOKABLE void sync();
     Q_INVOKABLE void resetToDefaults();
@@ -59,6 +75,10 @@ signals:
     void readerFontSizeChanged(int size);
     void checkIntervalHoursChanged(int hours);
     void windowDisplayModeChanged(const QString& mode);
+    void tabCloseButtonModeChanged(const QString& mode);
+    void tabHoverPreviewEnabledChanged(bool enabled);
+    void tabRamUsageModeChanged(const QString& mode);
+    void processMemoryUsageChanged(const QString& usage);
 
 private:
     QSettings m_settings;
@@ -73,6 +93,10 @@ private:
     int m_windowWidth{1200};
     int m_windowHeight{800};
     QString m_windowState{"normal"};
+    QString m_tabCloseButtonMode{"hover"};
+    bool m_tabHoverPreviewEnabled{true};
+    QString m_tabRamUsageMode{"preview"};
+    mutable QString m_cachedProcessMemoryUsage;
 
     void ensureStoragePathExists();
 };

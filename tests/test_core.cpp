@@ -311,8 +311,38 @@ void testSettingsAndRegistry() {
     // Invalid mode should be ignored
     settings.setWindowDisplayMode("invalid_mode");
     assert(settings.windowDisplayMode() == "fullscreen");
+
+    // Test tab customization settings
+    settings.setTabCloseButtonMode("always");
+    assert(settings.tabCloseButtonMode() == "always");
+    settings.setTabCloseButtonMode("never");
+    assert(settings.tabCloseButtonMode() == "never");
+    settings.setTabCloseButtonMode("invalid");
+    assert(settings.tabCloseButtonMode() == "never");
+
+    settings.setTabHoverPreviewEnabled(false);
+    assert(settings.tabHoverPreviewEnabled() == false);
+    settings.setTabHoverPreviewEnabled(true);
+    assert(settings.tabHoverPreviewEnabled() == true);
+
+    settings.setTabRamUsageMode("none");
+    assert(settings.tabRamUsageMode() == "none");
+    settings.setTabRamUsageMode("tab");
+    assert(settings.tabRamUsageMode() == "tab");
+    settings.setTabRamUsageMode("both");
+    assert(settings.tabRamUsageMode() == "both");
+    settings.setTabRamUsageMode("invalid");
+    assert(settings.tabRamUsageMode() == "both");
+
+    QString mem = settings.processMemoryUsage();
+    assert(!mem.isEmpty());
+    assert(mem.contains("MB"));
+
     settings.resetToDefaults();
     assert(settings.windowDisplayMode() == "windowed");
+    assert(settings.tabCloseButtonMode() == "hover");
+    assert(settings.tabHoverPreviewEnabled() == true);
+    assert(settings.tabRamUsageMode() == "preview");
 
     std::cout << "[PASS] testSettingsAndRegistry passed!" << std::endl;
 }
