@@ -628,12 +628,24 @@ void testMainQmlLoading() {
     auto* rootObj = engine.rootObjects().first();
     auto* window = qobject_cast<QQuickWindow*>(rootObj);
     if (window) {
+        window->setFlags(Qt::Window | Qt::FramelessWindowHint);
         std::cout << "  Calling framelessHelper.init(window)..." << std::endl;
         framelessHelper.init(window);
         std::cout << "  framelessHelper.init(window) returned." << std::endl;
         window->show();
         QCoreApplication::processEvents();
         std::cout << "  QCoreApplication::processEvents() completed." << std::endl;
+#ifdef Q_OS_WIN
+        HWND hwnd = reinterpret_cast<HWND>(window->winId());
+        RECT wr, cr;
+        GetWindowRect(hwnd, &wr);
+        GetClientRect(hwnd, &cr);
+        std::cout << "  HWND WindowRect: " << (wr.right - wr.left) << "x" << (wr.bottom - wr.top) << std::endl;
+        std::cout << "  HWND ClientRect: " << (cr.right - cr.left) << "x" << (cr.bottom - cr.top) << std::endl;
+        std::cout << "  QQuickWindow size: " << window->width() << "x" << window->height() << std::endl;
+        assert(window->width() == (cr.right - cr.left));
+        assert(window->height() == (cr.bottom - cr.top));
+#endif
     }
     std::cout << "[PASS] testMainQmlLoading passed!" << std::endl;
 }

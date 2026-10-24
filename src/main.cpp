@@ -211,7 +211,7 @@ int main(int argc, char* argv[]) {
 #endif
         };
 
-        auto applyDisplayMode = [window, &settingsMgr, updateWindowTheme](const QString& mode) {
+        auto applyDisplayMode = [window, &settingsMgr, &framelessHelper, updateWindowTheme](const QString& mode) {
             if (mode == "fullscreen") {
                 window->setFlags(Qt::Window);
                 window->showFullScreen();
@@ -232,7 +232,7 @@ int main(int argc, char* argv[]) {
                 }
 #endif
             } else { // "windowed"
-                window->setFlags(Qt::Window);
+                window->setFlags(Qt::Window | Qt::FramelessWindowHint);
                 int winX = settingsMgr.windowX();
                 int winY = settingsMgr.windowY();
                 int winW = settingsMgr.windowWidth();
@@ -254,12 +254,7 @@ int main(int argc, char* argv[]) {
                 }
                 window->setGeometry(winX, winY, winW, winH);
                 window->showNormal();
-#ifdef Q_OS_WIN
-                HWND hwnd = reinterpret_cast<HWND>(window->winId());
-                if (hwnd) {
-                    SetWindowPos(hwnd, HWND_TOP, winX, winY, winW, winH, SWP_FRAMECHANGED | SWP_SHOWWINDOW);
-                }
-#endif
+                framelessHelper.init(window);
             }
 
             updateWindowTheme();
@@ -329,16 +324,20 @@ int main(int argc, char* argv[]) {
 
         // Show window with its initial state according to display mode
         if (displayMode == "fullscreen" || winState == "fullscreen") {
+            window->setFlags(Qt::Window);
             window->showFullScreen();
         } else if (winState == "maximized") {
+            window->setFlags(Qt::Window | Qt::FramelessWindowHint);
             window->setGeometry(winX, winY, winW, winH);
             window->showMaximized();
+            framelessHelper.init(window);
         } else {
+            window->setFlags(Qt::Window | Qt::FramelessWindowHint);
             window->setGeometry(winX, winY, winW, winH);
             window->showNormal();
+            framelessHelper.init(window);
         }
 
-        framelessHelper.init(window);
         updateWindowTheme();
     }
 

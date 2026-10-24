@@ -41,8 +41,8 @@ void WindowsFramelessHelper::init(QQuickWindow* window) {
         style |= WS_THICKFRAME | WS_CAPTION | WS_MINIMIZEBOX | WS_MAXIMIZEBOX | WS_SYSMENU;
         SetWindowLongPtr(hwnd, GWL_STYLE, style);
 
-        // Extend frame into client area for native DWM drop shadow
-        MARGINS margins = { 0, 0, 1, 0 };
+        // Extend frame into client area for native DWM drop shadow (1px on all edges)
+        MARGINS margins = { 1, 1, 1, 1 };
         DwmExtendFrameIntoClientArea(hwnd, &margins);
 
         // Subclass window to intercept WM_NCCALCSIZE and WM_NCHITTEST

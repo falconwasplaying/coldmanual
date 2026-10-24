@@ -8,6 +8,7 @@ import "components"
 ApplicationWindow {
     id: window
     visible: true
+    flags: Qt.Window | Qt.FramelessWindowHint
     width: 1200
     height: 800
     minimumWidth: 960
