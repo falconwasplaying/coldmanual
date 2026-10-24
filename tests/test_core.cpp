@@ -593,7 +593,6 @@ void testThemeColors() {
 
 void testMainQmlLoading() {
     std::cout << "[TEST] Running testMainQmlLoading..." << std::endl;
-    QQmlApplicationEngine engine;
     SettingsManager settingsMgr;
     NetworkManager networkMgr;
     DocCatalogManager catalogMgr;
@@ -601,14 +600,17 @@ void testMainQmlLoading() {
     DocsetSearchEngine searchEngine;
     DocsetManager docsetMgr(&catalogMgr, &downloader, &searchEngine, &settingsMgr);
     WindowsFramelessHelper framelessHelper;
+    QQmlApplicationEngine engine;
 
     auto* ctx = engine.rootContext();
     ctx->setContextProperty("settingsMgr", &settingsMgr);
+    ctx->setContextProperty("settingsManager", &settingsMgr);
     ctx->setContextProperty("networkMgr", &networkMgr);
     ctx->setContextProperty("catalogMgr", &catalogMgr);
     ctx->setContextProperty("downloader", &downloader);
     ctx->setContextProperty("searchEngine", &searchEngine);
     ctx->setContextProperty("docsetMgr", &docsetMgr);
+    ctx->setContextProperty("docsetManager", &docsetMgr);
     ctx->setContextProperty("framelessHelper", &framelessHelper);
 
     QObject::connect(&engine, &QQmlApplicationEngine::warnings, [](const QList<QQmlError>& warnings) {
@@ -622,6 +624,16 @@ void testMainQmlLoading() {
     if (engine.rootObjects().isEmpty()) {
         std::cerr << "  [FATAL] Failed to load qrc:/Main.qml!" << std::endl;
         assert(false && "Main.qml failed to load!");
+    }
+    auto* rootObj = engine.rootObjects().first();
+    auto* window = qobject_cast<QQuickWindow*>(rootObj);
+    if (window) {
+        std::cout << "  Calling framelessHelper.init(window)..." << std::endl;
+        framelessHelper.init(window);
+        std::cout << "  framelessHelper.init(window) returned." << std::endl;
+        window->show();
+        QCoreApplication::processEvents();
+        std::cout << "  QCoreApplication::processEvents() completed." << std::endl;
     }
     std::cout << "[PASS] testMainQmlLoading passed!" << std::endl;
 }
