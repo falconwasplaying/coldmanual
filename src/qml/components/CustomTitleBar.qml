@@ -8,7 +8,7 @@ Rectangle {
 
     property var tabsModel: null
     property int activeTabIndex: 0
-    property alias isMaximized: framelessHelper.isMaximized
+    readonly property bool isMaximized: (typeof framelessHelper !== "undefined" && framelessHelper) ? framelessHelper.isMaximized : false
 
     signal selectTabRequested(int index)
     signal closeTabRequested(int index)
@@ -47,7 +47,11 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton
-                onDoubleClicked: framelessHelper.toggleMaximize()
+                onDoubleClicked: {
+                    if (typeof framelessHelper !== "undefined" && framelessHelper) {
+                        framelessHelper.toggleMaximize()
+                    }
+                }
                 onPressed: {
                     if (typeof window !== "undefined" && window.startSystemMove) {
                         window.startSystemMove()
@@ -257,7 +261,11 @@ Rectangle {
             MouseArea {
                 anchors.fill: parent
                 acceptedButtons: Qt.LeftButton
-                onDoubleClicked: framelessHelper.toggleMaximize()
+                onDoubleClicked: {
+                    if (typeof framelessHelper !== "undefined" && framelessHelper) {
+                        framelessHelper.toggleMaximize()
+                    }
+                }
                 onPressed: {
                     if (typeof window !== "undefined" && window.startSystemMove) {
                         window.startSystemMove()
@@ -291,7 +299,13 @@ Rectangle {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: framelessHelper.showMinimized()
+                    onClicked: {
+                        if (typeof framelessHelper !== "undefined" && framelessHelper) {
+                            framelessHelper.showMinimized()
+                        } else if (typeof window !== "undefined" && window.showMinimized) {
+                            window.showMinimized()
+                        }
+                    }
                 }
             }
 
@@ -303,7 +317,7 @@ Rectangle {
 
                 LucideIcon {
                     anchors.centerIn: parent
-                    name: framelessHelper.isMaximized ? "copy" : "square"
+                    name: root.isMaximized ? "copy" : "square"
                     size: 11
                     color: Theme.textOnSurface
                 }
@@ -313,7 +327,14 @@ Rectangle {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: framelessHelper.toggleMaximize()
+                    onClicked: {
+                        if (typeof framelessHelper !== "undefined" && framelessHelper) {
+                            framelessHelper.toggleMaximize()
+                        } else if (typeof window !== "undefined") {
+                            if (window.visibility === Window.Maximized) window.showNormal()
+                            else window.showMaximized()
+                        }
+                    }
                 }
             }
 
@@ -335,7 +356,13 @@ Rectangle {
                     anchors.fill: parent
                     hoverEnabled: true
                     cursorShape: Qt.PointingHandCursor
-                    onClicked: framelessHelper.close()
+                    onClicked: {
+                        if (typeof framelessHelper !== "undefined" && framelessHelper) {
+                            framelessHelper.close()
+                        } else if (typeof window !== "undefined" && window.close) {
+                            window.close()
+                        }
+                    }
                 }
             }
         }

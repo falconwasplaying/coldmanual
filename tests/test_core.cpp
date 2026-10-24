@@ -14,6 +14,7 @@
 #include <QQmlApplicationEngine>
 #include <QQmlContext>
 #include <QQmlComponent>
+#include <QGuiApplication>
 
 #include "core/SettingsManager.h"
 #include "core/CatalogItem.h"
@@ -22,6 +23,7 @@
 #include "core/DocsetDownloader.h"
 #include "core/DocsetManager.h"
 #include "core/NetworkManager.h"
+#include "core/WindowsFramelessHelper.h"
 
 void testCatalogParsing() {
     std::cout << "[TEST] Running testCatalogParsing..." << std::endl;
@@ -589,13 +591,48 @@ void testThemeColors() {
     std::cout << "[PASS] testThemeColors passed (white text on blue boxes verified in light & dark modes)!" << std::endl;
 }
 
+void testMainQmlLoading() {
+    std::cout << "[TEST] Running testMainQmlLoading..." << std::endl;
+    QQmlApplicationEngine engine;
+    SettingsManager settingsMgr;
+    NetworkManager networkMgr;
+    DocCatalogManager catalogMgr;
+    DocsetDownloader downloader;
+    DocsetSearchEngine searchEngine;
+    DocsetManager docsetMgr(&catalogMgr, &downloader, &searchEngine, &settingsMgr);
+    WindowsFramelessHelper framelessHelper;
+
+    auto* ctx = engine.rootContext();
+    ctx->setContextProperty("settingsMgr", &settingsMgr);
+    ctx->setContextProperty("networkMgr", &networkMgr);
+    ctx->setContextProperty("catalogMgr", &catalogMgr);
+    ctx->setContextProperty("downloader", &downloader);
+    ctx->setContextProperty("searchEngine", &searchEngine);
+    ctx->setContextProperty("docsetMgr", &docsetMgr);
+    ctx->setContextProperty("framelessHelper", &framelessHelper);
+
+    QObject::connect(&engine, &QQmlApplicationEngine::warnings, [](const QList<QQmlError>& warnings) {
+        for (const auto& w : warnings) {
+            std::cerr << "  [QML Warning] " << w.toString().toStdString() << std::endl;
+        }
+    });
+
+    engine.addImportPath("qrc:/");
+    engine.load(QUrl("qrc:/Main.qml"));
+    if (engine.rootObjects().isEmpty()) {
+        std::cerr << "  [FATAL] Failed to load qrc:/Main.qml!" << std::endl;
+        assert(false && "Main.qml failed to load!");
+    }
+    std::cout << "[PASS] testMainQmlLoading passed!" << std::endl;
+}
+
 int main(int argc, char* argv[]) {
 #ifdef Q_OS_WIN
     CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
 #endif
-    QCoreApplication::setOrganizationName("ColdManualTest");
-    QCoreApplication::setApplicationName("ColdManualTest");
-    QCoreApplication app(argc, argv);
+    QGuiApplication::setOrganizationName("ColdManualTest");
+    QGuiApplication::setApplicationName("ColdManualTest");
+    QGuiApplication app(argc, argv);
 
     generateAppIco();
     testCatalogParsing();
@@ -607,6 +644,7 @@ int main(int argc, char* argv[]) {
     testNetworkManager();
     testNoDiskCaching();
     testThemeColors();
+    testMainQmlLoading();
 
     std::cout << "\nALL TESTS PASSED SUCCESSFULLY! (ColdManual Engine Verified)" << std::endl;
     return 0;
