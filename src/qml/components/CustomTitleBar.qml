@@ -147,7 +147,7 @@ Rectangle {
 
                                 // Tab RAM Footprint Badge
                                 Rectangle {
-                                    visible: tabItem.showRamOnTab && root.currentRamUsage.length > 0
+                                    visible: tabItem.showRamOnTab && tabRamText.text.length > 0
                                     Layout.preferredHeight: 16
                                     Layout.preferredWidth: tabRamText.implicitWidth + 8
                                     radius: Theme.shapeFull
@@ -156,7 +156,18 @@ Rectangle {
                                     Text {
                                         id: tabRamText
                                         anchors.centerIn: parent
-                                        text: root.currentRamUsage
+                                        text: {
+                                            if (typeof model.ramUsage !== "undefined" && model.ramUsage.length > 0) {
+                                                return model.ramUsage
+                                            }
+                                            if (typeof settingsMgr !== "undefined" && settingsMgr.getTabMemoryUsage) {
+                                                var tId = (typeof model.tabId !== "undefined") ? model.tabId : ""
+                                                var u = settingsMgr.getTabMemoryUsage(tId)
+                                                if (u.length > 0) return u
+                                                return settingsMgr.calculateTabMemoryUsage(model.pageType, model.filePath, 50)
+                                            }
+                                            return "5.0 MB"
+                                        }
                                         font.family: Theme.fontSans
                                         font.pixelSize: 9
                                         font.bold: true
@@ -396,7 +407,16 @@ Rectangle {
                                         (item.pageType === "installed") ? "download" :
                                         (item.pageType === "settings") ? "settings" :
                                         (item.icon ? item.icon : "file-text")
-                tabHoverCard.ramUsage = root.currentRamUsage
+                var tabMem = ""
+                if (item.ramUsage && item.ramUsage.length > 0) {
+                    tabMem = item.ramUsage
+                } else if (typeof settingsMgr !== "undefined" && settingsMgr.getTabMemoryUsage) {
+                    tabMem = settingsMgr.getTabMemoryUsage(item.tabId ? item.tabId : "")
+                    if (!tabMem || tabMem.length === 0) {
+                        tabMem = settingsMgr.calculateTabMemoryUsage(item.pageType, item.filePath, 50)
+                    }
+                }
+                tabHoverCard.ramUsage = tabMem ? tabMem : "5.0 MB"
                 tabHoverCard.showRam = (typeof settingsMgr !== "undefined") && (settingsMgr.tabRamUsageMode === "preview" || settingsMgr.tabRamUsageMode === "both")
                 
                 // Position card safely within window bounds

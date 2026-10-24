@@ -59,6 +59,7 @@ Item {
 
     signal navigateToCatalog()
     signal documentOpened(string docsetId, string docsetName, string fullFilePath, string title, string snippet)
+    signal scrollPositionChanged(real newScrollY)
 
     function restoreTabState(tab) {
         stopAutoScroll()
@@ -78,7 +79,8 @@ Item {
         currentFilePath = tab.filePath ? tab.filePath : ""
         history = (tab.history && tab.history.length > 0) ? tab.history : [{ docsetId: currentDocsetId, docsetName: currentDocsetName, filePath: currentFilePath, title: currentTitle }]
         historyIndex = (typeof tab.historyIndex !== "undefined" && tab.historyIndex >= 0) ? tab.historyIndex : 0
-        loadPage(currentFilePath)
+        var targetY = (typeof tab.scrollY !== "undefined" && tab.scrollY > 0) ? tab.scrollY : 0
+        loadPage(currentFilePath, targetY)
         loadSymbolTypes()
     }
 
@@ -95,13 +97,13 @@ Item {
         history.push({ docsetId: docsetId, docsetName: docsetName, filePath: fullFilePath, title: currentTitle })
         historyIndex = history.length - 1
 
-        loadPage(fullFilePath)
+        loadPage(fullFilePath, 0)
         loadSymbolTypes()
 
         documentOpened(docsetId, docsetName, fullFilePath, currentTitle, currentDocsetName + " — " + currentTitle)
     }
 
-    function loadPage(path) {
+    function loadPage(path, targetScrollY) {
         stopAutoScroll()
         currentFilePath = path
         var rawHtml = searchEngine.readFileContent(path)
@@ -109,7 +111,7 @@ Item {
             // Preprocess HTML for reader: strip web chrome, neutralize bright styles, inject theme CSS
             var styledHtml = searchEngine.prepareHtmlForReader(rawHtml, Theme.isDark)
             docArea.text = styledHtml
-            docScroll.contentY = 0
+            docScroll.contentY = (typeof targetScrollY === "number" && targetScrollY > 0) ? targetScrollY : 0
         } else {
             docArea.text = "<div style='color: " + Theme.textMuted + "; padding: 40px; text-align: center;'>" +
                            "<h3>Document Not Found</h3><p>" + path + "</p></div>"
@@ -674,6 +676,12 @@ Item {
                     contentWidth: parent.width
                     contentHeight: docArea.height + 60
                     clip: true
+
+                    onContentYChanged: {
+                        if (!autoScrollActive && contentY >= 0) {
+                            root.scrollPositionChanged(contentY)
+                        }
+                    }
 
                     ScrollBar.vertical: ScrollBar {
                         active: true

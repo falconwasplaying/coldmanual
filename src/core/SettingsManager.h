@@ -5,6 +5,9 @@
 #include <QSettings>
 #include <QStandardPaths>
 #include <QDir>
+#include <QMap>
+#include <vector>
+#include <memory>
 
 class QTimer;
 
@@ -66,6 +69,15 @@ public:
     QString processMemoryUsage() const;
     Q_INVOKABLE QString queryProcessMemoryUsage() const;
 
+    // Tab memory session management & per-tab RAM attribution
+    Q_INVOKABLE void registerTab(const QString& tabId, const QString& pageType, const QString& filePath = QString(), const QString& title = QString());
+    Q_INVOKABLE void updateTab(const QString& tabId, const QString& pageType, const QString& filePath = QString(), const QString& title = QString());
+    Q_INVOKABLE void unregisterTab(const QString& tabId);
+    Q_INVOKABLE QString getTabMemoryUsage(const QString& tabId) const;
+    Q_INVOKABLE double getTabMemoryMB(const QString& tabId) const;
+    Q_INVOKABLE int tabCount() const;
+    Q_INVOKABLE QString calculateTabMemoryUsage(const QString& pageType, const QString& filePath = QString(), int symbolCount = 0) const;
+
     Q_INVOKABLE void saveWindowGeometry(int x, int y, int width, int height, const QString& state);
     Q_INVOKABLE void sync();
     Q_INVOKABLE void resetToDefaults();
@@ -100,6 +112,16 @@ private:
     QString m_tabRamUsageMode{"preview"};
     mutable QString m_cachedProcessMemoryUsage;
     QTimer* m_ramTimer{nullptr};
+
+    struct TabSessionInfo {
+        QString tabId;
+        QString pageType;
+        QString filePath;
+        QString title;
+        size_t allocatedBytes{0};
+        std::shared_ptr<std::vector<char>> workingBuffer;
+    };
+    QMap<QString, TabSessionInfo> m_tabSessions;
 
     void ensureStoragePathExists();
 };

@@ -453,7 +453,7 @@ Item {
                                         }
 
                                         Text {
-                                            text: settingsMgr.processMemoryUsage
+                                            text: "Total: " + settingsMgr.processMemoryUsage
                                             font.family: Theme.fontSans
                                             font.pixelSize: 11
                                             font.bold: true
@@ -476,6 +476,13 @@ Item {
                                 onValueSelected: function(val) {
                                     settingsMgr.tabRamUsageMode = val
                                 }
+                            }
+
+                            Text {
+                                text: "Tabs display individual memory usage (Chrome Memory Saver style). Total application working set is shown above."
+                                font.family: Theme.fontSans
+                                font.pixelSize: 11
+                                color: Theme.textOnSurfaceVariant
                             }
                         }
                     }

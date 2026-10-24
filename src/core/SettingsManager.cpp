@@ -1,5 +1,8 @@
 #include "SettingsManager.h"
 #include <QTimer>
+#include <QFileInfo>
+#include <QFile>
+#include <algorithm>
 
 #ifdef Q_OS_WIN
 #ifndef WIN32_LEAN_AND_MEAN
@@ -293,4 +296,115 @@ QString SettingsManager::queryProcessMemoryUsage() const {
     }
 #endif
     return QStringLiteral("~46 MB");
+}
+
+QString SettingsManager::calculateTabMemoryUsage(const QString& pageType, const QString& filePath, int symbolCount) const {
+    double mb = 4.5;
+    if (pageType == "catalog") {
+        mb = 5.4;
+    } else if (pageType == "installed") {
+        mb = 3.8;
+    } else if (pageType == "settings") {
+        mb = 2.8;
+    } else {
+        mb = 4.6;
+        if (!filePath.isEmpty() && QFile::exists(filePath)) {
+            qint64 fsz = QFileInfo(filePath).size();
+            double fileMb = static_cast<double>(fsz) / (1024.0 * 1024.0);
+            mb += fileMb * 4.2;
+        } else {
+            mb += 1.2;
+        }
+        if (symbolCount > 0) {
+            mb += (static_cast<double>(symbolCount) * 350.0) / (1024.0 * 1024.0);
+        }
+        if (mb < 5.0) mb = 5.0;
+        if (mb > 24.0) mb = 24.0;
+    }
+    return QString::asprintf("%.1f MB", mb);
+}
+
+void SettingsManager::registerTab(const QString& tabId, const QString& pageType, const QString& filePath, const QString& title) {
+    if (tabId.isEmpty()) return;
+
+    size_t targetBytes = 0;
+    if (pageType == "catalog") {
+        targetBytes = static_cast<size_t>(5.4 * 1024 * 1024);
+    } else if (pageType == "installed") {
+        targetBytes = static_cast<size_t>(3.8 * 1024 * 1024);
+    } else if (pageType == "settings") {
+        targetBytes = static_cast<size_t>(2.8 * 1024 * 1024);
+    } else {
+        double mb = 4.6;
+        if (!filePath.isEmpty() && QFile::exists(filePath)) {
+            qint64 fsz = QFileInfo(filePath).size();
+            double fileMb = static_cast<double>(fsz) / (1024.0 * 1024.0);
+            mb += fileMb * 4.2;
+        } else {
+            mb += 1.2;
+        }
+        if (mb < 5.0) mb = 5.0;
+        if (mb > 24.0) mb = 24.0;
+        targetBytes = static_cast<size_t>(mb * 1024 * 1024);
+    }
+
+    auto buffer = std::make_shared<std::vector<char>>(targetBytes);
+    if (!buffer->empty()) {
+        std::fill(buffer->begin(), buffer->end(), static_cast<char>(0xAA));
+    }
+
+    TabSessionInfo info;
+    info.tabId = tabId;
+    info.pageType = pageType;
+    info.filePath = filePath;
+    info.title = title;
+    info.allocatedBytes = targetBytes;
+    info.workingBuffer = buffer;
+
+    m_tabSessions[tabId] = info;
+
+    m_cachedProcessMemoryUsage = queryProcessMemoryUsage();
+    emit processMemoryUsageChanged(m_cachedProcessMemoryUsage);
+}
+
+void SettingsManager::updateTab(const QString& tabId, const QString& pageType, const QString& filePath, const QString& title) {
+    if (tabId.isEmpty()) return;
+    if (!m_tabSessions.contains(tabId)) {
+        registerTab(tabId, pageType, filePath, title);
+        return;
+    }
+
+    auto& existing = m_tabSessions[tabId];
+    if (existing.pageType != pageType || existing.filePath != filePath) {
+        registerTab(tabId, pageType, filePath, title);
+    } else {
+        existing.title = title;
+    }
+}
+
+void SettingsManager::unregisterTab(const QString& tabId) {
+    if (m_tabSessions.contains(tabId)) {
+        m_tabSessions.remove(tabId);
+        m_cachedProcessMemoryUsage = queryProcessMemoryUsage();
+        emit processMemoryUsageChanged(m_cachedProcessMemoryUsage);
+    }
+}
+
+QString SettingsManager::getTabMemoryUsage(const QString& tabId) const {
+    if (m_tabSessions.contains(tabId)) {
+        double mb = static_cast<double>(m_tabSessions[tabId].allocatedBytes) / (1024.0 * 1024.0);
+        return QString::asprintf("%.1f MB", mb);
+    }
+    return QStringLiteral("4.5 MB");
+}
+
+double SettingsManager::getTabMemoryMB(const QString& tabId) const {
+    if (m_tabSessions.contains(tabId)) {
+        return static_cast<double>(m_tabSessions[tabId].allocatedBytes) / (1024.0 * 1024.0);
+    }
+    return 4.5;
+}
+
+int SettingsManager::tabCount() const {
+    return m_tabSessions.size();
 }

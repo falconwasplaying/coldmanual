@@ -81,7 +81,6 @@ ApplicationWindow {
             currentTab = 3
         } else {
             currentTab = 0
-            readerView.restoreTabState(tabData)
         }
         isSwitchingBrowserTab = false
     }
@@ -121,8 +120,12 @@ ApplicationWindow {
                       (pageType === "settings") ? "Application Settings & Preferences" :
                       (docsetName ? docsetName + " Documentation" : "Documentation Page")
 
+        var newTabId = "tab_" + Date.now() + "_" + Math.floor(Math.random() * 1000)
+        settingsMgr.registerTab(newTabId, pageType, filePath ? filePath : "", tabTitle)
+        var memStr = settingsMgr.getTabMemoryUsage(newTabId)
+
         browserTabsModel.append({
-            tabId: "tab_" + Date.now() + "_" + Math.floor(Math.random() * 1000),
+            tabId: newTabId,
             pageType: pageType,
             docsetId: docsetId ? docsetId : "",
             docsetName: docsetName ? docsetName : "",
@@ -131,24 +134,79 @@ ApplicationWindow {
             lastReaderTitle: (pageType === "reader" ? tabTitle : ""),
             icon: iconName,
             previewSnippet: snippet,
+            ramUsage: memStr,
             history: [],
-            historyIndex: 0
+            historyIndex: 0,
+            scrollY: 0
         })
         switchBrowserTab(browserTabsModel.count - 1)
     }
 
     function closeBrowserTab(index) {
         if (browserTabsModel.count <= 1) {
+            var oldTabId = browserTabsModel.get(0).tabId
+            settingsMgr.unregisterTab(oldTabId)
+            browserTabsModel.clear()
             createNewBrowserTab()
-            browserTabsModel.remove(0)
-            switchBrowserTab(0)
             return
         }
+        var removedTabId = browserTabsModel.get(index).tabId
+        settingsMgr.unregisterTab(removedTabId)
         browserTabsModel.remove(index)
         if (currentActiveBrowserTab >= browserTabsModel.count) {
             currentActiveBrowserTab = browserTabsModel.count - 1
         }
         switchBrowserTab(currentActiveBrowserTab)
+    }
+
+    function openDocumentInActiveTab(docsetId, docsetName, fullFilePath, title, snippet) {
+        var tabTitle = title ? title : (docsetName ? docsetName : "Documentation")
+        if (browserTabsModel.count === 0) {
+            createNewBrowserTab(docsetId, docsetName, fullFilePath, tabTitle, "reader")
+            return
+        }
+        var cur = browserTabsModel.get(currentActiveBrowserTab)
+        var tabId = cur.tabId
+        browserTabsModel.setProperty(currentActiveBrowserTab, "pageType", "reader")
+        browserTabsModel.setProperty(currentActiveBrowserTab, "docsetId", docsetId)
+        browserTabsModel.setProperty(currentActiveBrowserTab, "docsetName", docsetName)
+        browserTabsModel.setProperty(currentActiveBrowserTab, "filePath", fullFilePath)
+        browserTabsModel.setProperty(currentActiveBrowserTab, "title", tabTitle)
+        browserTabsModel.setProperty(currentActiveBrowserTab, "lastReaderTitle", tabTitle)
+        browserTabsModel.setProperty(currentActiveBrowserTab, "icon", "book-open")
+        browserTabsModel.setProperty(currentActiveBrowserTab, "previewSnippet", snippet ? snippet : (docsetName + " Documentation"))
+        browserTabsModel.setProperty(currentActiveBrowserTab, "scrollY", 0)
+
+        settingsMgr.updateTab(tabId, "reader", fullFilePath, tabTitle)
+        browserTabsModel.setProperty(currentActiveBrowserTab, "ramUsage", settingsMgr.getTabMemoryUsage(tabId))
+
+        if (currentTab !== 0) {
+            currentTab = 0
+        }
+
+        var activeHost = tabViewsRepeater.itemAt(currentActiveBrowserTab)
+        if (activeHost && activeHost.readerViewItem) {
+            activeHost.readerViewItem.openDocument(docsetId, docsetName, fullFilePath, tabTitle)
+        }
+    }
+
+    function handleDocumentOpened(docsetId, docsetName, fullFilePath, title, snippet) {
+        if (currentActiveBrowserTab < 0 || currentActiveBrowserTab >= browserTabsModel.count) return
+        var cur = browserTabsModel.get(currentActiveBrowserTab)
+        var tabTitle = title ? title : (docsetName ? docsetName : "Documentation")
+        var tabId = cur.tabId
+
+        browserTabsModel.setProperty(currentActiveBrowserTab, "pageType", "reader")
+        browserTabsModel.setProperty(currentActiveBrowserTab, "docsetId", docsetId)
+        browserTabsModel.setProperty(currentActiveBrowserTab, "docsetName", docsetName)
+        browserTabsModel.setProperty(currentActiveBrowserTab, "filePath", fullFilePath)
+        browserTabsModel.setProperty(currentActiveBrowserTab, "title", tabTitle)
+        browserTabsModel.setProperty(currentActiveBrowserTab, "lastReaderTitle", tabTitle)
+        browserTabsModel.setProperty(currentActiveBrowserTab, "icon", "book-open")
+        browserTabsModel.setProperty(currentActiveBrowserTab, "previewSnippet", snippet ? snippet : (docsetName + " Documentation"))
+
+        settingsMgr.updateTab(tabId, "reader", fullFilePath, tabTitle)
+        browserTabsModel.setProperty(currentActiveBrowserTab, "ramUsage", settingsMgr.getTabMemoryUsage(tabId))
     }
 
     onCurrentTabChanged: {
@@ -161,20 +219,20 @@ ApplicationWindow {
         if (browserTabsModel.count === 0) return
         if (currentActiveBrowserTab < 0 || currentActiveBrowserTab >= browserTabsModel.count) return
 
+        var cur = browserTabsModel.get(currentActiveBrowserTab)
+        var tabId = cur.tabId
+
         if (currentTab === 0) {
             // Reader
-            var cur = browserTabsModel.get(currentActiveBrowserTab)
             var titleText = (cur.lastReaderTitle && cur.lastReaderTitle.length > 0) ? cur.lastReaderTitle :
                             (cur.title && cur.title !== "Browse Catalog" && cur.title !== "Installed" && cur.title !== "Settings" ? cur.title : "Reader")
             browserTabsModel.setProperty(currentActiveBrowserTab, "pageType", "reader")
             browserTabsModel.setProperty(currentActiveBrowserTab, "title", titleText)
             browserTabsModel.setProperty(currentActiveBrowserTab, "icon", "book-open")
-            if (cur.filePath) {
-                readerView.restoreTabState(cur)
-            }
+            settingsMgr.updateTab(tabId, "reader", cur.filePath ? cur.filePath : "", titleText)
+            browserTabsModel.setProperty(currentActiveBrowserTab, "ramUsage", settingsMgr.getTabMemoryUsage(tabId))
         } else if (currentTab === 1) {
             // Catalog
-            var cur = browserTabsModel.get(currentActiveBrowserTab)
             if (cur.pageType === "reader" && cur.title && cur.title !== "Reader" && cur.title !== "Browse Catalog" && cur.title !== "Installed" && cur.title !== "Settings") {
                 browserTabsModel.setProperty(currentActiveBrowserTab, "lastReaderTitle", cur.title)
             }
@@ -182,9 +240,10 @@ ApplicationWindow {
             browserTabsModel.setProperty(currentActiveBrowserTab, "title", "Browse Catalog")
             browserTabsModel.setProperty(currentActiveBrowserTab, "icon", "compass")
             browserTabsModel.setProperty(currentActiveBrowserTab, "previewSnippet", "Explore and download offline documentation sets")
+            settingsMgr.updateTab(tabId, "catalog", "", "Browse Catalog")
+            browserTabsModel.setProperty(currentActiveBrowserTab, "ramUsage", settingsMgr.getTabMemoryUsage(tabId))
         } else if (currentTab === 2) {
             // Installed
-            var cur = browserTabsModel.get(currentActiveBrowserTab)
             if (cur.pageType === "reader" && cur.title && cur.title !== "Reader" && cur.title !== "Browse Catalog" && cur.title !== "Installed" && cur.title !== "Settings") {
                 browserTabsModel.setProperty(currentActiveBrowserTab, "lastReaderTitle", cur.title)
             }
@@ -192,9 +251,10 @@ ApplicationWindow {
             browserTabsModel.setProperty(currentActiveBrowserTab, "title", "Installed")
             browserTabsModel.setProperty(currentActiveBrowserTab, "icon", "download")
             browserTabsModel.setProperty(currentActiveBrowserTab, "previewSnippet", "Manage installed offline documentation")
+            settingsMgr.updateTab(tabId, "installed", "", "Installed")
+            browserTabsModel.setProperty(currentActiveBrowserTab, "ramUsage", settingsMgr.getTabMemoryUsage(tabId))
         } else if (currentTab === 3) {
             // Settings
-            var cur = browserTabsModel.get(currentActiveBrowserTab)
             if (cur.pageType === "reader" && cur.title && cur.title !== "Reader" && cur.title !== "Browse Catalog" && cur.title !== "Installed" && cur.title !== "Settings") {
                 browserTabsModel.setProperty(currentActiveBrowserTab, "lastReaderTitle", cur.title)
             }
@@ -202,30 +262,12 @@ ApplicationWindow {
             browserTabsModel.setProperty(currentActiveBrowserTab, "title", "Settings")
             browserTabsModel.setProperty(currentActiveBrowserTab, "icon", "settings")
             browserTabsModel.setProperty(currentActiveBrowserTab, "previewSnippet", "Application Settings & Preferences")
+            settingsMgr.updateTab(tabId, "settings", "", "Settings")
+            browserTabsModel.setProperty(currentActiveBrowserTab, "ramUsage", settingsMgr.getTabMemoryUsage(tabId))
         }
     }
 
-    Connections {
-        target: readerView
-        function onDocumentOpened(docsetId, docsetName, fullFilePath, title, snippet) {
-            var tabTitle = title ? title : (docsetName ? docsetName : "Documentation")
-            if (browserTabsModel.count === 0) {
-                createNewBrowserTab(docsetId, docsetName, fullFilePath, tabTitle, "reader")
-            } else {
-                browserTabsModel.setProperty(currentActiveBrowserTab, "pageType", "reader")
-                browserTabsModel.setProperty(currentActiveBrowserTab, "docsetId", docsetId)
-                browserTabsModel.setProperty(currentActiveBrowserTab, "docsetName", docsetName)
-                browserTabsModel.setProperty(currentActiveBrowserTab, "filePath", fullFilePath)
-                browserTabsModel.setProperty(currentActiveBrowserTab, "title", tabTitle)
-                browserTabsModel.setProperty(currentActiveBrowserTab, "lastReaderTitle", tabTitle)
-                browserTabsModel.setProperty(currentActiveBrowserTab, "icon", "book-open")
-                browserTabsModel.setProperty(currentActiveBrowserTab, "previewSnippet", snippet ? snippet : (docsetName + " Documentation"))
-            }
-            if (currentTab !== 0) {
-                currentTab = 0
-            }
-        }
-    }
+
 
     Component.onCompleted: {
         Theme.isDark = (settingsMgr.themeMode !== "light")
@@ -1029,78 +1071,143 @@ ApplicationWindow {
         }
 
 
-        // Main Content Views with Smooth Crossfade & Micro-Slide
+        // Tab View Components
+        Component {
+            id: readerComponent
+            ReaderView {
+                anchors.fill: parent
+                onNavigateToCatalog: {
+                    if (networkMgr.isOnline) {
+                        window.currentTab = 1
+                    } else {
+                        showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
+                    }
+                }
+                onDocumentOpened: function(docsetId, docsetName, fullFilePath, title, snippet) {
+                    window.handleDocumentOpened(docsetId, docsetName, fullFilePath, title, snippet)
+                }
+                onScrollPositionChanged: function(newScrollY) {
+                    if (currentActiveBrowserTab >= 0 && currentActiveBrowserTab < browserTabsModel.count) {
+                        browserTabsModel.setProperty(currentActiveBrowserTab, "scrollY", newScrollY)
+                    }
+                }
+            }
+        }
+
+        Component {
+            id: catalogComponent
+            CatalogView {
+                anchors.fill: parent
+                onOpenDocsetInReader: function(docsetId, docsetName) {
+                    var info = docsetMgr.getInstalledDocset(docsetId)
+                    if (info.indexPath) {
+                        window.openDocumentInActiveTab(docsetId, docsetName, info.indexPath, docsetName, docsetName + " Documentation")
+                    }
+                }
+            }
+        }
+
+        Component {
+            id: installedComponent
+            InstalledView {
+                anchors.fill: parent
+                onOpenDocsetInReader: function(docsetId, docsetName) {
+                    var info = docsetMgr.getInstalledDocset(docsetId)
+                    if (info.indexPath) {
+                        window.openDocumentInActiveTab(docsetId, docsetName, info.indexPath, docsetName, docsetName + " Documentation")
+                    }
+                }
+                onNavigateToCatalog: {
+                    if (networkMgr.isOnline) {
+                        window.currentTab = 1
+                    } else {
+                        showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
+                    }
+                }
+            }
+        }
+
+        Component {
+            id: settingsComponent
+            SettingsView {
+                anchors.fill: parent
+            }
+        }
+
+        // Main Content Views: Tabs treated as independent windows/views
         Item {
             id: mainContentContainer
             Layout.fillWidth: true
             Layout.fillHeight: true
 
-            ReaderView {
-                id: readerView
-                anchors.fill: parent
-                visible: opacity > 0.001
-                opacity: (window.currentTab === 0) ? 1.0 : 0.0
-                y: (window.currentTab === 0) ? 0 : 6
-                Behavior on opacity { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutQuad } }
-                Behavior on y { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
-                onNavigateToCatalog: {
-                    if (networkMgr.isOnline) {
-                        window.currentTab = 1
-                    } else {
-                        showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
-                    }
-                }
-            }
+            Repeater {
+                id: tabViewsRepeater
+                model: browserTabsModel
 
-            CatalogView {
-                id: catalogView
-                anchors.fill: parent
-                visible: opacity > 0.001
-                opacity: (window.currentTab === 1) ? 1.0 : 0.0
-                y: (window.currentTab === 1) ? 0 : 6
-                Behavior on opacity { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutQuad } }
-                Behavior on y { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
-                onOpenDocsetInReader: function(docsetId, docsetName) {
-                    var info = docsetMgr.getInstalledDocset(docsetId)
-                    if (info.indexPath) {
-                        readerView.openDocument(docsetId, docsetName, info.indexPath, docsetName)
-                    }
-                    window.currentTab = 0
-                }
-            }
+                delegate: Item {
+                    id: tabHost
+                    anchors.fill: parent
+                    visible: index === currentActiveBrowserTab
 
-            InstalledView {
-                id: installedView
-                anchors.fill: parent
-                visible: opacity > 0.001
-                opacity: (window.currentTab === 2) ? 1.0 : 0.0
-                y: (window.currentTab === 2) ? 0 : 6
-                Behavior on opacity { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutQuad } }
-                Behavior on y { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
-                onOpenDocsetInReader: function(docsetId, docsetName) {
-                    var info = docsetMgr.getInstalledDocset(docsetId)
-                    if (info.indexPath) {
-                        readerView.openDocument(docsetId, docsetName, info.indexPath, docsetName)
-                    }
-                    window.currentTab = 0
-                }
-                onNavigateToCatalog: {
-                    if (networkMgr.isOnline) {
-                        window.currentTab = 1
-                    } else {
-                        showToast("Offline Mode", "Cannot open catalog while offline. Please connect to the internet.", "wifi-off")
-                    }
-                }
-            }
+                    readonly property string tabPageType: model.pageType ? model.pageType : "reader"
+                    readonly property string tabDocsetId: model.docsetId ? model.docsetId : ""
+                    readonly property string tabDocsetName: model.docsetName ? model.docsetName : ""
+                    readonly property string tabFilePath: model.filePath ? model.filePath : ""
+                    readonly property string tabTitleText: model.title ? model.title : ""
+                    readonly property var tabHistory: model.history ? model.history : []
+                    readonly property int tabHistoryIndex: (typeof model.historyIndex !== "undefined") ? model.historyIndex : 0
+                    readonly property real tabScrollY: (typeof model.scrollY !== "undefined") ? model.scrollY : 0
 
-            SettingsView {
-                id: settingsView
-                anchors.fill: parent
-                visible: opacity > 0.001
-                opacity: (window.currentTab === 3) ? 1.0 : 0.0
-                y: (window.currentTab === 3) ? 0 : 6
-                Behavior on opacity { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Easing.OutQuad } }
-                Behavior on y { NumberAnimation { duration: Theme.animDurationNormal; easing.type: Theme.animEasingDecel } }
+                    readonly property var readerViewItem: tabReaderLoader.item
+                    readonly property var catalogViewItem: tabCatalogLoader.item
+                    readonly property var installedViewItem: tabInstalledLoader.item
+                    readonly property var settingsViewItem: tabSettingsLoader.item
+
+                    Loader {
+                        id: tabReaderLoader
+                        anchors.fill: parent
+                        active: tabHost.tabPageType === "reader"
+                        visible: active
+                        sourceComponent: readerComponent
+                        onLoaded: {
+                            if (item && tabHost.tabFilePath) {
+                                item.restoreTabState({
+                                    docsetId: tabHost.tabDocsetId,
+                                    docsetName: tabHost.tabDocsetName,
+                                    filePath: tabHost.tabFilePath,
+                                    title: tabHost.tabTitleText,
+                                    history: tabHost.tabHistory,
+                                    historyIndex: tabHost.tabHistoryIndex,
+                                    scrollY: tabHost.tabScrollY
+                                })
+                            }
+                        }
+                    }
+
+                    Loader {
+                        id: tabCatalogLoader
+                        anchors.fill: parent
+                        active: tabHost.tabPageType === "catalog"
+                        visible: active
+                        sourceComponent: catalogComponent
+                    }
+
+                    Loader {
+                        id: tabInstalledLoader
+                        anchors.fill: parent
+                        active: tabHost.tabPageType === "installed"
+                        visible: active
+                        sourceComponent: installedComponent
+                    }
+
+                    Loader {
+                        id: tabSettingsLoader
+                        anchors.fill: parent
+                        active: tabHost.tabPageType === "settings"
+                        visible: active
+                        sourceComponent: settingsComponent
+                    }
+                }
             }
         }
     }
@@ -1113,7 +1220,7 @@ ApplicationWindow {
         z: 9999
         onNavigateToItem: function(docsetId, docsetName, fullFilePath, title) {
             if (browserTabsModel.count === 0 || !browserTabsModel.get(currentActiveBrowserTab).filePath) {
-                readerView.openDocument(docsetId, docsetName, fullFilePath, title)
+                window.openDocumentInActiveTab(docsetId, docsetName, fullFilePath, title, docsetName + " — " + title)
             } else {
                 createNewBrowserTab(docsetId, docsetName, fullFilePath, title, "reader")
             }
