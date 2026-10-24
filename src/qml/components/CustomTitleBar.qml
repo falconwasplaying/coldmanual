@@ -14,6 +14,8 @@ Rectangle {
     signal closeTabRequested(int index)
     signal newTabRequested()
 
+    readonly property string currentRamUsage: (typeof settingsMgr !== "undefined" && settingsMgr) ? settingsMgr.processMemoryUsage : ""
+
     height: 40
     color: Theme.surfaceContainerLow
 
@@ -145,7 +147,7 @@ Rectangle {
 
                                 // Tab RAM Footprint Badge
                                 Rectangle {
-                                    visible: tabItem.showRamOnTab && (typeof settingsMgr !== "undefined" && settingsMgr.processMemoryUsage.length > 0)
+                                    visible: tabItem.showRamOnTab && root.currentRamUsage.length > 0
                                     Layout.preferredHeight: 16
                                     Layout.preferredWidth: tabRamText.implicitWidth + 8
                                     radius: Theme.shapeFull
@@ -154,7 +156,7 @@ Rectangle {
                                     Text {
                                         id: tabRamText
                                         anchors.centerIn: parent
-                                        text: (typeof settingsMgr !== "undefined") ? settingsMgr.processMemoryUsage : ""
+                                        text: root.currentRamUsage
                                         font.family: Theme.fontSans
                                         font.pixelSize: 9
                                         font.bold: true
@@ -394,7 +396,7 @@ Rectangle {
                                         (item.pageType === "installed") ? "download" :
                                         (item.pageType === "settings") ? "settings" :
                                         (item.icon ? item.icon : "file-text")
-                tabHoverCard.ramUsage = (typeof settingsMgr !== "undefined") ? settingsMgr.processMemoryUsage : ""
+                tabHoverCard.ramUsage = root.currentRamUsage
                 tabHoverCard.showRam = (typeof settingsMgr !== "undefined") && (settingsMgr.tabRamUsageMode === "preview" || settingsMgr.tabRamUsageMode === "both")
                 
                 // Position card safely within window bounds

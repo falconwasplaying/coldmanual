@@ -375,85 +375,17 @@ Item {
                                 color: Theme.textOnSurface
                             }
 
-                            RowLayout {
-                                spacing: 8
-
-                                // Hover only
-                                Rectangle {
-                                    width: 110
-                                    height: 32
-                                    radius: Theme.shapeFull
-                                    color: (settingsMgr.tabCloseButtonMode === "hover") ? Theme.primary : Theme.surfaceContainerHigh
-                                    border.color: (settingsMgr.tabCloseButtonMode === "hover") ? Theme.primary : Theme.outlineVariant
-                                    border.width: 1
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "On Hover"
-                                        font.family: Theme.fontSans
-                                        font.pixelSize: 12
-                                        font.bold: settingsMgr.tabCloseButtonMode === "hover"
-                                        color: (settingsMgr.tabCloseButtonMode === "hover") ? Theme.textOnPrimary : Theme.textOnSurface
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: settingsMgr.tabCloseButtonMode = "hover"
-                                    }
-                                }
-
-                                // Always
-                                Rectangle {
-                                    width: 110
-                                    height: 32
-                                    radius: Theme.shapeFull
-                                    color: (settingsMgr.tabCloseButtonMode === "always") ? Theme.primary : Theme.surfaceContainerHigh
-                                    border.color: (settingsMgr.tabCloseButtonMode === "always") ? Theme.primary : Theme.outlineVariant
-                                    border.width: 1
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "Always Show"
-                                        font.family: Theme.fontSans
-                                        font.pixelSize: 12
-                                        font.bold: settingsMgr.tabCloseButtonMode === "always"
-                                        color: (settingsMgr.tabCloseButtonMode === "always") ? Theme.textOnPrimary : Theme.textOnSurface
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: settingsMgr.tabCloseButtonMode = "always"
-                                    }
-                                }
-
-                                // Never
-                                Rectangle {
-                                    width: 110
-                                    height: 32
-                                    radius: Theme.shapeFull
-                                    color: (settingsMgr.tabCloseButtonMode === "never") ? Theme.primary : Theme.surfaceContainerHigh
-                                    border.color: (settingsMgr.tabCloseButtonMode === "never") ? Theme.primary : Theme.outlineVariant
-                                    border.width: 1
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "Hidden"
-                                        font.family: Theme.fontSans
-                                        font.pixelSize: 12
-                                        font.bold: settingsMgr.tabCloseButtonMode === "never"
-                                        color: (settingsMgr.tabCloseButtonMode === "never") ? Theme.textOnPrimary : Theme.textOnSurface
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: settingsMgr.tabCloseButtonMode = "never"
-                                    }
+                            SegmentedPill {
+                                width: 360
+                                height: 36
+                                currentValue: settingsMgr.tabCloseButtonMode
+                                options: [
+                                    { id: "hover", label: "On Hover", icon: "eye" },
+                                    { id: "always", label: "Always Show", icon: "x-circle" },
+                                    { id: "never", label: "Hidden", icon: "eye-off" }
+                                ]
+                                onValueSelected: function(val) {
+                                    settingsMgr.tabCloseButtonMode = val
                                 }
                             }
                         }
@@ -503,120 +435,46 @@ Item {
                                     color: Theme.textOnSurface
                                 }
 
-                                Text {
-                                    text: "(Current footprint: " + settingsMgr.processMemoryUsage + ")"
-                                    font.family: Theme.fontSans
-                                    font.pixelSize: 12
-                                    font.bold: true
-                                    color: Theme.primary
+                                Rectangle {
+                                    Layout.preferredHeight: 22
+                                    Layout.preferredWidth: ramBadgeRow.implicitWidth + 14
+                                    radius: Theme.shapeFull
+                                    color: Theme.secondaryContainer
+
+                                    RowLayout {
+                                        id: ramBadgeRow
+                                        anchors.centerIn: parent
+                                        spacing: 5
+
+                                        LucideIcon {
+                                            name: "activity"
+                                            size: 11
+                                            color: Theme.textOnSecondaryContainer
+                                        }
+
+                                        Text {
+                                            text: settingsMgr.processMemoryUsage
+                                            font.family: Theme.fontSans
+                                            font.pixelSize: 11
+                                            font.bold: true
+                                            color: Theme.textOnSecondaryContainer
+                                        }
+                                    }
                                 }
                             }
 
-                            RowLayout {
-                                spacing: 8
-
-                                // In Preview Only
-                                Rectangle {
-                                    width: 130
-                                    height: 32
-                                    radius: Theme.shapeFull
-                                    color: (settingsMgr.tabRamUsageMode === "preview") ? Theme.primary : Theme.surfaceContainerHigh
-                                    border.color: (settingsMgr.tabRamUsageMode === "preview") ? Theme.primary : Theme.outlineVariant
-                                    border.width: 1
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "Hover Card Only"
-                                        font.family: Theme.fontSans
-                                        font.pixelSize: 12
-                                        font.bold: settingsMgr.tabRamUsageMode === "preview"
-                                        color: (settingsMgr.tabRamUsageMode === "preview") ? Theme.textOnPrimary : Theme.textOnSurface
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: settingsMgr.tabRamUsageMode = "preview"
-                                    }
-                                }
-
-                                // On Tab
-                                Rectangle {
-                                    width: 110
-                                    height: 32
-                                    radius: Theme.shapeFull
-                                    color: (settingsMgr.tabRamUsageMode === "tab") ? Theme.primary : Theme.surfaceContainerHigh
-                                    border.color: (settingsMgr.tabRamUsageMode === "tab") ? Theme.primary : Theme.outlineVariant
-                                    border.width: 1
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "On Tab Directly"
-                                        font.family: Theme.fontSans
-                                        font.pixelSize: 12
-                                        font.bold: settingsMgr.tabRamUsageMode === "tab"
-                                        color: (settingsMgr.tabRamUsageMode === "tab") ? Theme.textOnPrimary : Theme.textOnSurface
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: settingsMgr.tabRamUsageMode = "tab"
-                                    }
-                                }
-
-                                // Both
-                                Rectangle {
-                                    width: 110
-                                    height: 32
-                                    radius: Theme.shapeFull
-                                    color: (settingsMgr.tabRamUsageMode === "both") ? Theme.primary : Theme.surfaceContainerHigh
-                                    border.color: (settingsMgr.tabRamUsageMode === "both") ? Theme.primary : Theme.outlineVariant
-                                    border.width: 1
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "Both"
-                                        font.family: Theme.fontSans
-                                        font.pixelSize: 12
-                                        font.bold: settingsMgr.tabRamUsageMode === "both"
-                                        color: (settingsMgr.tabRamUsageMode === "both") ? Theme.textOnPrimary : Theme.textOnSurface
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: settingsMgr.tabRamUsageMode = "both"
-                                    }
-                                }
-
-                                // None
-                                Rectangle {
-                                    width: 110
-                                    height: 32
-                                    radius: Theme.shapeFull
-                                    color: (settingsMgr.tabRamUsageMode === "none") ? Theme.primary : Theme.surfaceContainerHigh
-                                    border.color: (settingsMgr.tabRamUsageMode === "none") ? Theme.primary : Theme.outlineVariant
-                                    border.width: 1
-
-                                    Text {
-                                        anchors.centerIn: parent
-                                        text: "Hidden (None)"
-                                        font.family: Theme.fontSans
-                                        font.pixelSize: 12
-                                        font.bold: settingsMgr.tabRamUsageMode === "none"
-                                        color: (settingsMgr.tabRamUsageMode === "none") ? Theme.textOnPrimary : Theme.textOnSurface
-                                    }
-
-                                    MouseArea {
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: settingsMgr.tabRamUsageMode = "none"
-                                    }
+                            SegmentedPill {
+                                width: 460
+                                height: 36
+                                currentValue: settingsMgr.tabRamUsageMode
+                                options: [
+                                    { id: "preview", label: "Hover Card", icon: "layers" },
+                                    { id: "tab", label: "On Tab Directly", icon: "tag" },
+                                    { id: "both", label: "Both", icon: "check-check" },
+                                    { id: "none", label: "Hidden", icon: "slash" }
+                                ]
+                                onValueSelected: function(val) {
+                                    settingsMgr.tabRamUsageMode = val
                                 }
                             }
                         }
@@ -665,83 +523,16 @@ Item {
                                 color: Theme.textOnSurface
                             }
 
-                            // Material 3 Segmented Theme Selector
-                            Rectangle {
-                                width: 196
+                            SegmentedPill {
+                                width: 220
                                 height: 36
-                                radius: Theme.shapeFull
-                                color: Theme.surfaceContainerHigh
-                                border.color: Theme.outlineVariant
-                                border.width: 1
-
-                                Row {
-                                    anchors.fill: parent
-                                    anchors.margins: 3
-                                    spacing: 2
-
-                                    // Dark segment
-                                    Rectangle {
-                                        width: (parent.width - 2) / 2
-                                        height: parent.height
-                                        radius: Theme.shapeFull
-                                        color: settingsMgr.themeMode === "dark" ? Theme.secondaryContainer : Theme.surfaceContainerHigh
-                                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-
-                                        RowLayout {
-                                            anchors.centerIn: parent
-                                            spacing: 6
-                                            LucideIcon {
-                                                name: "moon"
-                                                size: 13
-                                                color: settingsMgr.themeMode === "dark" ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
-                                            }
-                                            Text {
-                                                text: "Dark"
-                                                font.family: Theme.fontSans
-                                                font.pixelSize: 12
-                                                font.bold: settingsMgr.themeMode === "dark"
-                                                color: settingsMgr.themeMode === "dark" ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
-                                            }
-                                        }
-
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: settingsMgr.themeMode = "dark"
-                                        }
-                                    }
-
-                                    // Light segment
-                                    Rectangle {
-                                        width: (parent.width - 2) / 2
-                                        height: parent.height
-                                        radius: Theme.shapeFull
-                                        color: settingsMgr.themeMode === "light" ? Theme.secondaryContainer : Theme.surfaceContainerHigh
-                                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-
-                                        RowLayout {
-                                            anchors.centerIn: parent
-                                            spacing: 6
-                                            LucideIcon {
-                                                name: "sun"
-                                                size: 13
-                                                color: settingsMgr.themeMode === "light" ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
-                                            }
-                                            Text {
-                                                text: "Light"
-                                                font.family: Theme.fontSans
-                                                font.pixelSize: 12
-                                                font.bold: settingsMgr.themeMode === "light"
-                                                color: settingsMgr.themeMode === "light" ? Theme.textOnSecondaryContainer : Theme.textOnSurfaceVariant
-                                            }
-                                        }
-
-                                        MouseArea {
-                                            anchors.fill: parent
-                                            cursorShape: Qt.PointingHandCursor
-                                            onClicked: settingsMgr.themeMode = "light"
-                                        }
-                                    }
+                                currentValue: settingsMgr.themeMode
+                                options: [
+                                    { id: "dark", label: "Dark", icon: "moon" },
+                                    { id: "light", label: "Light", icon: "sun" }
+                                ]
+                                onValueSelected: function(val) {
+                                    settingsMgr.themeMode = val
                                 }
                             }
                         }

@@ -45,8 +45,9 @@ SettingsManager::SettingsManager(QObject* parent)
 
     ensureStoragePathExists();
 
+    m_cachedProcessMemoryUsage = queryProcessMemoryUsage();
     m_ramTimer = new QTimer(this);
-    m_ramTimer->setInterval(2000);
+    m_ramTimer->setInterval(1500);
     connect(m_ramTimer, &QTimer::timeout, this, [this]() {
         QString currentMem = queryProcessMemoryUsage();
         if (currentMem != m_cachedProcessMemoryUsage) {
@@ -250,7 +251,10 @@ void SettingsManager::setTabRamUsageMode(const QString& mode) {
 }
 
 QString SettingsManager::processMemoryUsage() const {
-    return queryProcessMemoryUsage();
+    if (m_cachedProcessMemoryUsage.isEmpty()) {
+        m_cachedProcessMemoryUsage = queryProcessMemoryUsage();
+    }
+    return m_cachedProcessMemoryUsage;
 }
 
 QString SettingsManager::queryProcessMemoryUsage() const {
@@ -276,8 +280,7 @@ QString SettingsManager::queryProcessMemoryUsage() const {
     pmc2.cb = sizeof(pmc2);
     if (GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc2), sizeof(pmc2)) && pmc2.PrivateWorkingSetSize > 0) {
         double mb = static_cast<double>(pmc2.PrivateWorkingSetSize) / (1024.0 * 1024.0);
-        m_cachedProcessMemoryUsage = QString::asprintf("%.1f MB", mb);
-        return m_cachedProcessMemoryUsage;
+        return QString::asprintf("%.1f MB", mb);
     }
 
     PROCESS_MEMORY_COUNTERS_EX pmc;
@@ -286,8 +289,7 @@ QString SettingsManager::queryProcessMemoryUsage() const {
     if (GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS*>(&pmc), sizeof(pmc))) {
         SIZE_T memBytes = (pmc.PrivateUsage > 0) ? pmc.PrivateUsage : pmc.WorkingSetSize;
         double mb = static_cast<double>(memBytes) / (1024.0 * 1024.0);
-        m_cachedProcessMemoryUsage = QString::asprintf("%.1f MB", mb);
-        return m_cachedProcessMemoryUsage;
+        return QString::asprintf("%.1f MB", mb);
     }
 #endif
     return QStringLiteral("~46 MB");
