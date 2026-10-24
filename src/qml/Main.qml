@@ -7,7 +7,7 @@ import "components"
 
 ApplicationWindow {
     id: window
-    visible: false
+    visible: true
     width: 1200
     height: 800
     minimumWidth: 960

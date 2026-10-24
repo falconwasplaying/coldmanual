@@ -49,7 +49,8 @@ void WindowsFramelessHelper::init(QQuickWindow* window) {
         SetWindowSubclass(hwnd, SubclassProc, 1, reinterpret_cast<DWORD_PTR>(this));
 
         // Update frame immediately
-        SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
+        SetWindowPos(hwnd, nullptr, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED | SWP_SHOWWINDOW);
+        ShowWindow(hwnd, SW_SHOW);
 
         setIsMaximized(IsZoomed(hwnd));
     }

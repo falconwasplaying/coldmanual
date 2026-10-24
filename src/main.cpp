@@ -118,7 +118,6 @@ int main(int argc, char* argv[]) {
 
     auto* rootObj = engine.rootObjects().first();
     if (auto* window = qobject_cast<QQuickWindow*>(rootObj)) {
-        framelessHelper.init(window);
         window->setColor(initialBgColor);
         window->setIcon(QIcon(":/resources/cmi.svg"));
 
@@ -130,12 +129,7 @@ int main(int argc, char* argv[]) {
         const QString winState = settingsMgr.windowState();
         const QString displayMode = settingsMgr.windowDisplayMode();
 
-        // Apply initial display mode flags
-        if (displayMode == "borderless") {
-            window->setFlags(Qt::Window | Qt::FramelessWindowHint);
-        } else {
-            window->setFlags(Qt::Window);
-        }
+
 
         // Enforce sensible minimums
         winW = std::max(960, winW);
@@ -323,18 +317,6 @@ int main(int argc, char* argv[]) {
             settingsMgr.sync();
         });
 
-#ifdef Q_OS_WIN
-        HWND hwnd = reinterpret_cast<HWND>(window->winId());
-        if (hwnd) {
-            // 1. Cloak the window from DWM desktop composition before showing so Windows never composites unrendered white frames
-            BOOL cloak = TRUE;
-            DwmSetWindowAttribute(hwnd, DWMWA_CLOAK, &cloak, sizeof(cloak));
-        }
-#endif
-
-        // Apply initial theme to window and native title bar
-        updateWindowTheme();
-
         // Dynamic Theme changes at runtime (matches title bar to white/dark mode immediately)
         QObject::connect(&settingsMgr, &SettingsManager::themeModeChanged, window, [updateWindowTheme](const QString&) {
             updateWindowTheme();
@@ -346,38 +328,18 @@ int main(int argc, char* argv[]) {
         });
 
         // Show window with its initial state according to display mode
-        if (displayMode == "borderless") {
-            applyDisplayMode("borderless");
-        } else if (displayMode == "fullscreen" || winState == "fullscreen") {
-            applyDisplayMode("fullscreen");
-        } else {
-            window->setFlags(Qt::Window);
+        if (displayMode == "fullscreen" || winState == "fullscreen") {
+            window->showFullScreen();
+        } else if (winState == "maximized") {
             window->setGeometry(winX, winY, winW, winH);
-            if (winState == "maximized") {
-                window->showMaximized();
-            } else {
-                window->showNormal();
-            }
-            updateWindowTheme();
+            window->showMaximized();
+        } else {
+            window->setGeometry(winX, winY, winW, winH);
+            window->showNormal();
         }
 
-#ifdef Q_OS_WIN
-        if (hwnd) {
-            auto connection = std::make_shared<QMetaObject::Connection>();
-            *connection = QObject::connect(window, &QQuickWindow::frameSwapped, window, [hwnd, connection]() {
-                QObject::disconnect(*connection);
-                BOOL uncloak = FALSE;
-                DwmSetWindowAttribute(hwnd, DWMWA_CLOAK, &uncloak, sizeof(uncloak));
-            }, Qt::QueuedConnection);
-
-            // Safety fallback: uncloak after 250ms in case frameSwapped is delayed
-            QTimer::singleShot(250, window, [hwnd, connection]() {
-                QObject::disconnect(*connection);
-                BOOL uncloak = FALSE;
-                DwmSetWindowAttribute(hwnd, DWMWA_CLOAK, &uncloak, sizeof(uncloak));
-            });
-        }
-#endif
+        framelessHelper.init(window);
+        updateWindowTheme();
     }
 
     int ret = app.exec();
