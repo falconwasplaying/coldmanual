@@ -388,6 +388,7 @@ ApplicationWindow {
         CustomTitleBar {
             id: customTitleBar
             Layout.fillWidth: true
+            z: 1000
             tabsModel: browserTabsModel
             activeTabIndex: currentActiveBrowserTab
             onSelectTabRequested: function(idx) { switchBrowserTab(idx) }

@@ -5,6 +5,7 @@ import ".."
 
 Rectangle {
     id: root
+    z: 1000
 
     property var tabsModel: null
     property int activeTabIndex: 0
@@ -221,9 +222,14 @@ Rectangle {
 
                             onEntered: {
                                 if (settingsMgr.tabHoverPreviewEnabled) {
+                                    var tX = tabItem.mapToItem(root, 0, 0).x
                                     hoverCardTimer.targetIndex = index
-                                    hoverCardTimer.targetX = tabItem.mapToItem(root, 0, 0).x
-                                    hoverCardTimer.restart()
+                                    hoverCardTimer.targetX = tX
+                                    if (tabHoverCard.visible) {
+                                        root.showHoverCardForTab(index, tX)
+                                    } else {
+                                        hoverCardTimer.restart()
+                                    }
                                 }
                             }
 
@@ -387,6 +393,37 @@ Rectangle {
         }
     }
 
+    function showHoverCardForTab(targetIndex, targetX) {
+        if (targetIndex >= 0 && root.tabsModel && targetIndex < root.tabsModel.count) {
+            var item = root.tabsModel.get(targetIndex)
+            var isReader = (item.pageType === "reader" || !item.pageType)
+            tabHoverCard.docsetId = (isReader && item.docsetId) ? item.docsetId : ""
+            tabHoverCard.docsetName = item.docsetName ? item.docsetName : (item.pageType ? item.pageType.toUpperCase() : "COLDMANUAL")
+            tabHoverCard.title = item.title ? item.title : "ColdManual"
+            tabHoverCard.previewSnippet = item.previewSnippet ? item.previewSnippet : ""
+            tabHoverCard.iconName = (item.pageType === "catalog") ? "compass" :
+                                    (item.pageType === "installed") ? "download" :
+                                    (item.pageType === "settings") ? "settings" :
+                                    (item.icon ? item.icon : "file-text")
+            var tabMem = ""
+            if (item.ramUsage && item.ramUsage.length > 0) {
+                tabMem = item.ramUsage
+            } else if (typeof settingsMgr !== "undefined" && settingsMgr.getTabMemoryUsage) {
+                tabMem = settingsMgr.getTabMemoryUsage(item.tabId ? item.tabId : "")
+                if (!tabMem || tabMem.length === 0) {
+                    tabMem = settingsMgr.calculateTabMemoryUsage(item.pageType, item.filePath, 50)
+                }
+            }
+            tabHoverCard.ramUsage = tabMem ? tabMem : "5.0 MB"
+            tabHoverCard.showRam = (typeof settingsMgr !== "undefined") && (settingsMgr.tabRamUsageMode === "preview" || settingsMgr.tabRamUsageMode === "both")
+            
+            // Position card safely within window bounds
+            var cardX = Math.max(10, Math.min(root.width - tabHoverCard.width - 10, targetX))
+            tabHoverCard.x = cardX
+            tabHoverCard.visible = true
+        }
+    }
+
     // Hover Card Timer & Popup
     Timer {
         id: hoverCardTimer
@@ -396,34 +433,7 @@ Rectangle {
         property real targetX: 0
 
         onTriggered: {
-            if (targetIndex >= 0 && root.tabsModel && targetIndex < root.tabsModel.count) {
-                var item = root.tabsModel.get(targetIndex)
-                var isReader = (item.pageType === "reader" || !item.pageType)
-                tabHoverCard.docsetId = (isReader && item.docsetId) ? item.docsetId : ""
-                tabHoverCard.docsetName = item.docsetName ? item.docsetName : (item.pageType ? item.pageType.toUpperCase() : "COLDMANUAL")
-                tabHoverCard.title = item.title ? item.title : "ColdManual"
-                tabHoverCard.previewSnippet = item.previewSnippet ? item.previewSnippet : ""
-                tabHoverCard.iconName = (item.pageType === "catalog") ? "compass" :
-                                        (item.pageType === "installed") ? "download" :
-                                        (item.pageType === "settings") ? "settings" :
-                                        (item.icon ? item.icon : "file-text")
-                var tabMem = ""
-                if (item.ramUsage && item.ramUsage.length > 0) {
-                    tabMem = item.ramUsage
-                } else if (typeof settingsMgr !== "undefined" && settingsMgr.getTabMemoryUsage) {
-                    tabMem = settingsMgr.getTabMemoryUsage(item.tabId ? item.tabId : "")
-                    if (!tabMem || tabMem.length === 0) {
-                        tabMem = settingsMgr.calculateTabMemoryUsage(item.pageType, item.filePath, 50)
-                    }
-                }
-                tabHoverCard.ramUsage = tabMem ? tabMem : "5.0 MB"
-                tabHoverCard.showRam = (typeof settingsMgr !== "undefined") && (settingsMgr.tabRamUsageMode === "preview" || settingsMgr.tabRamUsageMode === "both")
-                
-                // Position card safely within window bounds
-                var cardX = Math.max(10, Math.min(root.width - tabHoverCard.width - 10, targetX))
-                tabHoverCard.x = cardX
-                tabHoverCard.visible = true
-            }
+            root.showHoverCardForTab(targetIndex, targetX)
         }
     }
 

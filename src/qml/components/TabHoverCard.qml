@@ -17,10 +17,9 @@ Rectangle {
     width: 270
     height: cardCol.implicitHeight + 20
     radius: Theme.shapeMedium
-    color: Theme.surfaceContainerHigh
+    color: Theme.isDark ? Theme.surfaceContainerHighest : "#ffffff"
     border.color: Theme.outlineVariant
     border.width: 1
-    clip: true
 
     // Drop shadow simulation with subtle outer glow
     Rectangle {
@@ -28,7 +27,7 @@ Rectangle {
         anchors.margins: -1
         radius: parent.radius + 1
         color: "transparent"
-        border.color: Theme.isDark ? "#33ffffff" : "#1a000000"
+        border.color: Theme.isDark ? "#40000000" : "#20000000"
         border.width: 1
         z: -1
     }
