@@ -316,8 +316,13 @@ Rectangle {
                     anchors.centerIn: parent
                     name: "minus"
                     size: 11
+                    strokeWidth: 1.8
                     color: Theme.textOnSurface
                 }
+
+                ToolTip.visible: minMouse.containsMouse
+                ToolTip.delay: 800
+                ToolTip.text: "Minimize"
 
                 MouseArea {
                     id: minMouse
@@ -342,10 +347,15 @@ Rectangle {
 
                 LucideIcon {
                     anchors.centerIn: parent
-                    name: root.isMaximized ? "copy" : "square"
+                    name: root.isMaximized ? "window-restore" : "square"
                     size: 11
+                    strokeWidth: 1.8
                     color: Theme.textOnSurface
                 }
+
+                ToolTip.visible: maxMouse.containsMouse
+                ToolTip.delay: 800
+                ToolTip.text: root.isMaximized ? "Restore Down" : "Maximize"
 
                 MouseArea {
                     id: maxMouse
@@ -372,9 +382,14 @@ Rectangle {
                 LucideIcon {
                     anchors.centerIn: parent
                     name: "x"
-                    size: 12
+                    size: 11
+                    strokeWidth: 1.8
                     color: closeWinMouse.containsMouse ? "#ffffff" : Theme.textOnSurface
                 }
+
+                ToolTip.visible: closeWinMouse.containsMouse
+                ToolTip.delay: 800
+                ToolTip.text: "Close"
 
                 MouseArea {
                     id: closeWinMouse
