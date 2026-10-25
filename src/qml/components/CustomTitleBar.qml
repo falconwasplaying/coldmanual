@@ -15,6 +15,12 @@ Rectangle {
     signal closeTabRequested(int index)
     signal newTabRequested()
 
+    onCloseTabRequested: {
+        hoverCardTimer.stop()
+        hoverGraceTimer.stop()
+        tabHoverCard.close()
+    }
+
     readonly property string currentRamUsage: (typeof settingsMgr !== "undefined" && settingsMgr) ? settingsMgr.processMemoryUsage : ""
 
     height: 40
@@ -93,7 +99,7 @@ Rectangle {
                         height: 32
 
                         property bool isActive: index === root.activeTabIndex
-                        property bool isHovered: tabMouseArea.containsMouse
+                        property bool isHovered: tabMouseArea.containsMouse || closeBtnMouse.containsMouse
                         property bool showCloseButton: {
                             var mode = settingsMgr.tabCloseButtonMode
                             if (mode === "always") return true
@@ -105,16 +111,31 @@ Rectangle {
                             return mode === "tab" || mode === "both"
                         }
 
-                        // Tab Pill / Container
+                        // Tab Hover Pill (fades opacity of constant color - prevents black interpolation glitch)
                         Rectangle {
+                            id: tabHoverPill
                             anchors.fill: parent
                             radius: 8
-                            color: tabItem.isActive ? Theme.surface :
-                                   (tabItem.isHovered ? Theme.surfaceContainerHigh : "transparent")
-                            border.color: tabItem.isActive ? Theme.outlineVariant : "transparent"
-                            border.width: 1
+                            color: Theme.surfaceContainerHigh
+                            opacity: (!tabItem.isActive && tabItem.isHovered) ? 1.0 : 0.0
+                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                        }
 
-                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                        // Active Tab Pill
+                        Rectangle {
+                            id: tabActivePill
+                            anchors.fill: parent
+                            radius: 8
+                            color: Theme.surface
+                            border.color: Theme.outlineVariant
+                            border.width: 1
+                            opacity: tabItem.isActive ? 1.0 : 0.0
+                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                        }
+
+                        // Tab Content
+                        Item {
+                            anchors.fill: parent
 
                             RowLayout {
                                 anchors.fill: parent
@@ -185,19 +206,26 @@ Rectangle {
                                 }
 
                                 // Close Button (X)
-                                Rectangle {
+                                Item {
                                     id: closeBtn
                                     visible: tabItem.showCloseButton
                                     Layout.preferredWidth: 18
                                     Layout.preferredHeight: 18
-                                    radius: Theme.shapeFull
-                                    color: closeBtnMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent"
+
+                                    Rectangle {
+                                        anchors.fill: parent
+                                        radius: Theme.shapeFull
+                                        color: Theme.surfaceContainerHighest
+                                        opacity: closeBtnMouse.containsMouse ? 1.0 : 0.0
+                                        Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                                    }
 
                                     LucideIcon {
                                         anchors.centerIn: parent
                                         name: "x"
                                         size: 10
                                         color: closeBtnMouse.containsMouse ? Theme.danger : Theme.textOnSurfaceVariant
+                                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                                     }
 
                                     MouseArea {
@@ -206,6 +234,34 @@ Rectangle {
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
                                         onClicked: root.closeTabRequested(index)
+                                        onEntered: {
+                                            hoverGraceTimer.stop()
+                                            if (settingsMgr.tabHoverPreviewEnabled) {
+                                                var tX = tabItem.mapToItem(root, 0, 0).x
+                                                if (tabHoverCard.isOpen) {
+                                                    hoverCardTimer.stop()
+                                                    root.showHoverCardForTab(index, tX, true)
+                                                } else {
+                                                    hoverCardTimer.targetIndex = index
+                                                    hoverCardTimer.targetX = tX
+                                                    hoverCardTimer.restart()
+                                                }
+                                            }
+                                        }
+                                        onExited: {
+                                            if (tabMouseArea.containsMouse) return
+                                            var tabPt = tabItem.mapFromItem(closeBtn, closeBtnMouse.mouseX, closeBtnMouse.mouseY)
+                                            if (tabPt.x >= 0 && tabPt.x <= tabItem.width && tabPt.y >= 0 && tabPt.y <= tabItem.height) {
+                                                return
+                                            }
+                                            hoverCardTimer.stop()
+                                            if (tabHoverCard.isOpen && !hoverCardArea.containsMouse) {
+                                                hoverGraceTimer.restart()
+                                                if (cursorZoneTimer.running) {
+                                                    cursorZoneTimer.triggered()
+                                                }
+                                            }
+                                        }
                                     }
                                 }
                             }
@@ -244,6 +300,11 @@ Rectangle {
                             }
 
                             onExited: {
+                                if (closeBtnMouse.containsMouse) return
+                                if (tabMouseArea.mouseX >= 0 && tabMouseArea.mouseX <= tabItem.width &&
+                                    tabMouseArea.mouseY >= 0 && tabMouseArea.mouseY <= tabItem.height) {
+                                    return
+                                }
                                 hoverCardTimer.stop()
                                 if (tabHoverCard.isOpen && !hoverCardArea.containsMouse) {
                                     hoverGraceTimer.restart()
@@ -257,20 +318,25 @@ Rectangle {
                 }
 
                 // New Tab (+) Button
-                Rectangle {
+                Item {
                     width: 28
                     height: 28
                     anchors.verticalCenter: parent.verticalCenter
-                    radius: Theme.shapeFull
-                    color: newTabMouse.containsMouse ? Theme.surfaceContainerHighest : "transparent"
 
-                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                    Rectangle {
+                        anchors.fill: parent
+                        radius: Theme.shapeFull
+                        color: Theme.surfaceContainerHighest
+                        opacity: newTabMouse.containsMouse ? 1.0 : 0.0
+                        Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                    }
 
                     LucideIcon {
                         anchors.centerIn: parent
                         name: "plus"
                         size: 14
                         color: newTabMouse.containsMouse ? Theme.primary : Theme.textOnSurfaceVariant
+                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
                     }
 
                     MouseArea {
