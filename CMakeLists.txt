@@ -14,6 +14,7 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS
     Quick
     Qml
     QuickControls2
+    QuickEffects
     Sql
     Network
     Svg
@@ -60,6 +61,7 @@ target_link_libraries(coldmanual PRIVATE
     Qt6::Quick
     Qt6::Qml
     Qt6::QuickControls2
+    Qt6::QuickEffects
     Qt6::Sql
     Qt6::Network
     Qt6::Svg
@@ -110,6 +112,7 @@ target_link_libraries(test_core PRIVATE
     Qt6::Quick
     Qt6::Qml
     Qt6::QuickControls2
+    Qt6::QuickEffects
     Qt6::Sql
     Qt6::Network
     Qt6::Svg

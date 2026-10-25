@@ -223,11 +223,13 @@ Rectangle {
                             onEntered: {
                                 if (settingsMgr.tabHoverPreviewEnabled) {
                                     var tX = tabItem.mapToItem(root, 0, 0).x
-                                    hoverCardTimer.targetIndex = index
-                                    hoverCardTimer.targetX = tX
-                                    if (tabHoverCard.visible) {
-                                        root.showHoverCardForTab(index, tX)
+                                    hoverGraceTimer.stop()
+                                    if (tabHoverCard.isOpen) {
+                                        hoverCardTimer.stop()
+                                        root.showHoverCardForTab(index, tX, true)
                                     } else {
+                                        hoverCardTimer.targetIndex = index
+                                        hoverCardTimer.targetX = tX
                                         hoverCardTimer.restart()
                                     }
                                 }
@@ -235,8 +237,8 @@ Rectangle {
 
                             onExited: {
                                 hoverCardTimer.stop()
-                                if (!hoverCardArea.containsMouse) {
-                                    tabHoverCard.visible = false
+                                if (tabHoverCard.isOpen && !hoverCardArea.containsMouse) {
+                                    hoverGraceTimer.restart()
                                 }
                             }
                         }
@@ -408,18 +410,18 @@ Rectangle {
         }
     }
 
-    function showHoverCardForTab(targetIndex, targetX) {
+    function getHoverCardData(targetIndex) {
         if (targetIndex >= 0 && root.tabsModel && targetIndex < root.tabsModel.count) {
             var item = root.tabsModel.get(targetIndex)
             var isReader = (item.pageType === "reader" || !item.pageType)
-            tabHoverCard.docsetId = (isReader && item.docsetId) ? item.docsetId : ""
-            tabHoverCard.docsetName = item.docsetName ? item.docsetName : (item.pageType ? item.pageType.toUpperCase() : "COLDMANUAL")
-            tabHoverCard.title = item.title ? item.title : "ColdManual"
-            tabHoverCard.previewSnippet = item.previewSnippet ? item.previewSnippet : ""
-            tabHoverCard.iconName = (item.pageType === "catalog") ? "compass" :
-                                    (item.pageType === "installed") ? "download" :
-                                    (item.pageType === "settings") ? "settings" :
-                                    (item.icon ? item.icon : "file-text")
+            var docId = (isReader && item.docsetId) ? item.docsetId : ""
+            var docName = item.docsetName ? item.docsetName : (item.pageType ? item.pageType.toUpperCase() : "COLDMANUAL")
+            var title = item.title ? item.title : "ColdManual"
+            var snippet = item.previewSnippet ? item.previewSnippet : ""
+            var icon = (item.pageType === "catalog") ? "compass" :
+                       (item.pageType === "installed") ? "download" :
+                       (item.pageType === "settings") ? "settings" :
+                       (item.icon ? item.icon : "file-text")
             var tabMem = ""
             if (item.ramUsage && item.ramUsage.length > 0) {
                 tabMem = item.ramUsage
@@ -429,17 +431,41 @@ Rectangle {
                     tabMem = settingsMgr.calculateTabMemoryUsage(item.pageType, item.filePath, 50)
                 }
             }
-            tabHoverCard.ramUsage = tabMem ? tabMem : "5.0 MB"
-            tabHoverCard.showRam = (typeof settingsMgr !== "undefined") && (settingsMgr.tabRamUsageMode === "preview" || settingsMgr.tabRamUsageMode === "both")
-            
-            // Position card safely within window bounds
-            var cardX = Math.max(10, Math.min(root.width - tabHoverCard.width - 10, targetX))
+            var ram = tabMem ? tabMem : "5.0 MB"
+            var showRam = (typeof settingsMgr !== "undefined") && (settingsMgr.tabRamUsageMode === "preview" || settingsMgr.tabRamUsageMode === "both")
+            return {
+                docsetId: docId,
+                docsetName: docName,
+                title: title,
+                previewSnippet: snippet,
+                iconName: icon,
+                ramUsage: ram,
+                showRam: showRam
+            }
+        }
+        return null
+    }
+
+    function showHoverCardForTab(targetIndex, targetX, animateSlide) {
+        var data = getHoverCardData(targetIndex)
+        if (!data) return
+
+        var cardX = Math.max(10, Math.min(root.width - tabHoverCard.width - 10, targetX))
+
+        if (animateSlide && tabHoverCard.isOpen) {
+            tabHoverCardXAnim.enabled = true
             tabHoverCard.x = cardX
-            tabHoverCard.visible = true
+            tabHoverCard.updateData(data, true)
+        } else {
+            tabHoverCardXAnim.enabled = false
+            tabHoverCard.x = cardX
+            tabHoverCard.updateData(data, false)
+            tabHoverCard.open()
+            tabHoverCardXAnim.enabled = true
         }
     }
 
-    // Hover Card Timer & Popup
+    // Hover Card Initial Timer & Grace Period Timer
     Timer {
         id: hoverCardTimer
         interval: 350
@@ -448,7 +474,18 @@ Rectangle {
         property real targetX: 0
 
         onTriggered: {
-            root.showHoverCardForTab(targetIndex, targetX)
+            root.showHoverCardForTab(targetIndex, targetX, false)
+        }
+    }
+
+    Timer {
+        id: hoverGraceTimer
+        interval: 350
+        repeat: false
+        onTriggered: {
+            if (!hoverCardArea.containsMouse) {
+                tabHoverCard.close()
+            }
         }
     }
 
@@ -456,13 +493,26 @@ Rectangle {
         id: tabHoverCard
         y: root.height + 4
         z: 999999
-        visible: false
+
+        Behavior on x {
+            id: tabHoverCardXAnim
+            enabled: false
+            NumberAnimation {
+                duration: 240
+                easing.type: Easing.OutCubic
+            }
+        }
 
         MouseArea {
             id: hoverCardArea
             anchors.fill: parent
             hoverEnabled: true
-            onExited: tabHoverCard.visible = false
+            onEntered: {
+                hoverGraceTimer.stop()
+            }
+            onExited: {
+                hoverGraceTimer.restart()
+            }
         }
     }
 
