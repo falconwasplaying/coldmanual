@@ -15,10 +15,17 @@ Rectangle {
     signal closeTabRequested(int index)
     signal newTabRequested()
 
-    onCloseTabRequested: {
+    property int currentHoverIndex: -1
+
+    function closeHoverCard() {
         hoverCardTimer.stop()
         hoverGraceTimer.stop()
+        root.currentHoverIndex = -1
         tabHoverCard.close()
+    }
+
+    onCloseTabRequested: {
+        root.closeHoverCard()
     }
 
     readonly property string currentRamUsage: (typeof settingsMgr !== "undefined" && settingsMgr) ? settingsMgr.processMemoryUsage : ""
@@ -59,9 +66,7 @@ Rectangle {
                 acceptedButtons: Qt.LeftButton
                 onEntered: {
                     if (tabHoverCard.isOpen) {
-                        hoverGraceTimer.stop()
-                        hoverCardTimer.stop()
-                        tabHoverCard.close()
+                        root.closeHoverCard()
                     }
                 }
                 onDoubleClicked: {
@@ -239,12 +244,16 @@ Rectangle {
                                             if (settingsMgr.tabHoverPreviewEnabled) {
                                                 var tX = tabItem.mapToItem(root, 0, 0).x
                                                 if (tabHoverCard.isOpen) {
-                                                    hoverCardTimer.stop()
-                                                    root.showHoverCardForTab(index, tX, true)
+                                                    if (root.currentHoverIndex !== index) {
+                                                        hoverCardTimer.stop()
+                                                        root.showHoverCardForTab(index, tX, true)
+                                                    }
                                                 } else {
-                                                    hoverCardTimer.targetIndex = index
-                                                    hoverCardTimer.targetX = tX
-                                                    hoverCardTimer.restart()
+                                                    if (!hoverCardTimer.running || hoverCardTimer.targetIndex !== index) {
+                                                        hoverCardTimer.targetIndex = index
+                                                        hoverCardTimer.targetX = tX
+                                                        hoverCardTimer.restart()
+                                                    }
                                                 }
                                             }
                                         }
@@ -289,12 +298,16 @@ Rectangle {
                                     var tX = tabItem.mapToItem(root, 0, 0).x
                                     hoverGraceTimer.stop()
                                     if (tabHoverCard.isOpen) {
-                                        hoverCardTimer.stop()
-                                        root.showHoverCardForTab(index, tX, true)
+                                        if (root.currentHoverIndex !== index) {
+                                            hoverCardTimer.stop()
+                                            root.showHoverCardForTab(index, tX, true)
+                                        }
                                     } else {
-                                        hoverCardTimer.targetIndex = index
-                                        hoverCardTimer.targetX = tX
-                                        hoverCardTimer.restart()
+                                        if (!hoverCardTimer.running || hoverCardTimer.targetIndex !== index) {
+                                            hoverCardTimer.targetIndex = index
+                                            hoverCardTimer.targetX = tX
+                                            hoverCardTimer.restart()
+                                        }
                                     }
                                 }
                             }
@@ -368,9 +381,7 @@ Rectangle {
                 acceptedButtons: Qt.LeftButton
                 onEntered: {
                     if (tabHoverCard.isOpen) {
-                        hoverGraceTimer.stop()
-                        hoverCardTimer.stop()
-                        tabHoverCard.close()
+                        root.closeHoverCard()
                     }
                 }
                 onDoubleClicked: {
@@ -532,9 +543,14 @@ Rectangle {
     }
 
     function showHoverCardForTab(targetIndex, targetX, animateSlide) {
+        if (tabHoverCard.isOpen && root.currentHoverIndex === targetIndex) {
+            return
+        }
+
         var data = getHoverCardData(targetIndex)
         if (!data) return
 
+        root.currentHoverIndex = targetIndex
         var cardX = Math.max(10, Math.min(root.width - tabHoverCard.width - 10, targetX))
 
         if (animateSlide && tabHoverCard.isOpen) {
@@ -569,7 +585,7 @@ Rectangle {
         repeat: false
         onTriggered: {
             if (!hoverCardArea.containsMouse) {
-                tabHoverCard.close()
+                root.closeHoverCard()
             }
         }
     }
@@ -605,9 +621,7 @@ Rectangle {
             if (typeof framelessHelper !== "undefined" && framelessHelper && framelessHelper.isCursorInHoverZone) {
                 var inZone = framelessHelper.isCursorInHoverZone(tabX1, tabY1, tabX2, tabY2, cardX1, cardY1, cardX2, cardY2)
                 if (!inZone) {
-                    hoverGraceTimer.stop()
-                    hoverCardTimer.stop()
-                    tabHoverCard.close()
+                    root.closeHoverCard()
                 }
             }
         }
@@ -617,6 +631,12 @@ Rectangle {
         id: tabHoverCard
         y: root.height + 4
         z: 999999
+
+        onIsOpenChanged: {
+            if (!isOpen) {
+                root.currentHoverIndex = -1
+            }
+        }
 
         Behavior on x {
             id: tabHoverCardXAnim
