@@ -213,10 +213,14 @@ int main(int argc, char* argv[]) {
 
         auto applyDisplayMode = [window, &settingsMgr, &framelessHelper, updateWindowTheme](const QString& mode) {
             if (mode == "fullscreen") {
-                window->setFlags(Qt::Window);
+                if (window->flags() != Qt::Window) {
+                    window->setFlags(Qt::Window);
+                }
                 window->showFullScreen();
             } else if (mode == "borderless") {
-                window->setFlags(Qt::Window | Qt::FramelessWindowHint);
+                if (window->flags() != (Qt::Window | Qt::FramelessWindowHint)) {
+                    window->setFlags(Qt::Window | Qt::FramelessWindowHint);
+                }
                 QScreen* screen = window->screen();
                 if (!screen) screen = QGuiApplication::primaryScreen();
                 if (screen) {
@@ -232,7 +236,15 @@ int main(int argc, char* argv[]) {
                 }
 #endif
             } else { // "windowed"
-                window->setFlags(Qt::Window | Qt::FramelessWindowHint);
+                if (window->flags() != (Qt::Window | Qt::FramelessWindowHint)) {
+                    window->setFlags(Qt::Window | Qt::FramelessWindowHint);
+                }
+#ifdef Q_OS_WIN
+                HWND hwnd = reinterpret_cast<HWND>(window->winId());
+                if (hwnd && IsZoomed(hwnd)) {
+                    ShowWindow(hwnd, SW_RESTORE);
+                }
+#endif
                 int winX = settingsMgr.windowX();
                 int winY = settingsMgr.windowY();
                 int winW = settingsMgr.windowWidth();
@@ -266,6 +278,12 @@ int main(int argc, char* argv[]) {
         geomSaveTimer->setInterval(500);
 
         QObject::connect(geomSaveTimer, &QTimer::timeout, window, [window, &settingsMgr]() {
+#ifdef Q_OS_WIN
+            HWND hwnd = reinterpret_cast<HWND>(window->winId());
+            if (hwnd && IsZoomed(hwnd)) {
+                return; // Do NOT overwrite normal windowed geometry while maximized
+            }
+#endif
             if (settingsMgr.windowDisplayMode() == "windowed" &&
                 window->visibility() == QWindow::Windowed &&
                 window->windowState() == Qt::WindowNoState) {
@@ -287,10 +305,17 @@ int main(int argc, char* argv[]) {
         QObject::connect(window, &QWindow::windowStateChanged, window, [window, &settingsMgr, geomSaveTimer](Qt::WindowState state) {
             geomSaveTimer->stop();
             if (settingsMgr.windowDisplayMode() == "windowed") {
+#ifdef Q_OS_WIN
+                HWND hwnd = reinterpret_cast<HWND>(window->winId());
+                if (hwnd && IsZoomed(hwnd)) {
+                    settingsMgr.saveWindowGeometry(settingsMgr.windowX(), settingsMgr.windowY(), settingsMgr.windowWidth(), settingsMgr.windowHeight(), "maximized");
+                    return;
+                }
+#endif
                 if (state == Qt::WindowMaximized) {
-                    settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "maximized");
+                    settingsMgr.saveWindowGeometry(settingsMgr.windowX(), settingsMgr.windowY(), settingsMgr.windowWidth(), settingsMgr.windowHeight(), "maximized");
                 } else if (state == Qt::WindowFullScreen) {
-                    settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "fullscreen");
+                    settingsMgr.saveWindowGeometry(settingsMgr.windowX(), settingsMgr.windowY(), settingsMgr.windowWidth(), settingsMgr.windowHeight(), "fullscreen");
                 } else if (state == Qt::WindowNoState) {
                     settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), "normal");
                 }
@@ -302,12 +327,22 @@ int main(int argc, char* argv[]) {
             geomSaveTimer->stop();
             if (settingsMgr.windowDisplayMode() == "windowed") {
                 QString stateStr = "normal";
+#ifdef Q_OS_WIN
+                HWND hwnd = reinterpret_cast<HWND>(window->winId());
+                if (hwnd && IsZoomed(hwnd)) {
+                    stateStr = "maximized";
+                } else
+#endif
                 if (window->visibility() == QWindow::Maximized || window->windowState() == Qt::WindowMaximized) {
                     stateStr = "maximized";
                 } else if (window->visibility() == QWindow::FullScreen || window->windowState() == Qt::WindowFullScreen) {
                     stateStr = "fullscreen";
                 }
-                settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), stateStr);
+                if (stateStr == "normal") {
+                    settingsMgr.saveWindowGeometry(window->x(), window->y(), window->width(), window->height(), stateStr);
+                } else {
+                    settingsMgr.saveWindowGeometry(settingsMgr.windowX(), settingsMgr.windowY(), settingsMgr.windowWidth(), settingsMgr.windowHeight(), stateStr);
+                }
             }
             settingsMgr.sync();
         });
@@ -329,8 +364,9 @@ int main(int argc, char* argv[]) {
         } else if (winState == "maximized") {
             window->setFlags(Qt::Window | Qt::FramelessWindowHint);
             window->setGeometry(winX, winY, winW, winH);
-            window->showMaximized();
+            window->showNormal();
             framelessHelper.init(window);
+            framelessHelper.toggleMaximize();
         } else {
             window->setFlags(Qt::Window | Qt::FramelessWindowHint);
             window->setGeometry(winX, winY, winW, winH);

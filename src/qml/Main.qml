@@ -372,12 +372,18 @@ ApplicationWindow {
     onClosing: function(close) {
         if (settingsMgr.windowDisplayMode === "windowed") {
             var stateStr = "normal"
-            if (window.visibility === Window.Maximized) {
+            if (typeof framelessHelper !== "undefined" && framelessHelper && framelessHelper.isMaximized) {
+                stateStr = "maximized"
+            } else if (window.visibility === Window.Maximized) {
                 stateStr = "maximized"
             } else if (window.visibility === Window.FullScreen) {
                 stateStr = "fullscreen"
             }
-            settingsMgr.saveWindowGeometry(window.x, window.y, window.width, window.height, stateStr)
+            if (stateStr === "normal") {
+                settingsMgr.saveWindowGeometry(window.x, window.y, window.width, window.height, stateStr)
+            } else {
+                settingsMgr.saveWindowGeometry(settingsMgr.windowX, settingsMgr.windowY, settingsMgr.windowWidth, settingsMgr.windowHeight, stateStr)
+            }
             settingsMgr.sync()
         }
     }

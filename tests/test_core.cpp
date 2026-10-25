@@ -645,6 +645,32 @@ void testMainQmlLoading() {
         std::cout << "  QQuickWindow size: " << window->width() << "x" << window->height() << std::endl;
         assert(window->width() == (cr.right - cr.left));
         assert(window->height() == (cr.bottom - cr.top));
+
+        std::cout << "  Testing framelessHelper.toggleMaximize()..." << std::endl;
+        framelessHelper.toggleMaximize();
+        QCoreApplication::processEvents();
+        GetWindowRect(hwnd, &wr);
+        GetClientRect(hwnd, &cr);
+        std::cout << "  After toggleMaximize() HWND WindowRect: " << (wr.right - wr.left) << "x" << (wr.bottom - wr.top)
+                  << " at (" << wr.left << "," << wr.top << ")" << std::endl;
+        std::cout << "  After toggleMaximize() HWND ClientRect: " << (cr.right - cr.left) << "x" << (cr.bottom - cr.top) << std::endl;
+        std::cout << "  After toggleMaximize() QQuickWindow size: " << window->width() << "x" << window->height() << std::endl;
+        std::cout << "  IsZoomed: " << IsZoomed(hwnd) << ", isMaximized: " << framelessHelper.isMaximized() << std::endl;
+        assert(IsZoomed(hwnd));
+        assert(framelessHelper.isMaximized());
+
+        std::cout << "  Testing framelessHelper.toggleMaximize() again (restore)..." << std::endl;
+        framelessHelper.toggleMaximize();
+        QCoreApplication::processEvents();
+        GetWindowRect(hwnd, &wr);
+        GetClientRect(hwnd, &cr);
+        std::cout << "  After Restore HWND WindowRect: " << (wr.right - wr.left) << "x" << (wr.bottom - wr.top)
+                  << " at (" << wr.left << "," << wr.top << ")" << std::endl;
+        std::cout << "  After Restore HWND ClientRect: " << (cr.right - cr.left) << "x" << (cr.bottom - cr.top) << std::endl;
+        std::cout << "  After Restore QQuickWindow size: " << window->width() << "x" << window->height() << std::endl;
+        std::cout << "  IsZoomed: " << IsZoomed(hwnd) << ", isMaximized: " << framelessHelper.isMaximized() << std::endl;
+        assert(!IsZoomed(hwnd));
+        assert(!framelessHelper.isMaximized());
 #endif
         QPointF cursorP = framelessHelper.cursorPosition();
         std::cout << "  cursorPosition: " << cursorP.x() << ", " << cursorP.y() << std::endl;

@@ -59,6 +59,18 @@ void WindowsFramelessHelper::init(QQuickWindow* window) {
 
 void WindowsFramelessHelper::toggleMaximize() {
     if (!m_window) return;
+#ifdef Q_OS_WIN
+    HWND hwnd = reinterpret_cast<HWND>(m_window->winId());
+    if (hwnd) {
+        if (IsZoomed(hwnd)) {
+            ShowWindow(hwnd, SW_RESTORE);
+        } else {
+            ShowWindow(hwnd, SW_MAXIMIZE);
+        }
+        setIsMaximized(IsZoomed(hwnd));
+        return;
+    }
+#endif
     if (isMaximized()) {
         m_window->showNormal();
     } else {
@@ -68,11 +80,25 @@ void WindowsFramelessHelper::toggleMaximize() {
 
 void WindowsFramelessHelper::showMinimized() {
     if (!m_window) return;
+#ifdef Q_OS_WIN
+    HWND hwnd = reinterpret_cast<HWND>(m_window->winId());
+    if (hwnd) {
+        ShowWindow(hwnd, SW_MINIMIZE);
+        return;
+    }
+#endif
     m_window->showMinimized();
 }
 
 void WindowsFramelessHelper::close() {
     if (!m_window) return;
+#ifdef Q_OS_WIN
+    HWND hwnd = reinterpret_cast<HWND>(m_window->winId());
+    if (hwnd) {
+        PostMessage(hwnd, WM_CLOSE, 0, 0);
+        return;
+    }
+#endif
     m_window->close();
 }
 
@@ -159,6 +185,25 @@ LRESULT CALLBACK WindowsFramelessHelper::SubclassProc(
     }
 
     switch (uMsg) {
+    case WM_GETMINMAXINFO: {
+        auto* mmi = reinterpret_cast<MINMAXINFO*>(lParam);
+        HMONITOR hMon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO mi;
+        mi.cbSize = sizeof(mi);
+        if (GetMonitorInfo(hMon, &mi)) {
+            mmi->ptMaxPosition.x = std::abs(mi.rcWork.left - mi.rcMonitor.left);
+            mmi->ptMaxPosition.y = std::abs(mi.rcWork.top - mi.rcMonitor.top);
+            mmi->ptMaxSize.x = mi.rcWork.right - mi.rcWork.left;
+            mmi->ptMaxSize.y = mi.rcWork.bottom - mi.rcWork.top;
+
+            mmi->ptMinTrackSize.x = 960;
+            mmi->ptMinTrackSize.y = 640;
+            mmi->ptMaxTrackSize.x = mi.rcWork.right - mi.rcWork.left;
+            mmi->ptMaxTrackSize.y = mi.rcWork.bottom - mi.rcWork.top;
+        }
+        return 0;
+    }
+
     case WM_NCCALCSIZE: {
         if (wParam == TRUE) {
             NCCALCSIZE_PARAMS* params = reinterpret_cast<NCCALCSIZE_PARAMS*>(lParam);
@@ -229,6 +274,7 @@ LRESULT CALLBACK WindowsFramelessHelper::SubclassProc(
         return HTCLIENT;
     }
 
+    case WM_WINDOWPOSCHANGED:
     case WM_SIZE: {
         self->setIsMaximized(IsZoomed(hwnd));
         break;
