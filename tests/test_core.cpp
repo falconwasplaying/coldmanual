@@ -646,6 +646,11 @@ void testMainQmlLoading() {
         assert(window->width() == (cr.right - cr.left));
         assert(window->height() == (cr.bottom - cr.top));
 #endif
+        QPointF cursorP = framelessHelper.cursorPosition();
+        std::cout << "  cursorPosition: " << cursorP.x() << ", " << cursorP.y() << std::endl;
+        assert(!framelessHelper.isCursorInHoverZone(10000, 10000, 10050, 10050, 20000, 20000, 20050, 20050));
+        assert(framelessHelper.isCursorInHoverZone(cursorP.x() - 10, cursorP.y() - 10, cursorP.x() + 10, cursorP.y() + 10, -100, -100, -50, -50));
+        std::cout << "  isCursorInHoverZone range checks passed!" << std::endl;
     }
     std::cout << "[PASS] testMainQmlLoading passed!" << std::endl;
 }

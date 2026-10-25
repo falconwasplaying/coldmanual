@@ -3,6 +3,8 @@
 #include <QObject>
 #include <QPointer>
 #include <QQuickWindow>
+#include <QPointF>
+#include <QCursor>
 
 #ifdef Q_OS_WIN
 #ifndef WIN32_LEAN_AND_MEAN
@@ -30,6 +32,9 @@ public:
     Q_INVOKABLE void showMinimized();
     Q_INVOKABLE void close();
     Q_INVOKABLE void updateTabsWidth(qreal startX, qreal endX);
+    Q_INVOKABLE QPointF cursorPosition() const;
+    Q_INVOKABLE bool isCursorInHoverZone(qreal tabX1, qreal tabY1, qreal tabX2, qreal tabY2,
+                                         qreal cardX1, qreal cardY1, qreal cardX2, qreal cardY2) const;
 
     bool isMaximized() const;
     void setIsMaximized(bool max);

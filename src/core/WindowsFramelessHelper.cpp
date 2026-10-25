@@ -125,6 +125,29 @@ void WindowsFramelessHelper::setTabsEndX(qreal x) {
     }
 }
 
+QPointF WindowsFramelessHelper::cursorPosition() const {
+    if (m_window) {
+        return m_window->mapFromGlobal(QCursor::pos());
+    }
+    return QPointF(-1, -1);
+}
+
+bool WindowsFramelessHelper::isCursorInHoverZone(qreal tabX1, qreal tabY1, qreal tabX2, qreal tabY2,
+                                                 qreal cardX1, qreal cardY1, qreal cardX2, qreal cardY2) const {
+    QPointF p = cursorPosition();
+    if (p.x() < 0 && p.y() < 0) return false;
+
+    // Check tabs zone (with padding bounds)
+    if (p.x() >= tabX1 && p.x() <= tabX2 && p.y() >= tabY1 && p.y() <= tabY2) {
+        return true;
+    }
+    // Check card zone (with padding bounds)
+    if (p.x() >= cardX1 && p.x() <= cardX2 && p.y() >= cardY1 && p.y() <= cardY2) {
+        return true;
+    }
+    return false;
+}
+
 #ifdef Q_OS_WIN
 LRESULT CALLBACK WindowsFramelessHelper::SubclassProc(
     HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam,

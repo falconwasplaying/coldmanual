@@ -49,7 +49,15 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
+                hoverEnabled: true
                 acceptedButtons: Qt.LeftButton
+                onEntered: {
+                    if (tabHoverCard.isOpen) {
+                        hoverGraceTimer.stop()
+                        hoverCardTimer.stop()
+                        tabHoverCard.close()
+                    }
+                }
                 onDoubleClicked: {
                     if (typeof framelessHelper !== "undefined" && framelessHelper) {
                         framelessHelper.toggleMaximize()
@@ -239,6 +247,9 @@ Rectangle {
                                 hoverCardTimer.stop()
                                 if (tabHoverCard.isOpen && !hoverCardArea.containsMouse) {
                                     hoverGraceTimer.restart()
+                                    if (cursorZoneTimer.running) {
+                                        cursorZoneTimer.triggered()
+                                    }
                                 }
                             }
                         }
@@ -287,7 +298,15 @@ Rectangle {
 
             MouseArea {
                 anchors.fill: parent
+                hoverEnabled: true
                 acceptedButtons: Qt.LeftButton
+                onEntered: {
+                    if (tabHoverCard.isOpen) {
+                        hoverGraceTimer.stop()
+                        hoverCardTimer.stop()
+                        tabHoverCard.close()
+                    }
+                }
                 onDoubleClicked: {
                     if (typeof framelessHelper !== "undefined" && framelessHelper) {
                         framelessHelper.toggleMaximize()
@@ -485,6 +504,45 @@ Rectangle {
         onTriggered: {
             if (!hoverCardArea.containsMouse) {
                 tabHoverCard.close()
+            }
+        }
+    }
+
+    // Cursor Range / Safe Zone Watcher
+    // If the cursor leaves the tab strip (with padding) and the overview card (with padding),
+    // immediately fade away the overview instead of waiting for the grace timer.
+    Timer {
+        id: cursorZoneTimer
+        interval: 35
+        repeat: true
+        running: tabHoverCard.isOpen
+        onTriggered: {
+            if (!tabHoverCard.isOpen) return
+
+            // 1. Tab strip zone bounds
+            var tabsPos = tabsContainer.mapToItem(null, 0, 0)
+            var tabPad = 16
+            var tabsW = (tabsRow ? tabsRow.implicitWidth + 36 : 200)
+            var tabX1 = tabsPos.x - tabPad
+            var tabX2 = tabsPos.x + tabsW + tabPad
+            var tabY1 = -tabPad
+            var tabY2 = root.height + tabPad
+
+            // 2. Card zone bounds
+            var cardPos = tabHoverCard.mapToItem(null, 0, 0)
+            var cardPad = 16
+            var cardX1 = cardPos.x - cardPad
+            var cardX2 = cardPos.x + tabHoverCard.width + cardPad
+            var cardY1 = cardPos.y - cardPad
+            var cardY2 = cardPos.y + tabHoverCard.height + cardPad
+
+            if (typeof framelessHelper !== "undefined" && framelessHelper && framelessHelper.isCursorInHoverZone) {
+                var inZone = framelessHelper.isCursorInHoverZone(tabX1, tabY1, tabX2, tabY2, cardX1, cardY1, cardX2, cardY2)
+                if (!inZone) {
+                    hoverGraceTimer.stop()
+                    hoverCardTimer.stop()
+                    tabHoverCard.close()
+                }
             }
         }
     }
