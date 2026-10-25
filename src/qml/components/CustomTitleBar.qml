@@ -24,6 +24,24 @@ Rectangle {
         tabHoverCard.close()
     }
 
+    function closeTab(index) {
+        if (!root.tabsModel || root.tabsModel.count === 0) return
+        root.closeHoverCard()
+        var target = tabsRepeater.itemAt(index)
+        if (target && !target.isClosing && target.closeWithAnimation) {
+            target.closeWithAnimation()
+            return
+        }
+        for (var i = 0; i < root.tabsModel.count; ++i) {
+            var it = tabsRepeater.itemAt(i)
+            if (it && !it.isClosing && it.closeWithAnimation) {
+                it.closeWithAnimation()
+                return
+            }
+        }
+        root.closeTabRequested(index)
+    }
+
     onCloseTabRequested: {
         root.closeHoverCard()
     }
@@ -93,19 +111,37 @@ Rectangle {
                 id: tabsRow
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 4
+                spacing: 0
 
                 Repeater {
+                    id: tabsRepeater
                     model: root.tabsModel
 
                     delegate: Item {
                         id: tabItem
-                        width: Math.max(110, Math.min(200, (tabsContainer.width - 44) / Math.max(1, (root.tabsModel ? root.tabsModel.count : 1))))
+                        readonly property real targetTabWidth: {
+                            var maxStrip = Math.max(200, root.width - 240)
+                            var cnt = (root.tabsModel && root.tabsModel.count > 0) ? root.tabsModel.count : 1
+                            return Math.max(110, Math.min(180, Math.floor(maxStrip / cnt) - 4))
+                        }
+
+                        property real closeWidthProgress: 1.0
+                        property real closeScale: 1.0
+                        property real closeOpacity: 1.0
+                        property real popRingScale: 1.0
+                        property real popRingOpacity: 0.0
+                        property bool isClosing: false
+                        property string savedTabId: (model && typeof model.tabId !== "undefined") ? model.tabId : ""
+
+                        width: isClosing ? Math.max(0, (targetTabWidth + 4) * closeWidthProgress) : (targetTabWidth + 4)
                         height: 32
+                        clip: false
+                        z: isClosing ? 10 : (isActive ? 2 : 1)
 
                         property bool isActive: index === root.activeTabIndex
-                        property bool isHovered: tabMouseArea.containsMouse || closeBtnMouse.containsMouse
+                        property bool isHovered: !isClosing && (tabMouseArea.containsMouse || closeBtnMouse.containsMouse)
                         property bool showCloseButton: {
+                            if (isClosing) return false
                             var mode = settingsMgr.tabCloseButtonMode
                             if (mode === "always") return true
                             if (mode === "never") return false
@@ -116,213 +152,346 @@ Rectangle {
                             return mode === "tab" || mode === "both"
                         }
 
-                        // Tab Hover Pill (fades opacity of constant color - prevents black interpolation glitch)
-                        Rectangle {
-                            id: tabHoverPill
-                            anchors.fill: parent
-                            radius: 8
-                            color: Theme.surfaceContainerHigh
-                            opacity: (!tabItem.isActive && tabItem.isHovered) ? 1.0 : 0.0
-                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                        function closeWithAnimation() {
+                            if (tabItem.isClosing) return
+                            tabItem.isClosing = true
+                            root.closeHoverCard()
+                            balloonPopAnim.restart()
                         }
 
-                        // Active Tab Pill
-                        Rectangle {
-                            id: tabActivePill
-                            anchors.fill: parent
-                            radius: 8
-                            color: Theme.surface
-                            border.color: Theme.outlineVariant
-                            border.width: 1
-                            opacity: tabItem.isActive ? 1.0 : 0.0
-                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                        function removeThisTab() {
+                            var targetId = tabItem.savedTabId
+                            var foundIdx = -1
+                            if (root.tabsModel) {
+                                for (var i = 0; i < root.tabsModel.count; ++i) {
+                                    var itemData = root.tabsModel.get(i)
+                                    if (itemData && itemData.tabId === targetId) {
+                                        foundIdx = i
+                                        break
+                                    }
+                                }
+                            }
+                            if (foundIdx >= 0) {
+                                root.closeTabRequested(foundIdx)
+                            } else if (index >= 0 && index < (root.tabsModel ? root.tabsModel.count : 0)) {
+                                root.closeTabRequested(index)
+                            }
                         }
 
-                        // Tab Content
+                        SequentialAnimation {
+                            id: balloonPopAnim
+
+                            // Phase 1: Pre-pop swell (balloon inflates slightly under pressure)
+                            ParallelAnimation {
+                                NumberAnimation {
+                                    target: tabItem
+                                    property: "closeScale"
+                                    from: 1.0
+                                    to: 1.14
+                                    duration: 60
+                                    easing.type: Easing.OutQuad
+                                }
+                            }
+
+                            // Phase 2: Pop & burst! Outward rupture + fade + shockwave ring + slot width collapse
+                            ParallelAnimation {
+                                NumberAnimation {
+                                    target: tabItem
+                                    property: "closeScale"
+                                    from: 1.14
+                                    to: 1.35
+                                    duration: 90
+                                    easing.type: Easing.OutCubic
+                                }
+                                NumberAnimation {
+                                    target: tabItem
+                                    property: "closeOpacity"
+                                    from: 1.0
+                                    to: 0.0
+                                    duration: 80
+                                    easing.type: Easing.InQuad
+                                }
+                                NumberAnimation {
+                                    target: tabItem
+                                    property: "popRingScale"
+                                    from: 1.0
+                                    to: 1.5
+                                    duration: 130
+                                    easing.type: Easing.OutQuad
+                                }
+                                SequentialAnimation {
+                                    NumberAnimation {
+                                        target: tabItem
+                                        property: "popRingOpacity"
+                                        from: 0.8
+                                        to: 0.8
+                                        duration: 20
+                                    }
+                                    NumberAnimation {
+                                        target: tabItem
+                                        property: "popRingOpacity"
+                                        from: 0.8
+                                        to: 0.0
+                                        duration: 110
+                                        easing.type: Easing.OutQuad
+                                    }
+                                }
+                                NumberAnimation {
+                                    target: tabItem
+                                    property: "closeWidthProgress"
+                                    from: 1.0
+                                    to: (root.tabsModel && root.tabsModel.count > 1) ? 0.0 : 1.0
+                                    duration: (root.tabsModel && root.tabsModel.count > 1) ? 150 : 0
+                                    easing.type: Easing.InOutCubic
+                                }
+                            }
+
+                            ScriptAction {
+                                script: tabItem.removeThisTab()
+                            }
+                        }
+
                         Item {
-                            anchors.fill: parent
+                            id: tabVisualContainer
+                            width: tabItem.targetTabWidth
+                            height: 32
+                            anchors.left: parent.left
+                            anchors.verticalCenter: parent.verticalCenter
+                            transformOrigin: Item.Center
+                            scale: tabItem.closeScale
+                            opacity: tabItem.closeOpacity
 
-                            RowLayout {
+                            // Shockwave burst ring
+                            Rectangle {
+                                id: popRing
+                                anchors.centerIn: parent
+                                width: parent.width + 6
+                                height: parent.height + 6
+                                radius: 10
+                                color: "transparent"
+                                border.color: Theme.primary
+                                border.width: 2
+                                visible: tabItem.isClosing
+                                transformOrigin: Item.Center
+                                scale: tabItem.popRingScale
+                                opacity: tabItem.popRingOpacity
+                            }
+
+                            // Tab Hover Pill (fades opacity of constant color - prevents black interpolation glitch)
+                            Rectangle {
+                                id: tabHoverPill
                                 anchors.fill: parent
-                                anchors.leftMargin: 8
-                                anchors.rightMargin: 6
-                                spacing: 6
+                                radius: 8
+                                color: Theme.surfaceContainerHigh
+                                opacity: (!tabItem.isActive && tabItem.isHovered) ? 1.0 : 0.0
+                                Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                            }
 
-                                // Doc Logo / Icon
-                                DocLogo {
-                                    docId: (model.pageType === "reader" || !model.pageType) && model.docsetId ? model.docsetId : ""
-                                    size: 16
-                                    showBackground: false
-                                    visible: (model.pageType === "reader" || !model.pageType) && model.docsetId && model.docsetId !== ""
-                                }
+                            // Active Tab Pill
+                            Rectangle {
+                                id: tabActivePill
+                                anchors.fill: parent
+                                radius: 8
+                                color: Theme.surface
+                                border.color: Theme.outlineVariant
+                                border.width: 1
+                                opacity: tabItem.isActive ? 1.0 : 0.0
+                                Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                            }
 
-                                LucideIcon {
-                                    name: {
-                                        if (model.pageType === "catalog") return "compass"
-                                        if (model.pageType === "installed") return "download"
-                                        if (model.pageType === "settings") return "settings"
-                                        if (model.icon && model.icon.length > 0) return model.icon
-                                        return "file-text"
-                                    }
-                                    size: 13
-                                    color: tabItem.isActive ? Theme.primary : Theme.textOnSurfaceVariant
-                                    visible: !((model.pageType === "reader" || !model.pageType) && model.docsetId && model.docsetId !== "")
-                                }
+                            // Tab Content
+                            Item {
+                                anchors.fill: parent
 
-                                // Document Title
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: model.title ? model.title : "New Tab"
-                                    font.family: Theme.fontSans
-                                    font.pixelSize: 12
-                                    font.bold: tabItem.isActive
-                                    color: tabItem.isActive ? Theme.textOnSurface : Theme.textOnSurfaceVariant
-                                    elide: Text.ElideRight
-                                }
+                                RowLayout {
+                                    anchors.fill: parent
+                                    anchors.leftMargin: 8
+                                    anchors.rightMargin: 6
+                                    spacing: 6
 
-                                // Tab RAM Footprint Badge
-                                Rectangle {
-                                    visible: tabItem.showRamOnTab && tabRamText.text.length > 0
-                                    Layout.preferredHeight: 16
-                                    Layout.preferredWidth: tabRamText.implicitWidth + 8
-                                    radius: Theme.shapeFull
-                                    color: Theme.secondaryContainer
-
-                                    Text {
-                                        id: tabRamText
-                                        anchors.centerIn: parent
-                                        text: {
-                                            if (typeof model.ramUsage !== "undefined" && model.ramUsage.length > 0) {
-                                                return model.ramUsage
-                                            }
-                                            if (typeof settingsMgr !== "undefined" && settingsMgr.getTabMemoryUsage) {
-                                                var tId = (typeof model.tabId !== "undefined") ? model.tabId : ""
-                                                var u = settingsMgr.getTabMemoryUsage(tId)
-                                                if (u.length > 0) return u
-                                                return settingsMgr.calculateTabMemoryUsage(model.pageType, model.filePath, 50)
-                                            }
-                                            return "5.0 MB"
-                                        }
-                                        font.family: Theme.fontSans
-                                        font.pixelSize: 9
-                                        font.bold: true
-                                        color: Theme.textOnSecondaryContainer
-                                    }
-                                }
-
-                                // Close Button (X)
-                                Item {
-                                    id: closeBtn
-                                    visible: tabItem.showCloseButton
-                                    Layout.preferredWidth: 18
-                                    Layout.preferredHeight: 18
-
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        radius: Theme.shapeFull
-                                        color: Theme.surfaceContainerHighest
-                                        opacity: closeBtnMouse.containsMouse ? 1.0 : 0.0
-                                        Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                                    // Doc Logo / Icon
+                                    DocLogo {
+                                        docId: (model.pageType === "reader" || !model.pageType) && model.docsetId ? model.docsetId : ""
+                                        size: 16
+                                        showBackground: false
+                                        visible: (model.pageType === "reader" || !model.pageType) && model.docsetId && model.docsetId !== ""
                                     }
 
                                     LucideIcon {
-                                        anchors.centerIn: parent
-                                        name: "x"
-                                        size: 10
-                                        color: closeBtnMouse.containsMouse ? Theme.danger : Theme.textOnSurfaceVariant
-                                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                                        name: {
+                                            if (model.pageType === "catalog") return "compass"
+                                            if (model.pageType === "installed") return "download"
+                                            if (model.pageType === "settings") return "settings"
+                                            if (model.icon && model.icon.length > 0) return model.icon
+                                            return "file-text"
+                                        }
+                                        size: 13
+                                        color: tabItem.isActive ? Theme.primary : Theme.textOnSurfaceVariant
+                                        visible: !((model.pageType === "reader" || !model.pageType) && model.docsetId && model.docsetId !== "")
                                     }
 
-                                    MouseArea {
-                                        id: closeBtnMouse
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.closeTabRequested(index)
-                                        onEntered: {
-                                            hoverGraceTimer.stop()
-                                            if (settingsMgr.tabHoverPreviewEnabled) {
-                                                var tX = tabItem.mapToItem(root, 0, 0).x
-                                                if (tabHoverCard.isOpen) {
-                                                    if (root.currentHoverIndex !== index) {
-                                                        hoverCardTimer.stop()
-                                                        root.showHoverCardForTab(index, tX, true)
-                                                    }
-                                                } else {
-                                                    if (!hoverCardTimer.running || hoverCardTimer.targetIndex !== index) {
-                                                        hoverCardTimer.targetIndex = index
-                                                        hoverCardTimer.targetX = tX
-                                                        hoverCardTimer.restart()
+                                    // Document Title
+                                    Text {
+                                        Layout.fillWidth: true
+                                        text: model.title ? model.title : "New Tab"
+                                        font.family: Theme.fontSans
+                                        font.pixelSize: 12
+                                        font.bold: tabItem.isActive
+                                        color: tabItem.isActive ? Theme.textOnSurface : Theme.textOnSurfaceVariant
+                                        elide: Text.ElideRight
+                                    }
+
+                                    // Tab RAM Footprint Badge
+                                    Rectangle {
+                                        visible: tabItem.showRamOnTab && tabRamText.text.length > 0
+                                        Layout.preferredHeight: 16
+                                        Layout.preferredWidth: tabRamText.implicitWidth + 8
+                                        radius: Theme.shapeFull
+                                        color: Theme.secondaryContainer
+
+                                        Text {
+                                            id: tabRamText
+                                            anchors.centerIn: parent
+                                            text: {
+                                                if (typeof model.ramUsage !== "undefined" && model.ramUsage.length > 0) {
+                                                    return model.ramUsage
+                                                }
+                                                if (typeof settingsMgr !== "undefined" && settingsMgr.getTabMemoryUsage) {
+                                                    var tId = (typeof model.tabId !== "undefined") ? model.tabId : ""
+                                                    var u = settingsMgr.getTabMemoryUsage(tId)
+                                                    if (u.length > 0) return u
+                                                    return settingsMgr.calculateTabMemoryUsage(model.pageType, model.filePath, 50)
+                                                }
+                                                return "5.0 MB"
+                                            }
+                                            font.family: Theme.fontSans
+                                            font.pixelSize: 9
+                                            font.bold: true
+                                            color: Theme.textOnSecondaryContainer
+                                        }
+                                    }
+
+                                    // Close Button (X)
+                                    Item {
+                                        id: closeBtn
+                                        visible: tabItem.showCloseButton
+                                        Layout.preferredWidth: 18
+                                        Layout.preferredHeight: 18
+
+                                        Rectangle {
+                                            anchors.fill: parent
+                                            radius: Theme.shapeFull
+                                            color: Theme.surfaceContainerHighest
+                                            opacity: closeBtnMouse.containsMouse ? 1.0 : 0.0
+                                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                                        }
+
+                                        LucideIcon {
+                                            anchors.centerIn: parent
+                                            name: "x"
+                                            size: 10
+                                            color: closeBtnMouse.containsMouse ? Theme.danger : Theme.textOnSurfaceVariant
+                                            Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                                        }
+
+                                        MouseArea {
+                                            id: closeBtnMouse
+                                            anchors.fill: parent
+                                            enabled: !tabItem.isClosing
+                                            hoverEnabled: true
+                                            cursorShape: Qt.PointingHandCursor
+                                            onClicked: tabItem.closeWithAnimation()
+                                            onEntered: {
+                                                if (tabItem.isClosing) return
+                                                hoverGraceTimer.stop()
+                                                if (settingsMgr.tabHoverPreviewEnabled) {
+                                                    var tX = tabItem.mapToItem(root, 0, 0).x
+                                                    if (tabHoverCard.isOpen) {
+                                                        if (root.currentHoverIndex !== index) {
+                                                            hoverCardTimer.stop()
+                                                            root.showHoverCardForTab(index, tX, true)
+                                                        }
+                                                    } else {
+                                                        if (!hoverCardTimer.running || hoverCardTimer.targetIndex !== index) {
+                                                            hoverCardTimer.targetIndex = index
+                                                            hoverCardTimer.targetX = tX
+                                                            hoverCardTimer.restart()
+                                                        }
                                                     }
                                                 }
                                             }
-                                        }
-                                        onExited: {
-                                            if (tabMouseArea.containsMouse) return
-                                            var tabPt = tabItem.mapFromItem(closeBtn, closeBtnMouse.mouseX, closeBtnMouse.mouseY)
-                                            if (tabPt.x >= 0 && tabPt.x <= tabItem.width && tabPt.y >= 0 && tabPt.y <= tabItem.height) {
-                                                return
-                                            }
-                                            hoverCardTimer.stop()
-                                            if (tabHoverCard.isOpen && !hoverCardArea.containsMouse) {
-                                                hoverGraceTimer.restart()
-                                                if (cursorZoneTimer.running) {
-                                                    cursorZoneTimer.triggered()
+                                            onExited: {
+                                                if (tabItem.isClosing) return
+                                                if (tabMouseArea.containsMouse) return
+                                                var tabPt = tabItem.mapFromItem(closeBtn, closeBtnMouse.mouseX, closeBtnMouse.mouseY)
+                                                if (tabPt.x >= 0 && tabPt.x <= tabItem.width && tabPt.y >= 0 && tabPt.y <= tabItem.height) {
+                                                    return
+                                                }
+                                                hoverCardTimer.stop()
+                                                if (tabHoverCard.isOpen && !hoverCardArea.containsMouse) {
+                                                    hoverGraceTimer.restart()
+                                                    if (cursorZoneTimer.running) {
+                                                        cursorZoneTimer.triggered()
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
                             }
-                        }
 
-                        // Tab Selection & Middle Click Mouse Area
-                        MouseArea {
-                            id: tabMouseArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            acceptedButtons: Qt.LeftButton | Qt.MiddleButton
-                            z: -1
+                            // Tab Selection & Middle Click Mouse Area
+                            MouseArea {
+                                id: tabMouseArea
+                                anchors.fill: parent
+                                enabled: !tabItem.isClosing
+                                hoverEnabled: true
+                                cursorShape: Qt.PointingHandCursor
+                                acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                                z: -1
 
-                            onClicked: function(mouse) {
-                                if (mouse.button === Qt.MiddleButton) {
-                                    root.closeTabRequested(index)
-                                } else {
-                                    root.selectTabRequested(index)
-                                }
-                            }
-
-                            onEntered: {
-                                if (settingsMgr.tabHoverPreviewEnabled) {
-                                    var tX = tabItem.mapToItem(root, 0, 0).x
-                                    hoverGraceTimer.stop()
-                                    if (tabHoverCard.isOpen) {
-                                        if (root.currentHoverIndex !== index) {
-                                            hoverCardTimer.stop()
-                                            root.showHoverCardForTab(index, tX, true)
-                                        }
+                                onClicked: function(mouse) {
+                                    if (tabItem.isClosing) return
+                                    if (mouse.button === Qt.MiddleButton) {
+                                        tabItem.closeWithAnimation()
                                     } else {
-                                        if (!hoverCardTimer.running || hoverCardTimer.targetIndex !== index) {
-                                            hoverCardTimer.targetIndex = index
-                                            hoverCardTimer.targetX = tX
-                                            hoverCardTimer.restart()
+                                        root.selectTabRequested(index)
+                                    }
+                                }
+
+                                onEntered: {
+                                    if (tabItem.isClosing) return
+                                    if (settingsMgr.tabHoverPreviewEnabled) {
+                                        var tX = tabItem.mapToItem(root, 0, 0).x
+                                        hoverGraceTimer.stop()
+                                        if (tabHoverCard.isOpen) {
+                                            if (root.currentHoverIndex !== index) {
+                                                hoverCardTimer.stop()
+                                                root.showHoverCardForTab(index, tX, true)
+                                            }
+                                        } else {
+                                            if (!hoverCardTimer.running || hoverCardTimer.targetIndex !== index) {
+                                                hoverCardTimer.targetIndex = index
+                                                hoverCardTimer.targetX = tX
+                                                hoverCardTimer.restart()
+                                            }
                                         }
                                     }
                                 }
-                            }
 
-                            onExited: {
-                                if (closeBtnMouse.containsMouse) return
-                                if (tabMouseArea.mouseX >= 0 && tabMouseArea.mouseX <= tabItem.width &&
-                                    tabMouseArea.mouseY >= 0 && tabMouseArea.mouseY <= tabItem.height) {
-                                    return
-                                }
-                                hoverCardTimer.stop()
-                                if (tabHoverCard.isOpen && !hoverCardArea.containsMouse) {
-                                    hoverGraceTimer.restart()
-                                    if (cursorZoneTimer.running) {
-                                        cursorZoneTimer.triggered()
+                                onExited: {
+                                    if (tabItem.isClosing) return
+                                    if (closeBtnMouse.containsMouse) return
+                                    if (tabMouseArea.mouseX >= 0 && tabMouseArea.mouseX <= tabItem.width &&
+                                        tabMouseArea.mouseY >= 0 && tabMouseArea.mouseY <= tabItem.height) {
+                                        return
+                                    }
+                                    hoverCardTimer.stop()
+                                    if (tabHoverCard.isOpen && !hoverCardArea.containsMouse) {
+                                        hoverGraceTimer.restart()
+                                        if (cursorZoneTimer.running) {
+                                            cursorZoneTimer.triggered()
+                                        }
                                     }
                                 }
                             }

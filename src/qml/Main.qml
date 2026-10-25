@@ -154,7 +154,9 @@ ApplicationWindow {
         var removedTabId = browserTabsModel.get(index).tabId
         settingsMgr.unregisterTab(removedTabId)
         browserTabsModel.remove(index)
-        if (currentActiveBrowserTab >= browserTabsModel.count) {
+        if (currentActiveBrowserTab > index) {
+            currentActiveBrowserTab--
+        } else if (currentActiveBrowserTab >= browserTabsModel.count) {
             currentActiveBrowserTab = browserTabsModel.count - 1
         }
         switchBrowserTab(currentActiveBrowserTab)
@@ -303,7 +305,7 @@ ApplicationWindow {
     }
     Shortcut {
         sequence: "Ctrl+W"
-        onActivated: closeBrowserTab(currentActiveBrowserTab)
+        onActivated: customTitleBar.closeTab(currentActiveBrowserTab)
     }
     Shortcut {
         sequence: "Ctrl+Tab"
