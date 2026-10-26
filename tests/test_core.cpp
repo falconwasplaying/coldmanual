@@ -591,6 +591,80 @@ void testThemeColors() {
     std::cout << "[PASS] testThemeColors passed (white text on blue boxes verified in light & dark modes)!" << std::endl;
 }
 
+void testListViewTabTransitions() {
+    std::cout << "[TEST] Running testListViewTabTransitions..." << std::endl;
+    QQmlEngine engine;
+    QQmlComponent comp(&engine);
+    comp.setData(R"(
+        import QtQuick
+        Item {
+            id: root
+            width: 800; height: 100
+
+            ListModel {
+                id: testModel
+                ListElement { title: "Tab 1" }
+                ListElement { title: "Tab 2" }
+                ListElement { title: "Tab 3" }
+            }
+
+            ListView {
+                id: lv
+                orientation: ListView.Horizontal
+                spacing: 4
+                clip: true
+                width: 600; height: 32
+                model: testModel
+
+                add: Transition {
+                    NumberAnimation { property: "width"; from: 0; duration: 190; easing.type: Easing.OutCubic }
+                }
+                addDisplaced: Transition {
+                    NumberAnimation { properties: "x,y"; duration: 190; easing.type: Easing.OutCubic }
+                }
+                remove: Transition {
+                    ParallelAnimation {
+                        PropertyAction { property: "enabled"; value: false }
+                        NumberAnimation { property: "width"; to: 0; duration: 170; easing.type: Easing.OutCubic }
+                    }
+                }
+                removeDisplaced: Transition {
+                    NumberAnimation { properties: "x,y"; duration: 170; easing.type: Easing.OutCubic }
+                }
+
+                delegate: Item {
+                    id: tabItem
+                    width: 150; height: 32
+                    clip: true
+                    Text { text: model.title; anchors.centerIn: parent }
+                }
+            }
+
+            function removeFirst() {
+                testModel.remove(0);
+            }
+            function appendNew() {
+                testModel.append({ title: "Tab New" });
+            }
+        }
+    )", QUrl("qrc:/testListView.qml"));
+
+    auto* obj = comp.create();
+    if (!obj) {
+        std::cerr << "Component error: " << comp.errorString().toStdString() << std::endl;
+    }
+    assert(obj);
+
+    QMetaObject::invokeMethod(obj, "removeFirst");
+    QCoreApplication::processEvents();
+
+    QMetaObject::invokeMethod(obj, "appendNew");
+    QCoreApplication::processEvents();
+
+    delete obj;
+    std::cout << "[PASS] testListViewTabTransitions passed!" << std::endl;
+}
+
 void testMainQmlLoading() {
     std::cout << "[TEST] Running testMainQmlLoading..." << std::endl;
     SettingsManager settingsMgr;
@@ -699,6 +773,7 @@ int main(int argc, char* argv[]) {
     testNetworkManager();
     testNoDiskCaching();
     testThemeColors();
+    testListViewTabTransitions();
     testMainQmlLoading();
 
     std::cout << "\nALL TESTS PASSED SUCCESSFULLY! (ColdManual Engine Verified)" << std::endl;

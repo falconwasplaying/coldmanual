@@ -25,20 +25,8 @@ Rectangle {
     }
 
     function closeTab(index) {
-        if (!root.tabsModel || root.tabsModel.count === 0) return
+        if (!root.tabsModel || index < 0 || index >= root.tabsModel.count) return
         root.closeHoverCard()
-        var target = tabsRepeater.itemAt(index)
-        if (target && !target.isClosing && target.closeWithAnimation) {
-            target.closeWithAnimation()
-            return
-        }
-        for (var i = 0; i < root.tabsModel.count; ++i) {
-            var it = tabsRepeater.itemAt(i)
-            if (it && !it.isClosing && it.closeWithAnimation) {
-                it.closeWithAnimation()
-                return
-            }
-        }
         root.closeTabRequested(index)
     }
 
@@ -104,42 +92,66 @@ Rectangle {
         Item {
             id: tabsContainer
             Layout.fillHeight: true
-            Layout.preferredWidth: Math.min(root.width - 200, tabsRow.implicitWidth + 36)
+            Layout.preferredWidth: Math.min(root.width - 200, (tabsRow ? tabsRow.implicitWidth + 8 : 200))
             clip: true
 
             Row {
                 id: tabsRow
                 anchors.left: parent.left
                 anchors.verticalCenter: parent.verticalCenter
-                spacing: 0
+                spacing: 4
 
-                Repeater {
-                    id: tabsRepeater
+                ListView {
+                    id: tabsListView
+                    orientation: ListView.Horizontal
+                    spacing: 4
+                    clip: true
+                    boundsBehavior: Flickable.StopAtBounds
+                    interactive: contentWidth > width
+
+                    readonly property real targetTabWidth: {
+                        var maxStrip = Math.max(200, root.width - 240)
+                        var cnt = (root.tabsModel && root.tabsModel.count > 0) ? root.tabsModel.count : 1
+                        return Math.max(110, Math.min(180, Math.floor(maxStrip / cnt) - 4))
+                    }
+
+                    width: Math.min(Math.max(110, root.width - 276), contentWidth)
+                    height: 32
                     model: root.tabsModel
+
+                    Behavior on width {
+                        NumberAnimation { duration: 190; easing.type: Easing.OutCubic }
+                    }
+
+                    add: Transition {
+                        NumberAnimation { property: "width"; from: 0; duration: 190; easing.type: Easing.OutCubic }
+                    }
+
+                    addDisplaced: Transition {
+                        NumberAnimation { properties: "x,y"; duration: 190; easing.type: Easing.OutCubic }
+                    }
+
+                    remove: Transition {
+                        ParallelAnimation {
+                            PropertyAction { property: "enabled"; value: false }
+                            NumberAnimation { property: "width"; to: 0; duration: 170; easing.type: Easing.OutCubic }
+                        }
+                    }
+
+                    removeDisplaced: Transition {
+                        NumberAnimation { properties: "x,y"; duration: 170; easing.type: Easing.OutCubic }
+                    }
 
                     delegate: Item {
                         id: tabItem
-                        readonly property real targetTabWidth: {
-                            var maxStrip = Math.max(200, root.width - 240)
-                            var cnt = (root.tabsModel && root.tabsModel.count > 0) ? root.tabsModel.count : 1
-                            return Math.max(110, Math.min(180, Math.floor(maxStrip / cnt) - 4))
-                        }
-
-                        property real openProgress: 0.0
-                        property real closeProgress: 1.0
-                        property bool isOpening: true
-                        property bool isClosing: false
-                        property string savedTabId: (model && typeof model.tabId !== "undefined") ? model.tabId : ""
-
-                        width: isClosing ? Math.max(0, (targetTabWidth + 4) * closeProgress) : Math.max(0, (targetTabWidth + 4) * openProgress)
+                        width: tabsListView.targetTabWidth
                         height: 32
                         clip: true
-                        z: isClosing ? 2 : (isActive ? 3 : 1)
+                        z: isActive ? 2 : 1
 
                         property bool isActive: index === root.activeTabIndex
-                        property bool isHovered: !isClosing && (tabMouseArea.containsMouse || closeBtnMouse.containsMouse)
+                        property bool isHovered: tabMouseArea.containsMouse || closeBtnMouse.containsMouse
                         property bool showCloseButton: {
-                            if (isClosing) return false
                             var mode = settingsMgr.tabCloseButtonMode
                             if (mode === "always") return true
                             if (mode === "never") return false
@@ -150,83 +162,20 @@ Rectangle {
                             return mode === "tab" || mode === "both"
                         }
 
-                        function closeWithAnimation() {
-                            if (tabItem.isClosing) return
-                            tabItem.isClosing = true
-                            root.closeHoverCard()
-                            closeAnim.restart()
-                        }
-
-                        function removeThisTab() {
-                            var targetId = tabItem.savedTabId
-                            var foundIdx = -1
-                            if (root.tabsModel) {
-                                for (var i = 0; i < root.tabsModel.count; ++i) {
-                                    var itemData = root.tabsModel.get(i)
-                                    if (itemData && itemData.tabId === targetId) {
-                                        foundIdx = i
-                                        break
-                                    }
-                                }
-                            }
-                            if (foundIdx >= 0) {
-                                root.closeTabRequested(foundIdx)
-                            } else if (index >= 0 && index < (root.tabsModel ? root.tabsModel.count : 0)) {
-                                root.closeTabRequested(index)
-                            }
-                        }
-
-                        // Write in from left to right on tab creation with an ease out
-                        NumberAnimation {
-                            id: openAnim
-                            target: tabItem
-                            property: "openProgress"
-                            from: 0.0
-                            to: 1.0
-                            duration: 190
-                            easing.type: Easing.OutCubic
-                            running: true
-                            onFinished: tabItem.isOpening = false
-                        }
-
-                        // Erase tab from right to left like an eraser with an ease out
-                        SequentialAnimation {
-                            id: closeAnim
-
-                            NumberAnimation {
-                                target: tabItem
-                                property: "closeProgress"
-                                from: 1.0
-                                to: 0.0
-                                duration: 170
-                                easing.type: Easing.OutCubic
-                            }
-
-                            ScriptAction {
-                                script: tabItem.removeThisTab()
-                            }
-                        }
-
-                        // Tab Hover Pill (resizes dynamically with right rounded corner intact)
+                        // Tab Hover Pill
                         Rectangle {
                             id: tabHoverPill
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: Math.max(0, parent.width - 4)
-                            height: 32
+                            anchors.fill: parent
                             radius: 8
                             color: Theme.surfaceContainerHigh
                             opacity: (!tabItem.isActive && tabItem.isHovered) ? 1.0 : 0.0
                             Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
                         }
 
-                        // Active Tab Pill (resizes dynamically with right rounded corner intact)
+                        // Active Tab Pill
                         Rectangle {
                             id: tabActivePill
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: Math.max(0, parent.width - 4)
-                            height: 32
+                            anchors.fill: parent
                             radius: 8
                             color: Theme.surface
                             border.color: Theme.outlineVariant
@@ -235,14 +184,12 @@ Rectangle {
                             Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
                         }
 
-                        // Tab Content (Fixed width, anchored left, clipped as width expands/contracts)
+                        // Tab Content
                         Item {
-                            id: tabVisualContainer
-                            width: tabItem.targetTabWidth
-                            height: 32
                             anchors.left: parent.left
                             anchors.verticalCenter: parent.verticalCenter
-                            clip: true
+                            width: tabsListView.targetTabWidth
+                            height: 32
 
                             RowLayout {
                                 anchors.fill: parent
@@ -338,12 +285,10 @@ Rectangle {
                                     MouseArea {
                                         id: closeBtnMouse
                                         anchors.fill: parent
-                                        enabled: !tabItem.isClosing && !tabItem.isOpening
                                         hoverEnabled: true
                                         cursorShape: Qt.PointingHandCursor
-                                        onClicked: tabItem.closeWithAnimation()
+                                        onClicked: root.closeTabRequested(index)
                                         onEntered: {
-                                            if (tabItem.isClosing || tabItem.isOpening) return
                                             hoverGraceTimer.stop()
                                             if (settingsMgr.tabHoverPreviewEnabled) {
                                                 var tX = tabItem.mapToItem(root, 0, 0).x
@@ -362,7 +307,6 @@ Rectangle {
                                             }
                                         }
                                         onExited: {
-                                            if (tabItem.isClosing || tabItem.isOpening) return
                                             if (tabMouseArea.containsMouse) return
                                             var tabPt = tabItem.mapFromItem(closeBtn, closeBtnMouse.mouseX, closeBtnMouse.mouseY)
                                             if (tabPt.x >= 0 && tabPt.x <= tabItem.width && tabPt.y >= 0 && tabPt.y <= tabItem.height) {
@@ -385,23 +329,20 @@ Rectangle {
                         MouseArea {
                             id: tabMouseArea
                             anchors.fill: parent
-                            enabled: !tabItem.isClosing
                             hoverEnabled: true
                             cursorShape: Qt.PointingHandCursor
                             acceptedButtons: Qt.LeftButton | Qt.MiddleButton
                             z: -1
 
                             onClicked: function(mouse) {
-                                if (tabItem.isClosing) return
                                 if (mouse.button === Qt.MiddleButton) {
-                                    tabItem.closeWithAnimation()
+                                    root.closeTabRequested(index)
                                 } else {
                                     root.selectTabRequested(index)
                                 }
                             }
 
                             onEntered: {
-                                if (tabItem.isClosing || tabItem.isOpening) return
                                 if (settingsMgr.tabHoverPreviewEnabled) {
                                     var tX = tabItem.mapToItem(root, 0, 0).x
                                     hoverGraceTimer.stop()
@@ -421,7 +362,6 @@ Rectangle {
                             }
 
                             onExited: {
-                                if (tabItem.isClosing || tabItem.isOpening) return
                                 if (closeBtnMouse.containsMouse) return
                                 if (tabMouseArea.mouseX >= 0 && tabMouseArea.mouseX <= tabItem.width &&
                                     tabMouseArea.mouseY >= 0 && tabMouseArea.mouseY <= tabItem.height) {
