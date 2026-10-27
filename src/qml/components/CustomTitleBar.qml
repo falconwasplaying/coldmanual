@@ -103,10 +103,12 @@ Rectangle {
 
         // Brave Tab Sizing & Rapid-Close State
         property real lockedTabWidth: 0
+        readonly property real maxPlusX: Math.max(0, tabsArea.width - newTabBtn.width - 4)
+        readonly property bool isStripSaturated: getNormalTabWidth() < 220
 
         readonly property real currentTabWidth: {
             var normal = getNormalTabWidth()
-            if (lockedTabWidth > 0 && tabsMouseTracker.containsMouse) {
+            if (lockedTabWidth > 0 && tabStripHover.hovered) {
                 return Math.min(lockedTabWidth, normal)
             }
             return normal
@@ -115,26 +117,44 @@ Rectangle {
         function getNormalTabWidth() {
             if (!root.tabsModel || root.tabsModel.count <= 0) return 220
             var count = root.tabsModel.count
-            var btnW = (count > 25) ? 24 : 28
-            var avail = Math.max(40, tabsArea.width - btnW - 8)
+            var btnReserved = 28 + 8
+            var avail = Math.max(40, tabsArea.width - btnReserved)
             var sp = (count > 20) ? 0 : ((count > 10) ? 1 : 2)
             var totalNeeded = count * 220 + (count - 1) * sp
             if (totalNeeded <= avail) return 220
             return Math.max(10, Math.floor((avail - (count - 1) * sp) / count))
         }
 
-        // Mouse Tracker for Rapid-Close Lock
-        MouseArea {
-            id: tabsMouseTracker
-            anchors.left: parent.left
+        function handleMouseExit() {
+            lockedTabWidth = 0
+            commitPendingClosedTabs()
+        }
+
+        function commitPendingClosedTabs() {
+            for (var i = 0; i < tabsRepeater.count; ++i) {
+                var it = tabsRepeater.itemAt(i)
+                if (it && it.isMiddleClickPending && !it.isClosing) {
+                    it.startMiddleClickCollapse()
+                }
+            }
+        }
+
+        // Tab Strip Hover & Boundary Tracker
+        Item {
+            id: tabsTrackingContainer
+            anchors.left: tabsRow.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            width: tabsRow.width + 12
-            hoverEnabled: true
-            acceptedButtons: Qt.NoButton
+            width: tabsRow.width
             z: -1
-            onExited: {
-                tabsArea.lockedTabWidth = 0
+
+            HoverHandler {
+                id: tabStripHover
+                onHoveredChanged: {
+                    if (!hovered) {
+                        tabsArea.handleMouseExit()
+                    }
+                }
             }
         }
 
@@ -163,6 +183,7 @@ Rectangle {
                     property bool isActive: index === root.activeTabIndex
                     property bool isHovered: tabMouseArea.containsMouse || (closeBtn.visible && closeBtnMouse.containsMouse)
                     property bool isClosing: false
+                    property bool isMiddleClickPending: false
 
                     // Progressive Shrinking Modes (Brave Tab Shrink Logic)
                     readonly property bool isIconOnly: visualWidth < 72
@@ -242,19 +263,64 @@ Rectangle {
                         isClosing = true
                         tabItem.enabled = false
                         root.closeHoverCard()
-                        if (tabsMouseTracker.containsMouse && tabsArea.currentTabWidth < 220) {
+                        if (tabStripHover.hovered && tabsArea.currentTabWidth < 220) {
                             tabsArea.lockedTabWidth = tabsArea.currentTabWidth
                         }
                         closeAnim.start()
                     }
 
+                    function middleClickClose() {
+                        if (isClosing || isMiddleClickPending) return
+                        if (!root.tabsModel || root.tabsModel.count <= 1) {
+                            closeWithAnimation()
+                            return
+                        }
+                        isMiddleClickPending = true
+                        tabItem.enabled = false
+                        tabItem.opacity = 0
+                        root.closeHoverCard()
+
+                        if (tabsArea.currentTabWidth < 220) {
+                            tabsArea.lockedTabWidth = tabsArea.currentTabWidth
+                        }
+
+                        if (tabItem.isActive) {
+                            var nextIdx = -1
+                            for (var f = index + 1; f < root.tabsModel.count; ++f) {
+                                var fItem = tabsRepeater.itemAt(f)
+                                if (!fItem || (!fItem.isClosing && !fItem.isMiddleClickPending)) {
+                                    nextIdx = f
+                                    break
+                                }
+                            }
+                            if (nextIdx < 0) {
+                                for (var b = index - 1; b >= 0; --b) {
+                                    var bItem = tabsRepeater.itemAt(b)
+                                    if (!bItem || (!bItem.isClosing && !bItem.isMiddleClickPending)) {
+                                        nextIdx = b
+                                        break
+                                    }
+                                }
+                            }
+                            if (nextIdx >= 0) {
+                                root.selectTabRequested(nextIdx)
+                            }
+                        }
+                    }
+
+                    function startMiddleClickCollapse() {
+                        if (isClosing) return
+                        isClosing = true
+                        closeAnim.start()
+                    }
+
                     Binding on visualWidth {
-                        when: !openAnim.running && !closeAnim.running
+                        when: !openAnim.running && !closeAnim.running && !isMiddleClickPending
                         value: tabsArea.currentTabWidth
                     }
 
                     Behavior on visualWidth {
-                        enabled: !openAnim.running && !closeAnim.running
+                        enabled: !openAnim.running && !closeAnim.running && !isMiddleClickPending
                         NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
                     }
 
@@ -293,12 +359,13 @@ Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
                         color: Theme.outlineVariant
                         opacity: {
+                            if (tabItem.isMiddleClickPending) return 0.0
                             if (tabItem.visualWidth < 22) return 0.0
                             if (tabItem.isActive || tabItem.isHovered || tabItem.isClosing) return 0.0
                             if (index >= root.tabsModel.count - 1) return 0.0
                             if (index + 1 === root.activeTabIndex) return 0.0
                             var nextItem = tabsRepeater.itemAt(index + 1)
-                            if (nextItem && (nextItem.isHovered || nextItem.isActive)) return 0.0
+                            if (nextItem && (nextItem.isHovered || nextItem.isActive || nextItem.isMiddleClickPending)) return 0.0
                             return 0.35
                         }
                         Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
@@ -476,7 +543,7 @@ Rectangle {
 
                         onClicked: function(mouse) {
                             if (mouse.button === Qt.MiddleButton) {
-                                tabItem.closeWithAnimation()
+                                tabItem.middleClickClose()
                             } else {
                                 root.selectTabRequested(index)
                             }
@@ -523,49 +590,58 @@ Rectangle {
                 }
             }
 
-            // New Tab (+) Button
-            Item {
-                id: newTabBtn
-                width: (root.tabsModel && root.tabsModel.count > 25) ? 24 : 28
-                height: width
-                anchors.verticalCenter: parent.verticalCenter
+            onWidthChanged: updateFramelessHitTest()
+        }
 
-                Rectangle {
-                    anchors.fill: parent
-                    radius: Theme.shapeFull
-                    color: Theme.surfaceContainerHighest
-                    opacity: newTabMouse.containsMouse ? 1.0 : 0.0
-                    Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
-                }
+        // New Tab (+) Button: strictly docked to max limit when saturated
+        Item {
+            id: newTabBtn
+            width: 28
+            height: 28
+            anchors.verticalCenter: parent.verticalCenter
+            x: tabsArea.isStripSaturated ? tabsArea.maxPlusX : Math.min(tabsArea.maxPlusX, tabsRow.x + tabsRow.width + 4)
+            z: 5
 
-                LucideIcon {
-                    anchors.centerIn: parent
-                    name: "plus"
-                    size: 14
-                    color: newTabMouse.containsMouse ? Theme.primary : Theme.textOnSurfaceVariant
-                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-                }
+            onXChanged: updateFramelessHitTest()
 
-                MouseArea {
-                    id: newTabMouse
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: root.newTabRequested()
-                }
-
-                ToolTip.visible: newTabMouse.containsMouse
-                ToolTip.delay: 400
-                ToolTip.text: "New Tab (Ctrl+T)"
+            Behavior on x {
+                enabled: !tabsArea.isStripSaturated
+                NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
             }
 
-            onWidthChanged: updateFramelessHitTest()
+            Rectangle {
+                anchors.fill: parent
+                radius: Theme.shapeFull
+                color: Theme.surfaceContainerHighest
+                opacity: newTabMouse.containsMouse ? 1.0 : 0.0
+                Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+            }
+
+            LucideIcon {
+                anchors.centerIn: parent
+                name: "plus"
+                size: 14
+                color: newTabMouse.containsMouse ? Theme.primary : Theme.textOnSurfaceVariant
+                Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+            }
+
+            MouseArea {
+                id: newTabMouse
+                anchors.fill: parent
+                hoverEnabled: true
+                cursorShape: Qt.PointingHandCursor
+                onClicked: root.newTabRequested()
+            }
+
+            ToolTip.visible: newTabMouse.containsMouse
+            ToolTip.delay: 400
+            ToolTip.text: "New Tab (Ctrl+T)"
         }
 
         // Draggable Empty Space across the rest of the tab area
         Item {
             id: dragArea
-            anchors.left: tabsRow.right
+            anchors.left: newTabBtn.right
             anchors.leftMargin: 4
             anchors.right: parent.right
             anchors.top: parent.top
@@ -861,6 +937,9 @@ Rectangle {
         if (typeof framelessHelper !== "undefined" && framelessHelper) {
             var tabsStart = 44.0
             var tabsEnd = tabsStart + (tabsRow ? tabsRow.width + 8 : 200.0)
+            if (newTabBtn) {
+                tabsEnd = Math.max(tabsEnd, tabsStart + newTabBtn.x + newTabBtn.width + 4)
+            }
             framelessHelper.updateTabsWidth(tabsStart, tabsEnd)
         }
     }

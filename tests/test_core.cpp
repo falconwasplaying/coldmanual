@@ -610,12 +610,14 @@ void testBraveTabStripTransitions() {
 
             property real lockedTabWidth: 0
             property bool isMouseInTabs: false
+            readonly property real maxPlusX: Math.max(0, root.width - newTabBtn.width - 4)
+            readonly property bool isStripSaturated: getNormalTabWidth() < 220
 
             function getNormalTabWidth() {
                 var cnt = testModel.count;
                 if (cnt <= 0) return 220;
-                var btnW = (cnt > 25) ? 24 : 28;
-                var avail = Math.max(40, 800 - btnW - 8);
+                var btnReserved = 28 + 8;
+                var avail = Math.max(40, root.width - btnReserved);
                 var sp = (cnt > 20) ? 0 : ((cnt > 10) ? 1 : 2);
                 var totalNeeded = cnt * 220 + (cnt - 1) * sp;
                 if (totalNeeded <= avail) return 220;
@@ -638,27 +640,45 @@ void testBraveTabStripTransitions() {
 
             Row {
                 id: tabsRow
-                spacing: 2
+                spacing: (testModel.count > 20) ? 0 : ((testModel.count > 10) ? 1 : 2)
                 Repeater {
                     id: rep
                     model: testModel
                     delegate: Item {
-                        width: root.currentTabWidth
+                        property bool isMiddleClickPending: false
+                        property real visualWidth: root.currentTabWidth
+                        width: visualWidth
                         height: 32
                     }
                 }
             }
 
-            function closeTabWithLock(idx) {
-                if (isMouseInTabs) {
+            Item {
+                id: newTabBtn
+                objectName: "newTabBtn"
+                width: 28; height: 28
+                x: root.isStripSaturated ? root.maxPlusX : Math.min(root.maxPlusX, tabsRow.x + tabsRow.width + 4)
+            }
+
+            function middleClickTab(idx) {
+                var item = rep.itemAt(idx);
+                if (item) {
+                    item.isMiddleClickPending = true;
+                }
+                if (isMouseInTabs && currentTabWidth < 220) {
                     lockedTabWidth = currentTabWidth;
                 }
-                testModel.remove(idx);
             }
 
             function mouseExit() {
                 isMouseInTabs = false;
                 lockedTabWidth = 0;
+                for (var i = rep.count - 1; i >= 0; --i) {
+                    var item = rep.itemAt(i);
+                    if (item && item.isMiddleClickPending) {
+                        testModel.remove(i);
+                    }
+                }
             }
         }
     )", QUrl("qrc:/testBraveTabStrip.qml"));
@@ -671,24 +691,48 @@ void testBraveTabStripTransitions() {
 
     qreal initialW = obj->property("currentTabWidth").toReal();
     assert(initialW == 220.0);
+    assert(!obj->property("isStripSaturated").toBool());
 
-    obj->setProperty("isMouseInTabs", true);
-    QMetaObject::invokeMethod(obj, "closeTabWithLock", Q_ARG(QVariant, 0));
+    auto* newTabBtn = obj->findChild<QObject*>("newTabBtn");
+    qreal maxPlus = obj->property("maxPlusX").toReal();
+    assert(maxPlus == 768.0); // 800 - 28 - 4
+
+    // Saturated strip: add tabs until strip saturates
+    QMetaObject::invokeMethod(obj, "addManyTabs", Q_ARG(QVariant, 5)); // 8 tabs total
     QCoreApplication::processEvents();
+    assert(obj->property("isStripSaturated").toBool());
+    qreal satPlusX = newTabBtn->property("x").toReal();
+    assert(satPlusX == 768.0);
+    std::cout << "  Saturated tab strip plus button locked at limit: " << satPlusX << "px" << std::endl;
 
-    qreal afterCloseW = obj->property("currentTabWidth").toReal();
-    assert(afterCloseW == 220.0);
+    // Add 10 more tabs (18 tabs total): plus button MUST remain 100% stationary
+    QMetaObject::invokeMethod(obj, "addManyTabs", Q_ARG(QVariant, 10));
+    QCoreApplication::processEvents();
+    qreal crowdedPlusX = newTabBtn->property("x").toReal();
+    assert(crowdedPlusX == 768.0);
+    std::cout << "  18 tabs plus button stationary at limit: " << crowdedPlusX << "px" << std::endl;
 
+    // Add 12 more tabs (30 tabs total): plus button MUST remain 100% stationary
+    QMetaObject::invokeMethod(obj, "addManyTabs", Q_ARG(QVariant, 12));
+    QCoreApplication::processEvents();
+    assert(newTabBtn->property("x").toReal() == 768.0);
+    qreal thirtyW = obj->property("currentTabWidth").toReal();
+    std::cout << "  30 tabs width: " << thirtyW << "px (shrinking verified, plus button strictly stationary)" << std::endl;
+    assert(thirtyW < 36.0 && thirtyW >= 10.0);
+
+    // Test Middle Click: tabs do not move/resize until mouse exits
+    obj->setProperty("isMouseInTabs", true);
+    QMetaObject::invokeMethod(obj, "middleClickTab", Q_ARG(QVariant, 2));
+    QCoreApplication::processEvents();
+    // Tab width remains locked and slot stays open
+    assert(obj->property("currentTabWidth").toReal() == thirtyW);
+    std::cout << "  Middle-click executed: slot frozen, tabs did not move/resize under cursor." << std::endl;
+
+    // On mouse exit: gap collapses and model updates
     QMetaObject::invokeMethod(obj, "mouseExit");
     QCoreApplication::processEvents();
     assert(obj->property("lockedTabWidth").toReal() == 0.0);
-
-    // Test progressive shrinking with 30 tabs
-    QMetaObject::invokeMethod(obj, "addManyTabs", Q_ARG(QVariant, 28));
-    QCoreApplication::processEvents();
-    qreal crowdedW = obj->property("currentTabWidth").toReal();
-    std::cout << "  30 tabs width: " << crowdedW << "px (verified icon-only & shrinking)" << std::endl;
-    assert(crowdedW < 36.0 && crowdedW >= 10.0);
+    std::cout << "  Mouse exited tab strip: pending middle-clicked tab collapsed & consolidated." << std::endl;
 
     delete obj;
     std::cout << "[PASS] testBraveTabStripTransitions passed!" << std::endl;
