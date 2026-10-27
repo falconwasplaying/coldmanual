@@ -27,6 +27,11 @@ Rectangle {
     function closeTab(index) {
         if (!root.tabsModel || index < 0 || index >= root.tabsModel.count) return
         root.closeHoverCard()
+        var target = tabsRepeater.itemAt(index)
+        if (target && !target.isClosing && target.closeWithAnimation) {
+            target.closeWithAnimation()
+            return
+        }
         root.closeTabRequested(index)
     }
 
@@ -49,389 +54,490 @@ Rectangle {
         z: 10
     }
 
-    RowLayout {
-        id: titleBarRow
-        anchors.fill: parent
-        spacing: 0
+    // App Logo & Branding (Left)
+    Item {
+        id: logoItem
+        anchors.left: parent.left
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: 44
+        z: 2
 
-        // App Logo & Branding (Left)
-        Item {
-            Layout.preferredWidth: 44
-            Layout.fillHeight: true
+        Image {
+            anchors.centerIn: parent
+            source: "qrc:/resources/cmi.svg"
+            sourceSize.width: 20
+            sourceSize.height: 20
+        }
 
-            Image {
-                anchors.centerIn: parent
-                source: "qrc:/resources/cmi.svg"
-                sourceSize.width: 20
-                sourceSize.height: 20
+        MouseArea {
+            anchors.fill: parent
+            hoverEnabled: true
+            acceptedButtons: Qt.LeftButton
+            onEntered: {
+                if (tabHoverCard.isOpen) {
+                    root.closeHoverCard()
+                }
             }
-
-            MouseArea {
-                anchors.fill: parent
-                hoverEnabled: true
-                acceptedButtons: Qt.LeftButton
-                onEntered: {
-                    if (tabHoverCard.isOpen) {
-                        root.closeHoverCard()
-                    }
+            onDoubleClicked: {
+                if (typeof framelessHelper !== "undefined" && framelessHelper) {
+                    framelessHelper.toggleMaximize()
                 }
-                onDoubleClicked: {
-                    if (typeof framelessHelper !== "undefined" && framelessHelper) {
-                        framelessHelper.toggleMaximize()
-                    }
-                }
-                onPressed: {
-                    if (typeof window !== "undefined" && window.startSystemMove) {
-                        window.startSystemMove()
-                    }
+            }
+            onPressed: {
+                if (typeof window !== "undefined" && window.startSystemMove) {
+                    window.startSystemMove()
                 }
             }
         }
+    }
 
-        // Tabs Strip & New Tab Button
-        Item {
-            id: tabsContainer
-            Layout.fillHeight: true
-            Layout.preferredWidth: Math.min(root.width - 200, (tabsRow ? tabsRow.implicitWidth + 8 : 200))
-            clip: true
+    // Tabs & Header Area (Brave Tab Strip Architecture)
+    Item {
+        id: tabsArea
+        anchors.left: logoItem.right
+        anchors.right: windowControls.left
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        clip: true
 
-            Row {
-                id: tabsRow
-                anchors.left: parent.left
-                anchors.verticalCenter: parent.verticalCenter
-                spacing: 4
+        // Brave Tab Sizing & Rapid-Close State
+        property real lockedTabWidth: 0
 
-                ListView {
-                    id: tabsListView
-                    orientation: ListView.Horizontal
-                    spacing: 4
-                    clip: true
-                    boundsBehavior: Flickable.StopAtBounds
-                    interactive: contentWidth > width
+        readonly property real currentTabWidth: {
+            var normal = getNormalTabWidth()
+            if (lockedTabWidth > 0 && tabsMouseTracker.containsMouse) {
+                return Math.min(lockedTabWidth, normal)
+            }
+            return normal
+        }
 
-                    readonly property real targetTabWidth: {
-                        var maxStrip = Math.max(200, root.width - 240)
-                        var cnt = (root.tabsModel && root.tabsModel.count > 0) ? root.tabsModel.count : 1
-                        return Math.max(110, Math.min(180, Math.floor(maxStrip / cnt) - 4))
-                    }
+        function getNormalTabWidth() {
+            if (!root.tabsModel || root.tabsModel.count <= 0) return 220
+            var count = root.tabsModel.count
+            var avail = Math.max(120, tabsArea.width - 36)
+            var totalNeeded = count * 220 + (count - 1) * 2
+            if (totalNeeded <= avail) return 220
+            return Math.max(80, Math.floor((avail - (count - 1) * 2) / count))
+        }
 
-                    width: Math.min(Math.max(110, root.width - 276), contentWidth)
+        // Mouse Tracker for Rapid-Close Lock
+        MouseArea {
+            id: tabsMouseTracker
+            anchors.left: parent.left
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
+            width: tabsRow.width + 12
+            hoverEnabled: true
+            acceptedButtons: Qt.NoButton
+            z: -1
+            onExited: {
+                tabsArea.lockedTabWidth = 0
+            }
+        }
+
+        Row {
+            id: tabsRow
+            anchors.left: parent.left
+            anchors.leftMargin: 4
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 2
+
+            Repeater {
+                id: tabsRepeater
+                model: root.tabsModel
+
+                delegate: Item {
+                    id: tabItem
+                    property string savedTabId: (typeof model.tabId !== "undefined") ? model.tabId : ""
+                    property real visualWidth: 0
+                    width: visualWidth
                     height: 32
-                    model: root.tabsModel
-
-                    Behavior on width {
-                        NumberAnimation { duration: 190; easing.type: Easing.OutCubic }
-                    }
-
-                    add: Transition {
-                        NumberAnimation { property: "width"; from: 0; duration: 190; easing.type: Easing.OutCubic }
-                    }
-
-                    addDisplaced: Transition {
-                        NumberAnimation { properties: "x,y"; duration: 190; easing.type: Easing.OutCubic }
-                    }
-
-                    remove: Transition {
-                        ParallelAnimation {
-                            PropertyAction { property: "enabled"; value: false }
-                            NumberAnimation { property: "width"; to: 0; duration: 170; easing.type: Easing.OutCubic }
-                        }
-                    }
-
-                    removeDisplaced: Transition {
-                        NumberAnimation { properties: "x,y"; duration: 170; easing.type: Easing.OutCubic }
-                    }
-
-                    delegate: Item {
-                        id: tabItem
-                        width: tabsListView.targetTabWidth
-                        height: 32
-                        clip: true
-                        z: isActive ? 2 : 1
-
-                        property bool isActive: index === root.activeTabIndex
-                        property bool isHovered: tabMouseArea.containsMouse || closeBtnMouse.containsMouse
-                        property bool showCloseButton: {
-                            var mode = settingsMgr.tabCloseButtonMode
-                            if (mode === "always") return true
-                            if (mode === "never") return false
-                            return isHovered || isActive
-                        }
-                        property bool showRamOnTab: {
-                            var mode = settingsMgr.tabRamUsageMode
-                            return mode === "tab" || mode === "both"
-                        }
-
-                        // Tab Hover Pill
-                        Rectangle {
-                            id: tabHoverPill
-                            anchors.fill: parent
-                            radius: 8
-                            color: Theme.surfaceContainerHigh
-                            opacity: (!tabItem.isActive && tabItem.isHovered) ? 1.0 : 0.0
-                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
-                        }
-
-                        // Active Tab Pill
-                        Rectangle {
-                            id: tabActivePill
-                            anchors.fill: parent
-                            radius: 8
-                            color: Theme.surface
-                            border.color: Theme.outlineVariant
-                            border.width: 1
-                            opacity: tabItem.isActive ? 1.0 : 0.0
-                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
-                        }
-
-                        // Tab Content
-                        Item {
-                            anchors.left: parent.left
-                            anchors.verticalCenter: parent.verticalCenter
-                            width: tabsListView.targetTabWidth
-                            height: 32
-
-                            RowLayout {
-                                anchors.fill: parent
-                                anchors.leftMargin: 8
-                                anchors.rightMargin: 6
-                                spacing: 6
-
-                                // Doc Logo / Icon
-                                DocLogo {
-                                    docId: (model.pageType === "reader" || !model.pageType) && model.docsetId ? model.docsetId : ""
-                                    size: 16
-                                    showBackground: false
-                                    visible: (model.pageType === "reader" || !model.pageType) && model.docsetId && model.docsetId !== ""
-                                }
-
-                                LucideIcon {
-                                    name: {
-                                        if (model.pageType === "catalog") return "compass"
-                                        if (model.pageType === "installed") return "download"
-                                        if (model.pageType === "settings") return "settings"
-                                        if (model.icon && model.icon.length > 0) return model.icon
-                                        return "file-text"
-                                    }
-                                    size: 13
-                                    color: tabItem.isActive ? Theme.primary : Theme.textOnSurfaceVariant
-                                    visible: !((model.pageType === "reader" || !model.pageType) && model.docsetId && model.docsetId !== "")
-                                }
-
-                                // Document Title
-                                Text {
-                                    Layout.fillWidth: true
-                                    text: model.title ? model.title : "New Tab"
-                                    font.family: Theme.fontSans
-                                    font.pixelSize: 12
-                                    font.bold: tabItem.isActive
-                                    color: tabItem.isActive ? Theme.textOnSurface : Theme.textOnSurfaceVariant
-                                    elide: Text.ElideRight
-                                }
-
-                                // Tab RAM Footprint Badge
-                                Rectangle {
-                                    visible: tabItem.showRamOnTab && tabRamText.text.length > 0
-                                    Layout.preferredHeight: 16
-                                    Layout.preferredWidth: tabRamText.implicitWidth + 8
-                                    radius: Theme.shapeFull
-                                    color: Theme.secondaryContainer
-
-                                    Text {
-                                        id: tabRamText
-                                        anchors.centerIn: parent
-                                        text: {
-                                            if (typeof model.ramUsage !== "undefined" && model.ramUsage.length > 0) {
-                                                return model.ramUsage
-                                            }
-                                            if (typeof settingsMgr !== "undefined" && settingsMgr.getTabMemoryUsage) {
-                                                var tId = (typeof model.tabId !== "undefined") ? model.tabId : ""
-                                                var u = settingsMgr.getTabMemoryUsage(tId)
-                                                if (u.length > 0) return u
-                                                return settingsMgr.calculateTabMemoryUsage(model.pageType, model.filePath, 50)
-                                            }
-                                            return "5.0 MB"
-                                        }
-                                        font.family: Theme.fontSans
-                                        font.pixelSize: 9
-                                        font.bold: true
-                                        color: Theme.textOnSecondaryContainer
-                                    }
-                                }
-
-                                // Close Button (X)
-                                Item {
-                                    id: closeBtn
-                                    visible: tabItem.showCloseButton
-                                    Layout.preferredWidth: 18
-                                    Layout.preferredHeight: 18
-
-                                    Rectangle {
-                                        anchors.fill: parent
-                                        radius: Theme.shapeFull
-                                        color: Theme.surfaceContainerHighest
-                                        opacity: closeBtnMouse.containsMouse ? 1.0 : 0.0
-                                        Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
-                                    }
-
-                                    LucideIcon {
-                                        anchors.centerIn: parent
-                                        name: "x"
-                                        size: 10
-                                        color: closeBtnMouse.containsMouse ? Theme.danger : Theme.textOnSurfaceVariant
-                                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
-                                    }
-
-                                    MouseArea {
-                                        id: closeBtnMouse
-                                        anchors.fill: parent
-                                        hoverEnabled: true
-                                        cursorShape: Qt.PointingHandCursor
-                                        onClicked: root.closeTabRequested(index)
-                                        onEntered: {
-                                            hoverGraceTimer.stop()
-                                            if (settingsMgr.tabHoverPreviewEnabled) {
-                                                var tX = tabItem.mapToItem(root, 0, 0).x
-                                                if (tabHoverCard.isOpen) {
-                                                    if (root.currentHoverIndex !== index) {
-                                                        hoverCardTimer.stop()
-                                                        root.showHoverCardForTab(index, tX, true)
-                                                    }
-                                                } else {
-                                                    if (!hoverCardTimer.running || hoverCardTimer.targetIndex !== index) {
-                                                        hoverCardTimer.targetIndex = index
-                                                        hoverCardTimer.targetX = tX
-                                                        hoverCardTimer.restart()
-                                                    }
-                                                }
-                                            }
-                                        }
-                                        onExited: {
-                                            if (tabMouseArea.containsMouse) return
-                                            var tabPt = tabItem.mapFromItem(closeBtn, closeBtnMouse.mouseX, closeBtnMouse.mouseY)
-                                            if (tabPt.x >= 0 && tabPt.x <= tabItem.width && tabPt.y >= 0 && tabPt.y <= tabItem.height) {
-                                                return
-                                            }
-                                            hoverCardTimer.stop()
-                                            if (tabHoverCard.isOpen && !hoverCardArea.containsMouse) {
-                                                hoverGraceTimer.restart()
-                                                if (cursorZoneTimer.running) {
-                                                    cursorZoneTimer.triggered()
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        // Tab Selection & Middle Click Mouse Area
-                        MouseArea {
-                            id: tabMouseArea
-                            anchors.fill: parent
-                            hoverEnabled: true
-                            cursorShape: Qt.PointingHandCursor
-                            acceptedButtons: Qt.LeftButton | Qt.MiddleButton
-                            z: -1
-
-                            onClicked: function(mouse) {
-                                if (mouse.button === Qt.MiddleButton) {
-                                    root.closeTabRequested(index)
-                                } else {
-                                    root.selectTabRequested(index)
-                                }
-                            }
-
-                            onEntered: {
-                                if (settingsMgr.tabHoverPreviewEnabled) {
-                                    var tX = tabItem.mapToItem(root, 0, 0).x
-                                    hoverGraceTimer.stop()
-                                    if (tabHoverCard.isOpen) {
-                                        if (root.currentHoverIndex !== index) {
-                                            hoverCardTimer.stop()
-                                            root.showHoverCardForTab(index, tX, true)
-                                        }
-                                    } else {
-                                        if (!hoverCardTimer.running || hoverCardTimer.targetIndex !== index) {
-                                            hoverCardTimer.targetIndex = index
-                                            hoverCardTimer.targetX = tX
-                                            hoverCardTimer.restart()
-                                        }
-                                    }
-                                }
-                            }
-
-                            onExited: {
-                                if (closeBtnMouse.containsMouse) return
-                                if (tabMouseArea.mouseX >= 0 && tabMouseArea.mouseX <= tabItem.width &&
-                                    tabMouseArea.mouseY >= 0 && tabMouseArea.mouseY <= tabItem.height) {
-                                    return
-                                }
-                                hoverCardTimer.stop()
-                                if (tabHoverCard.isOpen && !hoverCardArea.containsMouse) {
-                                    hoverGraceTimer.restart()
-                                    if (cursorZoneTimer.running) {
-                                        cursorZoneTimer.triggered()
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // New Tab (+) Button
-                Item {
-                    width: 28
-                    height: 28
                     anchors.verticalCenter: parent.verticalCenter
+                    clip: true
+                    z: isActive ? 2 : 1
+                    opacity: 1.0
 
+                    property bool isActive: index === root.activeTabIndex
+                    property bool isHovered: tabMouseArea.containsMouse || closeBtnMouse.containsMouse
+                    property bool isClosing: false
+
+                    property bool showCloseButton: {
+                        if (isClosing) return false
+                        var mode = settingsMgr.tabCloseButtonMode
+                        if (mode === "always") return true
+                        if (mode === "never") return false
+                        return isHovered || isActive
+                    }
+
+                    property bool showRamOnTab: {
+                        var mode = settingsMgr.tabRamUsageMode
+                        return mode === "tab" || mode === "both"
+                    }
+
+                    // Opening Animation: Write itself in from left to right with ease out (like Brave)
+                    NumberAnimation {
+                        id: openAnim
+                        target: tabItem
+                        property: "visualWidth"
+                        from: 0
+                        to: tabsArea.currentTabWidth
+                        duration: 170
+                        easing.type: Easing.OutCubic
+                    }
+
+                    // Closing Animation: Erase tab from right to left like Brave, sibling tabs slide smoothly
+                    ParallelAnimation {
+                        id: closeAnim
+                        NumberAnimation {
+                            target: tabItem
+                            property: "visualWidth"
+                            to: 0
+                            duration: 160
+                            easing.type: Easing.OutCubic
+                        }
+                        NumberAnimation {
+                            target: tabItem
+                            property: "opacity"
+                            to: 0
+                            duration: 140
+                            easing.type: Easing.OutCubic
+                        }
+                        onFinished: {
+                            var targetIdx = -1
+                            if (root.tabsModel && tabItem.savedTabId.length > 0) {
+                                for (var i = 0; i < root.tabsModel.count; ++i) {
+                                    var m = root.tabsModel.get(i)
+                                    if (m && m.tabId === tabItem.savedTabId) {
+                                        targetIdx = i
+                                        break
+                                    }
+                                }
+                            }
+                            if (targetIdx < 0) targetIdx = index
+                            if (targetIdx >= 0 && root.tabsModel && targetIdx < root.tabsModel.count) {
+                                root.closeTabRequested(targetIdx)
+                            }
+                        }
+                    }
+
+                    function closeWithAnimation() {
+                        if (isClosing) return
+                        isClosing = true
+                        tabItem.enabled = false
+                        root.closeHoverCard()
+                        if (tabsMouseTracker.containsMouse && tabsArea.currentTabWidth < 220) {
+                            tabsArea.lockedTabWidth = tabsArea.currentTabWidth
+                        }
+                        closeAnim.start()
+                    }
+
+                    Binding on visualWidth {
+                        when: !openAnim.running && !closeAnim.running
+                        value: tabsArea.currentTabWidth
+                    }
+
+                    Behavior on visualWidth {
+                        enabled: !openAnim.running && !closeAnim.running
+                        NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
+                    }
+
+                    Component.onCompleted: {
+                        openAnim.start()
+                    }
+
+                    // Active Tab Pill (Brave Elevated Dark/Light Styling)
                     Rectangle {
+                        id: tabActivePill
                         anchors.fill: parent
-                        radius: Theme.shapeFull
-                        color: Theme.surfaceContainerHighest
-                        opacity: newTabMouse.containsMouse ? 1.0 : 0.0
+                        radius: 8
+                        color: Theme.isDark ? "#282a2f" : "#ffffff"
+                        border.color: Theme.isDark ? "#3e424a" : "#c2c7cf"
+                        border.width: 1
+                        opacity: tabItem.isActive ? 1.0 : 0.0
                         Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
                     }
 
-                    LucideIcon {
-                        anchors.centerIn: parent
-                        name: "plus"
-                        size: 14
-                        color: newTabMouse.containsMouse ? Theme.primary : Theme.textOnSurfaceVariant
-                        Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                    // Tab Hover Pill (Smooth fade on inactive hover)
+                    Rectangle {
+                        id: tabHoverPill
+                        anchors.fill: parent
+                        radius: 8
+                        color: Theme.isDark ? "#23262c" : "#e4e7ed"
+                        opacity: (!tabItem.isActive && tabItem.isHovered && !tabItem.isClosing) ? 1.0 : 0.0
+                        Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
                     }
 
+                    // Brave Tab Separator Line (between adjacent inactive tabs)
+                    Rectangle {
+                        id: tabSeparator
+                        width: 1
+                        height: 16
+                        anchors.right: parent.right
+                        anchors.verticalCenter: parent.verticalCenter
+                        color: Theme.outlineVariant
+                        opacity: {
+                            if (tabItem.isActive || tabItem.isHovered || tabItem.isClosing) return 0.0
+                            if (index >= root.tabsModel.count - 1) return 0.0
+                            if (index + 1 === root.activeTabIndex) return 0.0
+                            var nextItem = tabsRepeater.itemAt(index + 1)
+                            if (nextItem && (nextItem.isHovered || nextItem.isActive)) return 0.0
+                            return 0.35
+                        }
+                        Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                    }
+
+                    // Tab Content (Anchored left, clipped as width contracts/expands)
+                    Item {
+                        anchors.left: parent.left
+                        anchors.verticalCenter: parent.verticalCenter
+                        width: Math.max(tabsArea.currentTabWidth, tabItem.width)
+                        height: 32
+
+                        RowLayout {
+                            anchors.fill: parent
+                            anchors.leftMargin: 8
+                            anchors.rightMargin: 6
+                            spacing: 6
+
+                            // Doc Logo / Icon
+                            DocLogo {
+                                docId: (model.pageType === "reader" || !model.pageType) && model.docsetId ? model.docsetId : ""
+                                size: 16
+                                showBackground: false
+                                visible: (model.pageType === "reader" || !model.pageType) && model.docsetId && model.docsetId !== ""
+                            }
+
+                            LucideIcon {
+                                name: {
+                                    if (model.pageType === "catalog") return "compass"
+                                    if (model.pageType === "installed") return "download"
+                                    if (model.pageType === "settings") return "settings"
+                                    if (model.icon && model.icon.length > 0) return model.icon
+                                    return "file-text"
+                                }
+                                size: 13
+                                color: tabItem.isActive ? Theme.primary : Theme.textOnSurfaceVariant
+                                visible: !((model.pageType === "reader" || !model.pageType) && model.docsetId && model.docsetId !== "")
+                            }
+
+                            // Document Title
+                            Text {
+                                Layout.fillWidth: true
+                                text: model.title ? model.title : "New Tab"
+                                font.family: Theme.fontSans
+                                font.pixelSize: 12
+                                font.bold: tabItem.isActive
+                                color: tabItem.isActive ? Theme.textOnSurface : Theme.textOnSurfaceVariant
+                                elide: Text.ElideRight
+                            }
+
+                            // Tab RAM Footprint Badge
+                            Rectangle {
+                                visible: tabItem.showRamOnTab && tabRamText.text.length > 0
+                                Layout.preferredHeight: 16
+                                Layout.preferredWidth: tabRamText.implicitWidth + 8
+                                radius: Theme.shapeFull
+                                color: Theme.secondaryContainer
+
+                                Text {
+                                    id: tabRamText
+                                    anchors.centerIn: parent
+                                    text: {
+                                        if (typeof model.ramUsage !== "undefined" && model.ramUsage.length > 0) {
+                                            return model.ramUsage
+                                        }
+                                        if (typeof settingsMgr !== "undefined" && settingsMgr.getTabMemoryUsage) {
+                                            var tId = (typeof model.tabId !== "undefined") ? model.tabId : ""
+                                            var u = settingsMgr.getTabMemoryUsage(tId)
+                                            if (u.length > 0) return u
+                                            return settingsMgr.calculateTabMemoryUsage(model.pageType, model.filePath, 50)
+                                        }
+                                        return "5.0 MB"
+                                    }
+                                    font.family: Theme.fontSans
+                                    font.pixelSize: 9
+                                    font.bold: true
+                                    color: Theme.textOnSecondaryContainer
+                                }
+                            }
+
+                            // Close Button (X)
+                            Item {
+                                id: closeBtn
+                                visible: tabItem.showCloseButton
+                                opacity: (tabItem.isActive || tabItem.isHovered) ? 1.0 : 0.0
+                                Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                                Layout.preferredWidth: 18
+                                Layout.preferredHeight: 18
+
+                                Rectangle {
+                                    anchors.fill: parent
+                                    radius: Theme.shapeFull
+                                    color: Theme.surfaceContainerHighest
+                                    opacity: closeBtnMouse.containsMouse ? 1.0 : 0.0
+                                    Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                                }
+
+                                LucideIcon {
+                                    anchors.centerIn: parent
+                                    name: "x"
+                                    size: 10
+                                    color: closeBtnMouse.containsMouse ? Theme.danger : Theme.textOnSurfaceVariant
+                                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                                }
+
+                                MouseArea {
+                                    id: closeBtnMouse
+                                    anchors.fill: parent
+                                    hoverEnabled: true
+                                    cursorShape: Qt.PointingHandCursor
+                                    onClicked: tabItem.closeWithAnimation()
+                                    onEntered: {
+                                        hoverGraceTimer.stop()
+                                        if (settingsMgr.tabHoverPreviewEnabled) {
+                                            var tX = tabItem.mapToItem(root, 0, 0).x
+                                            if (tabHoverCard.isOpen) {
+                                                if (root.currentHoverIndex !== index) {
+                                                    hoverCardTimer.stop()
+                                                    root.showHoverCardForTab(index, tX, true)
+                                                }
+                                            } else {
+                                                if (!hoverCardTimer.running || hoverCardTimer.targetIndex !== index) {
+                                                    hoverCardTimer.targetIndex = index
+                                                    hoverCardTimer.targetX = tX
+                                                    hoverCardTimer.restart()
+                                                }
+                                            }
+                                        }
+                                    }
+                                    onExited: {
+                                        if (tabMouseArea.containsMouse) return
+                                        var tabPt = tabItem.mapFromItem(closeBtn, closeBtnMouse.mouseX, closeBtnMouse.mouseY)
+                                        if (tabPt.x >= 0 && tabPt.x <= tabItem.width && tabPt.y >= 0 && tabPt.y <= tabItem.height) {
+                                            return
+                                        }
+                                        hoverCardTimer.stop()
+                                        if (tabHoverCard.isOpen && !hoverCardArea.containsMouse) {
+                                            hoverGraceTimer.restart()
+                                            if (cursorZoneTimer.running) {
+                                                cursorZoneTimer.triggered()
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    // Tab Selection & Middle Click Mouse Area
                     MouseArea {
-                        id: newTabMouse
+                        id: tabMouseArea
                         anchors.fill: parent
                         hoverEnabled: true
                         cursorShape: Qt.PointingHandCursor
-                        onClicked: root.newTabRequested()
-                    }
+                        acceptedButtons: Qt.LeftButton | Qt.MiddleButton
+                        z: -1
 
-                    ToolTip.visible: newTabMouse.containsMouse
-                    ToolTip.delay: 400
-                    ToolTip.text: "New Tab (Ctrl+T)"
+                        onClicked: function(mouse) {
+                            if (mouse.button === Qt.MiddleButton) {
+                                tabItem.closeWithAnimation()
+                            } else {
+                                root.selectTabRequested(index)
+                            }
+                        }
+
+                        onEntered: {
+                            if (settingsMgr.tabHoverPreviewEnabled) {
+                                var tX = tabItem.mapToItem(root, 0, 0).x
+                                hoverGraceTimer.stop()
+                                if (tabHoverCard.isOpen) {
+                                    if (root.currentHoverIndex !== index) {
+                                        hoverCardTimer.stop()
+                                        root.showHoverCardForTab(index, tX, true)
+                                    }
+                                } else {
+                                    if (!hoverCardTimer.running || hoverCardTimer.targetIndex !== index) {
+                                        hoverCardTimer.targetIndex = index
+                                        hoverCardTimer.targetX = tX
+                                        hoverCardTimer.restart()
+                                    }
+                                }
+                            }
+                        }
+
+                        onExited: {
+                            if (closeBtnMouse.containsMouse) return
+                            if (tabMouseArea.mouseX >= 0 && tabMouseArea.mouseX <= tabItem.width &&
+                                tabMouseArea.mouseY >= 0 && tabMouseArea.mouseY <= tabItem.height) {
+                                return
+                            }
+                            hoverCardTimer.stop()
+                            if (tabHoverCard.isOpen && !hoverCardArea.containsMouse) {
+                                hoverGraceTimer.restart()
+                                if (cursorZoneTimer.running) {
+                                    cursorZoneTimer.triggered()
+                                }
+                            }
+                        }
+                    }
                 }
+            }
+
+            // New Tab (+) Button
+            Item {
+                id: newTabBtn
+                width: 28
+                height: 28
+                anchors.verticalCenter: parent.verticalCenter
+
+                Rectangle {
+                    anchors.fill: parent
+                    radius: Theme.shapeFull
+                    color: Theme.surfaceContainerHighest
+                    opacity: newTabMouse.containsMouse ? 1.0 : 0.0
+                    Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
+                }
+
+                LucideIcon {
+                    anchors.centerIn: parent
+                    name: "plus"
+                    size: 14
+                    color: newTabMouse.containsMouse ? Theme.primary : Theme.textOnSurfaceVariant
+                    Behavior on color { ColorAnimation { duration: Theme.animDurationFast } }
+                }
+
+                MouseArea {
+                    id: newTabMouse
+                    anchors.fill: parent
+                    hoverEnabled: true
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: root.newTabRequested()
+                }
+
+                ToolTip.visible: newTabMouse.containsMouse
+                ToolTip.delay: 400
+                ToolTip.text: "New Tab (Ctrl+T)"
             }
 
             onWidthChanged: updateFramelessHitTest()
         }
 
-        // Draggable Empty Space (Takes all remaining width)
+        // Draggable Empty Space across the rest of the tab area
         Item {
-            id: dragSpacer
-            Layout.fillWidth: true
-            Layout.fillHeight: true
+            id: dragArea
+            anchors.left: tabsRow.right
+            anchors.leftMargin: 4
+            anchors.right: parent.right
+            anchors.top: parent.top
+            anchors.bottom: parent.bottom
 
             MouseArea {
                 anchors.fill: parent
                 hoverEnabled: true
                 acceptedButtons: Qt.LeftButton
                 onEntered: {
-                    if (tabHoverCard.isOpen) {
-                        root.closeHoverCard()
-                    }
+                    if (tabHoverCard.isOpen) root.closeHoverCard()
                 }
                 onDoubleClicked: {
                     if (typeof framelessHelper !== "undefined" && framelessHelper) {
@@ -445,13 +551,17 @@ Rectangle {
                 }
             }
         }
+    }
 
-        // Window Controls (Right: Minimize, Maximize/Restore, Close)
-        Row {
-            id: windowControls
-            Layout.preferredWidth: 138
-            Layout.fillHeight: true
-            spacing: 0
+    // Window Controls (Right: Minimize, Maximize/Restore, Close)
+    Row {
+        id: windowControls
+        anchors.right: parent.right
+        anchors.top: parent.top
+        anchors.bottom: parent.bottom
+        width: 138
+        spacing: 0
+        z: 2
 
             // Minimize
             Rectangle {
@@ -553,7 +663,6 @@ Rectangle {
                 }
             }
         }
-    }
 
     function getHoverCardData(targetIndex) {
         if (targetIndex >= 0 && root.tabsModel && targetIndex < root.tabsModel.count) {
@@ -651,9 +760,9 @@ Rectangle {
             if (!tabHoverCard.isOpen) return
 
             // 1. Tab strip zone bounds
-            var tabsPos = tabsContainer.mapToItem(null, 0, 0)
+            var tabsPos = tabsArea.mapToItem(null, 0, 0)
             var tabPad = 16
-            var tabsW = (tabsRow ? tabsRow.implicitWidth + 36 : 200)
+            var tabsW = (tabsRow ? tabsRow.width + 16 : 200)
             var tabX1 = tabsPos.x - tabPad
             var tabX2 = tabsPos.x + tabsW + tabPad
             var tabY1 = -tabPad
@@ -712,7 +821,7 @@ Rectangle {
     function updateFramelessHitTest() {
         if (typeof framelessHelper !== "undefined" && framelessHelper) {
             var tabsStart = 44.0
-            var tabsEnd = tabsStart + (tabsRow ? tabsRow.implicitWidth + 36 : 200.0)
+            var tabsEnd = tabsStart + (tabsRow ? tabsRow.width + 8 : 200.0)
             framelessHelper.updateTabsWidth(tabsStart, tabsEnd)
         }
     }

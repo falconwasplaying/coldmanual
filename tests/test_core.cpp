@@ -591,8 +591,8 @@ void testThemeColors() {
     std::cout << "[PASS] testThemeColors passed (white text on blue boxes verified in light & dark modes)!" << std::endl;
 }
 
-void testListViewTabTransitions() {
-    std::cout << "[TEST] Running testListViewTabTransitions..." << std::endl;
+void testBraveTabStripTransitions() {
+    std::cout << "[TEST] Running testBraveTabStripTransitions..." << std::endl;
     QQmlEngine engine;
     QQmlComponent comp(&engine);
     comp.setData(R"(
@@ -603,51 +603,57 @@ void testListViewTabTransitions() {
 
             ListModel {
                 id: testModel
-                ListElement { title: "Tab 1" }
-                ListElement { title: "Tab 2" }
-                ListElement { title: "Tab 3" }
+                ListElement { tabId: "1"; title: "Tab 1" }
+                ListElement { tabId: "2"; title: "Tab 2" }
+                ListElement { tabId: "3"; title: "Tab 3" }
             }
 
-            ListView {
-                id: lv
-                orientation: ListView.Horizontal
-                spacing: 4
-                clip: true
-                width: 600; height: 32
-                model: testModel
+            property real lockedTabWidth: 0
+            property bool isMouseInTabs: false
 
-                add: Transition {
-                    NumberAnimation { property: "width"; from: 0; duration: 190; easing.type: Easing.OutCubic }
+            function getNormalTabWidth() {
+                var cnt = testModel.count;
+                if (cnt <= 0) return 220;
+                var avail = Math.max(120, 800 - 36);
+                var totalNeeded = cnt * 220 + (cnt - 1) * 2;
+                if (totalNeeded <= avail) return 220;
+                return Math.max(80, Math.floor((avail - (cnt - 1) * 2) / cnt));
+            }
+
+            readonly property real currentTabWidth: {
+                var normal = getNormalTabWidth();
+                if (lockedTabWidth > 0 && isMouseInTabs) {
+                    return Math.min(lockedTabWidth, normal);
                 }
-                addDisplaced: Transition {
-                    NumberAnimation { properties: "x,y"; duration: 190; easing.type: Easing.OutCubic }
-                }
-                remove: Transition {
-                    ParallelAnimation {
-                        PropertyAction { property: "enabled"; value: false }
-                        NumberAnimation { property: "width"; to: 0; duration: 170; easing.type: Easing.OutCubic }
+                return normal;
+            }
+
+            Row {
+                id: tabsRow
+                spacing: 2
+                Repeater {
+                    id: rep
+                    model: testModel
+                    delegate: Item {
+                        width: root.currentTabWidth
+                        height: 32
                     }
                 }
-                removeDisplaced: Transition {
-                    NumberAnimation { properties: "x,y"; duration: 170; easing.type: Easing.OutCubic }
-                }
-
-                delegate: Item {
-                    id: tabItem
-                    width: 150; height: 32
-                    clip: true
-                    Text { text: model.title; anchors.centerIn: parent }
-                }
             }
 
-            function removeFirst() {
-                testModel.remove(0);
+            function closeTabWithLock(idx) {
+                if (isMouseInTabs) {
+                    lockedTabWidth = currentTabWidth;
+                }
+                testModel.remove(idx);
             }
-            function appendNew() {
-                testModel.append({ title: "Tab New" });
+
+            function mouseExit() {
+                isMouseInTabs = false;
+                lockedTabWidth = 0;
             }
         }
-    )", QUrl("qrc:/testListView.qml"));
+    )", QUrl("qrc:/testBraveTabStrip.qml"));
 
     auto* obj = comp.create();
     if (!obj) {
@@ -655,14 +661,22 @@ void testListViewTabTransitions() {
     }
     assert(obj);
 
-    QMetaObject::invokeMethod(obj, "removeFirst");
+    qreal initialW = obj->property("currentTabWidth").toReal();
+    assert(initialW == 220.0);
+
+    obj->setProperty("isMouseInTabs", true);
+    QMetaObject::invokeMethod(obj, "closeTabWithLock", Q_ARG(QVariant, 0));
     QCoreApplication::processEvents();
 
-    QMetaObject::invokeMethod(obj, "appendNew");
+    qreal afterCloseW = obj->property("currentTabWidth").toReal();
+    assert(afterCloseW == 220.0);
+
+    QMetaObject::invokeMethod(obj, "mouseExit");
     QCoreApplication::processEvents();
+    assert(obj->property("lockedTabWidth").toReal() == 0.0);
 
     delete obj;
-    std::cout << "[PASS] testListViewTabTransitions passed!" << std::endl;
+    std::cout << "[PASS] testBraveTabStripTransitions passed!" << std::endl;
 }
 
 void testMainQmlLoading() {
@@ -773,7 +787,7 @@ int main(int argc, char* argv[]) {
     testNetworkManager();
     testNoDiskCaching();
     testThemeColors();
-    testListViewTabTransitions();
+    testBraveTabStripTransitions();
     testMainQmlLoading();
 
     std::cout << "\nALL TESTS PASSED SUCCESSFULLY! (ColdManual Engine Verified)" << std::endl;
