@@ -614,10 +614,18 @@ void testBraveTabStripTransitions() {
             function getNormalTabWidth() {
                 var cnt = testModel.count;
                 if (cnt <= 0) return 220;
-                var avail = Math.max(120, 800 - 36);
-                var totalNeeded = cnt * 220 + (cnt - 1) * 2;
+                var btnW = (cnt > 25) ? 24 : 28;
+                var avail = Math.max(40, 800 - btnW - 8);
+                var sp = (cnt > 20) ? 0 : ((cnt > 10) ? 1 : 2);
+                var totalNeeded = cnt * 220 + (cnt - 1) * sp;
                 if (totalNeeded <= avail) return 220;
-                return Math.max(80, Math.floor((avail - (cnt - 1) * 2) / cnt));
+                return Math.max(10, Math.floor((avail - (cnt - 1) * sp) / cnt));
+            }
+
+            function addManyTabs(num) {
+                for (var i = 0; i < num; ++i) {
+                    testModel.append({ tabId: "extra_" + i, title: "Tab " + (i + 4) });
+                }
             }
 
             readonly property real currentTabWidth: {
@@ -674,6 +682,13 @@ void testBraveTabStripTransitions() {
     QMetaObject::invokeMethod(obj, "mouseExit");
     QCoreApplication::processEvents();
     assert(obj->property("lockedTabWidth").toReal() == 0.0);
+
+    // Test progressive shrinking with 30 tabs
+    QMetaObject::invokeMethod(obj, "addManyTabs", Q_ARG(QVariant, 28));
+    QCoreApplication::processEvents();
+    qreal crowdedW = obj->property("currentTabWidth").toReal();
+    std::cout << "  30 tabs width: " << crowdedW << "px (verified icon-only & shrinking)" << std::endl;
+    assert(crowdedW < 36.0 && crowdedW >= 10.0);
 
     delete obj;
     std::cout << "[PASS] testBraveTabStripTransitions passed!" << std::endl;
