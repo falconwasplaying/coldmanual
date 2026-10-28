@@ -145,16 +145,27 @@ Rectangle {
             anchors.left: tabsRow.left
             anchors.top: parent.top
             anchors.bottom: parent.bottom
-            width: tabsRow.width
+            width: Math.max(tabsRow.width, (newTabBtn.x + newTabBtn.width) - tabsRow.x)
             z: -1
 
             HoverHandler {
                 id: tabStripHover
                 onHoveredChanged: {
                     if (!hovered) {
-                        tabsArea.handleMouseExit()
+                        mouseExitTimer.restart()
+                    } else {
+                        mouseExitTimer.stop()
                     }
                 }
+            }
+        }
+
+        Timer {
+            id: mouseExitTimer
+            interval: 70
+            repeat: false
+            onTriggered: {
+                tabsArea.handleMouseExit()
             }
         }
 
@@ -172,7 +183,7 @@ Rectangle {
                 delegate: Item {
                     id: tabItem
                     property string savedTabId: (typeof model.tabId !== "undefined") ? model.tabId : ""
-                    property real visualWidth: 0
+                    property real visualWidth: tabsArea.currentTabWidth
                     width: visualWidth
                     height: 32
                     anchors.verticalCenter: parent.verticalCenter
@@ -198,7 +209,7 @@ Rectangle {
                     readonly property real lucideStrokeWidth: (iconSize <= 10) ? 1.5 : 2.0
 
                     property bool showCloseButton: {
-                        if (isClosing || isIconOnly) return false
+                        if (isClosing || isMiddleClickPending || isIconOnly) return false
                         var mode = settingsMgr.tabCloseButtonMode
                         if (mode === "always") return true
                         if (mode === "never") return false
@@ -221,6 +232,11 @@ Rectangle {
                         to: tabsArea.currentTabWidth
                         duration: 170
                         easing.type: Easing.OutCubic
+                        onFinished: {
+                            if (!tabItem.isMiddleClickPending && !tabItem.isClosing) {
+                                tabItem.visualWidth = tabsArea.currentTabWidth
+                            }
+                        }
                     }
 
                     // Closing Animation: Erase tab from right to left like Brave, sibling tabs slide smoothly
@@ -259,9 +275,8 @@ Rectangle {
                     }
 
                     function closeWithAnimation() {
-                        if (isClosing) return
+                        if (isClosing || isMiddleClickPending) return
                         isClosing = true
-                        tabItem.enabled = false
                         root.closeHoverCard()
                         if (tabStripHover.hovered && tabsArea.currentTabWidth < 220) {
                             tabsArea.lockedTabWidth = tabsArea.currentTabWidth
@@ -276,8 +291,6 @@ Rectangle {
                             return
                         }
                         isMiddleClickPending = true
-                        tabItem.enabled = false
-                        tabItem.opacity = 0
                         root.closeHoverCard()
 
                         if (tabsArea.currentTabWidth < 220) {
@@ -314,13 +327,17 @@ Rectangle {
                         closeAnim.start()
                     }
 
-                    Binding on visualWidth {
-                        when: !openAnim.running && !closeAnim.running && !isMiddleClickPending
-                        value: tabsArea.currentTabWidth
+                    Connections {
+                        target: tabsArea
+                        function onCurrentTabWidthChanged() {
+                            if (!openAnim.running && !closeAnim.running && !tabItem.isMiddleClickPending && !tabItem.isClosing) {
+                                tabItem.visualWidth = tabsArea.currentTabWidth
+                            }
+                        }
                     }
 
                     Behavior on visualWidth {
-                        enabled: !openAnim.running && !closeAnim.running && !isMiddleClickPending
+                        enabled: !openAnim.running && !closeAnim.running && !tabItem.isMiddleClickPending && !tabItem.isClosing
                         NumberAnimation { duration: 160; easing.type: Easing.OutCubic }
                     }
 
@@ -336,7 +353,7 @@ Rectangle {
                         color: Theme.isDark ? "#282a2f" : "#ffffff"
                         border.color: Theme.isDark ? "#3e424a" : "#c2c7cf"
                         border.width: 1
-                        opacity: tabItem.isActive ? 1.0 : 0.0
+                        opacity: (tabItem.isActive && !tabItem.isMiddleClickPending && !tabItem.isClosing) ? 1.0 : 0.0
                         Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
                     }
 
@@ -346,7 +363,7 @@ Rectangle {
                         anchors.fill: parent
                         radius: Math.max(3, Math.min(8, Math.floor(tabItem.visualWidth / 3)))
                         color: Theme.isDark ? "#23262c" : "#e4e7ed"
-                        opacity: (!tabItem.isActive && tabItem.isHovered && !tabItem.isClosing) ? 1.0 : 0.0
+                        opacity: (!tabItem.isActive && tabItem.isHovered && !tabItem.isClosing && !tabItem.isMiddleClickPending) ? 1.0 : 0.0
                         Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
                     }
 
@@ -359,13 +376,13 @@ Rectangle {
                         anchors.verticalCenter: parent.verticalCenter
                         color: Theme.outlineVariant
                         opacity: {
-                            if (tabItem.isMiddleClickPending) return 0.0
+                            if (tabItem.isMiddleClickPending || tabItem.isClosing) return 0.0
                             if (tabItem.visualWidth < 22) return 0.0
-                            if (tabItem.isActive || tabItem.isHovered || tabItem.isClosing) return 0.0
+                            if (tabItem.isActive || tabItem.isHovered) return 0.0
                             if (index >= root.tabsModel.count - 1) return 0.0
                             if (index + 1 === root.activeTabIndex) return 0.0
                             var nextItem = tabsRepeater.itemAt(index + 1)
-                            if (nextItem && (nextItem.isHovered || nextItem.isActive || nextItem.isMiddleClickPending)) return 0.0
+                            if (nextItem && (nextItem.isHovered || nextItem.isActive || nextItem.isMiddleClickPending || nextItem.isClosing)) return 0.0
                             return 0.35
                         }
                         Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
@@ -376,6 +393,7 @@ Rectangle {
                         id: tabContent
                         anchors.fill: parent
                         clip: true
+                        visible: !tabItem.isMiddleClickPending && !tabItem.isClosing
 
                         // Centered / Left-aligned Icon
                         Item {
@@ -495,7 +513,10 @@ Rectangle {
                                 anchors.fill: parent
                                 hoverEnabled: true
                                 cursorShape: Qt.PointingHandCursor
-                                onClicked: tabItem.closeWithAnimation()
+                                onClicked: {
+                                    if (tabItem.isClosing || tabItem.isMiddleClickPending) return
+                                    tabItem.closeWithAnimation()
+                                }
                                 onEntered: {
                                     hoverGraceTimer.stop()
                                     if (settingsMgr.tabHoverPreviewEnabled) {
@@ -537,11 +558,12 @@ Rectangle {
                         id: tabMouseArea
                         anchors.fill: parent
                         hoverEnabled: true
-                        cursorShape: Qt.PointingHandCursor
+                        cursorShape: (tabItem.isMiddleClickPending || tabItem.isClosing) ? Qt.ArrowCursor : Qt.PointingHandCursor
                         acceptedButtons: Qt.LeftButton | Qt.MiddleButton
                         z: -1
 
                         onClicked: function(mouse) {
+                            if (tabItem.isMiddleClickPending || tabItem.isClosing) return
                             if (mouse.button === Qt.MiddleButton) {
                                 tabItem.middleClickClose()
                             } else {
@@ -550,6 +572,7 @@ Rectangle {
                         }
 
                         onEntered: {
+                            if (tabItem.isMiddleClickPending || tabItem.isClosing) return
                             if (settingsMgr.tabHoverPreviewEnabled) {
                                 var tX = tabItem.mapToItem(root, 0, 0).x
                                 hoverGraceTimer.stop()
@@ -584,7 +607,7 @@ Rectangle {
                         }
                     }
 
-                    ToolTip.visible: tabItem.isIconOnly && tabMouseArea.containsMouse && !tabHoverCard.isOpen
+                    ToolTip.visible: !tabItem.isMiddleClickPending && !tabItem.isClosing && tabItem.isIconOnly && tabMouseArea.containsMouse && !tabHoverCard.isOpen
                     ToolTip.delay: 350
                     ToolTip.text: model.title ? model.title : "New Tab"
                 }
@@ -630,7 +653,11 @@ Rectangle {
                 anchors.fill: parent
                 hoverEnabled: true
                 cursorShape: Qt.PointingHandCursor
-                onClicked: root.newTabRequested()
+                onClicked: {
+                    mouseExitTimer.stop()
+                    tabsArea.handleMouseExit()
+                    root.newTabRequested()
+                }
             }
 
             ToolTip.visible: newTabMouse.containsMouse

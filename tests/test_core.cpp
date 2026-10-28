@@ -643,8 +643,10 @@ void testBraveTabStripTransitions() {
                 spacing: (testModel.count > 20) ? 0 : ((testModel.count > 10) ? 1 : 2)
                 Repeater {
                     id: rep
+                    objectName: "rep"
                     model: testModel
                     delegate: Item {
+                        objectName: "tabDelegate"
                         property bool isMiddleClickPending: false
                         property real visualWidth: root.currentTabWidth
                         width: visualWidth
@@ -726,6 +728,15 @@ void testBraveTabStripTransitions() {
     QCoreApplication::processEvents();
     // Tab width remains locked and slot stays open
     assert(obj->property("currentTabWidth").toReal() == thirtyW);
+    auto* rep = obj->findChild<QObject*>("rep");
+    if (rep) {
+        QObject* item2 = nullptr;
+        QMetaObject::invokeMethod(rep, "itemAt", Q_RETURN_ARG(QObject*, item2), Q_ARG(int, 2));
+        if (item2) {
+            assert(item2->property("visualWidth").toReal() == thirtyW);
+            assert(item2->property("isMiddleClickPending").toBool());
+        }
+    }
     std::cout << "  Middle-click executed: slot frozen, tabs did not move/resize under cursor." << std::endl;
 
     // On mouse exit: gap collapses and model updates
