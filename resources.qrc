@@ -18,6 +18,7 @@
         <file alias="components/TabHoverCard.qml">src/qml/components/TabHoverCard.qml</file>
         <file alias="components/WindowModePill.qml">src/qml/components/WindowModePill.qml</file>
         <file alias="components/SegmentedPill.qml">src/qml/components/SegmentedPill.qml</file>
+        <file alias="components/ToggleSwitch.qml">src/qml/components/ToggleSwitch.qml</file>
         <file alias="components/Toast.qml">src/qml/components/Toast.qml</file>
         <file alias="views/ReaderView.qml">src/qml/views/ReaderView.qml</file>
         <file alias="views/CatalogView.qml">src/qml/views/CatalogView.qml</file>

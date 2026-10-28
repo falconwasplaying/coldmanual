@@ -197,13 +197,19 @@ Item {
                             color: Theme.textOnSurfaceVariant
                         }
 
-                        RowLayout {
+                        // 1. Enable Automatic Background Checks
+                        Item {
                             Layout.fillWidth: true
-                            spacing: 10
+                            implicitHeight: Math.max(autoCheckCol.implicitHeight, autoCheckSwitch.height)
 
                             ColumnLayout {
-                                Layout.fillWidth: true
+                                id: autoCheckCol
+                                anchors.left: parent.left
+                                anchors.right: autoCheckSwitch.left
+                                anchors.rightMargin: 16
+                                anchors.verticalCenter: parent.verticalCenter
                                 spacing: 2
+
                                 Text {
                                     text: "Enable Automatic Background Checks"
                                     font.family: Theme.fontSans
@@ -219,40 +225,65 @@ Item {
                                 }
                             }
 
-                            Switch {
+                            ToggleSwitch {
+                                id: autoCheckSwitch
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
                                 checked: settingsMgr.autoUpdateEnabled
-                                onToggled: settingsMgr.autoUpdateEnabled = checked
+                                onToggled: function(val) {
+                                    settingsMgr.autoUpdateEnabled = val
+                                }
                             }
                         }
 
-                        RowLayout {
+                        // 2. Check Frequency (Segmented Pill)
+                        ColumnLayout {
                             Layout.fillWidth: true
-                            spacing: 10
+                            spacing: 8
+                            opacity: settingsMgr.autoUpdateEnabled ? 1.0 : 0.4
                             enabled: settingsMgr.autoUpdateEnabled
+                            Behavior on opacity { NumberAnimation { duration: Theme.animDurationFast } }
 
                             Text {
                                 text: "Check Frequency:"
                                 font.family: Theme.fontSans
                                 font.pixelSize: 13
+                                font.bold: true
                                 color: Theme.textOnSurface
                             }
 
-                            ComboBox {
-                                id: intervalCombo
-                                model: ["Every 6 Hours", "Every 12 Hours", "Daily (24 Hours)", "Weekly (168 Hours)"]
-                                currentIndex: {
+                            SegmentedPill {
+                                width: 440
+                                height: 36
+                                currentValue: {
                                     var h = settingsMgr.checkIntervalHours
-                                    if (h <= 6) return 0
-                                    if (h <= 12) return 1
-                                    if (h <= 24) return 2
-                                    return 3
+                                    if (h <= 6) return "6"
+                                    if (h <= 12) return "12"
+                                    if (h <= 24) return "24"
+                                    return "168"
                                 }
-                                onActivated: function(index) {
-                                    if (index === 0) settingsMgr.checkIntervalHours = 6
-                                    else if (index === 1) settingsMgr.checkIntervalHours = 12
-                                    else if (index === 2) settingsMgr.checkIntervalHours = 24
-                                    else if (index === 3) settingsMgr.checkIntervalHours = 168
+                                options: [
+                                    { id: "6", label: "Every 6 Hours" },
+                                    { id: "12", label: "Every 12 Hours" },
+                                    { id: "24", label: "Daily" },
+                                    { id: "168", label: "Weekly" }
+                                ]
+                                onValueSelected: function(val) {
+                                    settingsMgr.checkIntervalHours = parseInt(val)
                                 }
+                            }
+
+                            Text {
+                                text: {
+                                    var h = settingsMgr.checkIntervalHours
+                                    if (h <= 6) return "Checks for documentation updates every 6 hours in the background"
+                                    if (h <= 12) return "Checks for documentation updates every 12 hours in the background"
+                                    if (h <= 24) return "Checks for documentation updates once a day (every 24 hours) in the background"
+                                    return "Checks for documentation updates once a week (every 7 days) in the background"
+                                }
+                                font.family: Theme.fontSans
+                                font.pixelSize: 11
+                                color: Theme.textOnSurfaceVariant
                             }
                         }
                     }
@@ -391,12 +422,16 @@ Item {
                         }
 
                         // 2. Tab Hover Preview Card
-                        RowLayout {
+                        Item {
                             Layout.fillWidth: true
-                            spacing: 10
+                            implicitHeight: Math.max(hoverCardCol.implicitHeight, hoverCardSwitch.height)
 
                             ColumnLayout {
-                                Layout.fillWidth: true
+                                id: hoverCardCol
+                                anchors.left: parent.left
+                                anchors.right: hoverCardSwitch.left
+                                anchors.rightMargin: 16
+                                anchors.verticalCenter: parent.verticalCenter
                                 spacing: 2
 
                                 Text {
@@ -414,9 +449,14 @@ Item {
                                 }
                             }
 
-                            Switch {
+                            ToggleSwitch {
+                                id: hoverCardSwitch
+                                anchors.right: parent.right
+                                anchors.verticalCenter: parent.verticalCenter
                                 checked: settingsMgr.tabHoverPreviewEnabled
-                                onToggled: settingsMgr.tabHoverPreviewEnabled = checked
+                                onToggled: function(val) {
+                                    settingsMgr.tabHoverPreviewEnabled = val
+                                }
                             }
                         }
 

@@ -286,6 +286,14 @@ void testSettingsAndRegistry() {
     assert(settings.readerFontSize() == 18);
     settings.setAutoUpdateEnabled(true);
     assert(settings.autoUpdateEnabled() == true);
+    settings.setCheckIntervalHours(6);
+    assert(settings.checkIntervalHours() == 6);
+    settings.setCheckIntervalHours(12);
+    assert(settings.checkIntervalHours() == 12);
+    settings.setCheckIntervalHours(168);
+    assert(settings.checkIntervalHours() == 168);
+    settings.setCheckIntervalHours(24);
+    assert(settings.checkIntervalHours() == 24);
 
     // Test persistent window geometry & state
     settings.saveWindowGeometry(300, 200, 1350, 850, "normal");
