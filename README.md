@@ -1,8 +1,10 @@
+<div align="center">
+
 # ColdManual
 
-An open-source lightweight desktop app for browsing, downloading, and reading offline documentation for programming languages, frameworks, and developer tools.
+</div>
 
----
+An open-source lightweight desktop app for browsing, downloading, and reading offline documentation for programming languages, frameworks, and developer tools.
 
 ## Building
 
